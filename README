@@ -1,0 +1,67 @@
+A project to manage google docs + portfolio assessment system.
+
+What do we need...
+
+Google sheets -> author our strands, etc.
+Google classroom connect -> create portfolio / connect pieces (?)
+Chrome extension -> connect w/ aspen
+Database or Google Docs DB ->
+         TABLES
+
+         PER CLASS
+         Skill -> Strand -> Descriptors -> # exemplars
+         Assignments -> Suggested skill (many-to-many)
+
+         PER STUDENT
+         Skill -> Exemplar -> Reflection -> ID?
+
+         PER TEACHER
+         Student -> Work -> Skill -> Assessment
+
+
+DESIGN
+Let's (temporarily?) plan to build backend/frontend with a clean interface so they can be decoupled at a later date. For now, let's plan this...
+
+Backend -> Google Apps Script based API like we use for aspen. Use this API to access classroom, sheets, etc.
+
+Frontend -> Netlify-hosted modern single-page web-app. Might use React? Can (possibly) cache data to avoid making multiple calls to the backend for e.g. rubric descriptors etc.
+
+
+*Backend methods*
+
+get_table(class,id)
+put_table(class,id)
+
+
+get_classes(student)
+get_teacher_classes(teacher)
+get_skills(class,assignment)
+get_portfolio_assignments(class,student)
+
+
+update_skills -> create pretty google doc from our output.
+update_portfolio -> create pretty portfolio from our output
+
+
+
+*Frontend Views*
+
+**Student**
+Add assignment...
+-> Pick skills...
+-> Reflect
+-> Submit to teacher
+
+View portfolio
+-> Show skills
+-> Show "dashboard" (what's done, what are scores, etc.)
+
+**Teacher**
+-> View portfolios
+   -> By student
+   -> By skill
+   -> By assignment
+   -> By exemplar
+
+-> Assessment to-do list
+     

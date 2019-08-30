@@ -1,0 +1,7 @@
+Step 1: Hello World
+- Get GAS-based API set-up
+- Get Get web-app authenticated to API * CORS trouble -> maybe JSONP is the solution???
+- Get single request made: e.g. list classes for a teacher.
+
+Step 2: Teacher set-up
+- Link assessments in
