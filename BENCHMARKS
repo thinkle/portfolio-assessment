@@ -1,7 +1,38 @@
 Step 1: Hello World
-- Get GAS-based API set-up
-- Get Get web-app authenticated to API * CORS trouble -> maybe JSONP is the solution???
-- Get single request made: e.g. list classes for a teacher.
+- Get GAS-based API set-up (x)
+- Get Get web-app authenticated to API * CORS trouble -> maybe JSONP is the solution??? (it is!) (x)
+- Get single request made: e.g. list classes for a teacher. (X)
+- Test posting data back to GAS api (no-go -- limit of ~5k characters)
+  -> Possible model...
+     Embed google docs etc. in iFrame for longer data rather than posting data directly. (x)
+     
+     Other workaround would involve putting data at a secret URL and directing GAS to fetch it, but that
+     will expose a substantial security hole and given we're working with student data, seems like a bad plan.
+
+Step 1.a: Google Embed Widget:
+- Create a widget for embedding a google doc or a google sheet with data we care about. (x)
+
+Step 1.b: Get basic property saving/getting working (x)
+
 
 Step 2: Teacher set-up
-- Link assessments in
+- Link assessments in (read-mode?)
+- Create necessary "database" (spreadsheets?).
+- Set up system for spreadsheets + data cached in user's browser (?)
+
+2A:
+-> Data types...
+    - Class list (list of classes)
+    - Skills list
+    - Portfolio Editor
+      -> Associate skills w/ exemplars (points + due dates)
+      -> Weight whole thing...
+      -> Get portfolio editor sheet widget working:
+             NOTES: Attempts to use various grid table widgets is a f**ing nightmare. Maybe worth just building
+             from scratch after all -- state management is the crux of it and it's not being simplified by using
+             other people's code :(
+
+
+Step 3: Student set-up
+- Allow student to link an assignment to a skill / multiple skills.
+- Allow teacher to link a student assignment to a skill / multiple skills.
