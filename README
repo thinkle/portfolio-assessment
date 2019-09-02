@@ -9,8 +9,17 @@ Database or Google Docs DB ->
          TABLES
 
          PER CLASS
-         Skill -> Strand -> Descriptors -> # exemplars
+         Skill -> Strand -> Descriptors -> # exemplars (display)
          Assignments -> Suggested skill (many-to-many)
+
+         Data model is...
+
+         Skill -> Strand -> Show-By-Date (?)
+         Skill -> Strand -> Show-By-Date (?)
+         Skill -> Strand -> Show-By-Date (?)
+         
+         1RP7wlpGOrrfUbdvBXKYvRygomATov6DTp1OocBEinqI
+
 
          PER STUDENT
          Skill -> Exemplar -> Reflection -> ID?
