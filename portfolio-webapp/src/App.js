@@ -1,32 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import ClassList from './ClassList.js';
+import React,{useState} from 'react';
+import './App.sass';
+import TestView from './Tests.js';
+
+function MainView () {
+    const [userType,setUserType] = useState(undefined);
+    return (
+        <div className="section">
+          <p>Are you a teacher or a student?</p>
+          {!userType && (
+              <div className="buttons">
+                <button onClick={()=>setUserType('teacher')} className="button is-large">Teacher</button>
+                <button onClick={()=>setUserType('student')} className="button is-large">Student</button>
+              </div>
+          )}
+          {userType=='student' && 'Student View... coming soon'}
+          {userType=='teacher' && 'Teacher View... coming soon'}
+          {userType && <a className="button delete is-medium" onClick={()=>setUserType(undefined)}></a>}
+        </div>
+    );
+}
 
 function App() {
-    //var appLink = 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbwU-L5LTC68yB4IE0Dm0a6SzaZUi9l04w0DL-RN3n0OfN2iCZM/exec'
-    var appLink = 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbw37U73iU1Ei_sOsX77GbyW7RvueieogCKHevPUVIQ/dev'
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a 
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React - Hello world :)
-    </a>
-        <p>Test API</p>
-        <a target='blank' href={appLink+"?function=get_teacher_classes&arg=thinkle@innovationcharter.org&callback=?"}>Get teacher classes</a>
-        <ClassList></ClassList>
-      </header>
-    </div>
-  );
+    const [page,setPage] = useState('main')
+    return (
+        <div className="App">
+          <div className="navbar">
+            <div className="container buttons">
+              <button className="button" onClick={()=>setPage('test')}>Run Tests</button>
+            </div>
+          </div>
+          <div className="section">
+            {page=='test'&&<TestView/>}
+            {page=='main' && <MainView/>}
+          </div>
+        </div>
+    );
 }
 
 export default App;

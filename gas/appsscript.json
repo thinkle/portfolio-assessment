@@ -17,7 +17,7 @@
   },
   "webapp": {
     "access": "DOMAIN",
-    "executeAs": "USER_DEPLOYING"
+    "executeAs": "USER_ACCESSING"
   },
   "exceptionLogging": "STACKDRIVER"
 }
