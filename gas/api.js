@@ -1,33 +1,23 @@
 var functions = {}; var tests = {}
 
-function get_teacher_classes (teacher) {
-    var resp = Classroom.Courses.list(
-        {teacherId:teacher,
-         courseStates : ['ACTIVE'],
-         pageSize: 25}
-    ); // assume <25 classes (lazy)
-    return resp.courses
-}
-
-function test_get_teacher_classes () {
-    var results = get_teacher_classes('thinkle@innovationcharter.org')
-    Logger.log('Got %s results: %s',results.length, results);
-}
-
-function get_sheet (id) {
+function get_sheet (id,tab) {
     console.log('get_sheet(%s)',id);
-    return SpreadsheetApp.openById(id).getActiveSheet().getDataRange().getValues()
+    var ssheet = SpreadsheetApp.openById(id);
+    if (!tab) {
+        var sheet = ssheet.getActiveSheet()
+    }
+    else {
+        var sheet = ssheet.getSheetByname(tab);
+    }
+    return sheet.getDataRange().getValues()
 }
-
 
 function test_get_sheet () {
     var results = get_sheet('1RP7wlpGOrrfUbdvBXKYvRygomATov6DTp1OocBEinqI');
     Logger.log('Got %s results: %s',results.length,results);
 }
 
-functions.get_teacher_classes = get_teacher_classes;
 functions.get_sheet = get_sheet;
-tests.get_teacher_classes = test_get_teacher_classes;
 tests.test_get_sheet = test_get_sheet;
 
 function parseQuery (params, json) {
@@ -49,6 +39,7 @@ function parseQuery (params, json) {
             params.arg3&&params.arg3[0],
             params.arg4&&params.arg4[0]
         );
+        console.log('=> RETURNS %s',json['result']);
     }
     else {
         console.log('No function?');
