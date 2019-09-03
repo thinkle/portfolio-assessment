@@ -9,16 +9,41 @@ Step 1: Hello World
      Other workaround would involve putting data at a secret URL and directing GAS to fetch it, but that
      will expose a substantial security hole and given we're working with student data, seems like a bad plan.
 
+     -> Workaround 2: send data in a series of request rather than all at once -- implemented but definitely shakey (x)
+
 Step 1.a: Google Embed Widget:
 - Create a widget for embedding a google doc or a google sheet with data we care about. (x)
 
 Step 1.b: Get basic property saving/getting working (x)
 
-
 Step 2: Teacher set-up
-- Link assessments in (read-mode?)
-- Create necessary "database" (spreadsheets?).
-- Set up system for spreadsheets + data cached in user's browser (?)
+- Link assessments in (read-mode?) (x)
+- Create necessary "database" (spreadsheets?). (sort-of)
+- Set up system for spreadsheets + data cached in user's browser
+  -> SETTINGS SYSTEM!
+     Metadata looks like...
+
+     Settings that can be fetched from google, stored to a spreadsheet, stored to google props, stored in browser localStorage...
+     Settings used to associate classes with spreadsheets & portfolios, etc.
+
+     [...
+     {
+        classId : google-classroom-id
+        classTitle : title
+        teachers : [email-addresses]
+        portfolioDesc : sheet (sheet has two tabs, one for portfolio skills and one for descriptors) (PUBLIC)
+        assessments : sheet (PRIVATE)
+     } (for each class)
+     ]
+
+     Student Work...
+     {
+     classId : google-classroom-id,
+     portfolioDesc : sheet ID (teacher sheet),
+     portfolio : sheet ID (student sheet - write access for student and teacher),
+     portfolioModTime : last-modification-time of portfolio (used to decide whether to fetch fresh data or not)
+     } (for each class)
+     
 
 2A:
 -> Data types...
@@ -36,3 +61,8 @@ Step 2: Teacher set-up
 Step 3: Student set-up
 - Allow student to link an assignment to a skill / multiple skills.
 - Allow teacher to link a student assignment to a skill / multiple skills.
+
+
+UI Improvements:
+- Set up basic animation framework
+- Animate basic UI elements
