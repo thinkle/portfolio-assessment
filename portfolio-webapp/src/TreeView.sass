@@ -1,0 +1,84 @@
+@import "../node_modules/bulma/sass/utilities/_all.sass";
+@import "../node_modules/bulma/sass/base/_all.sass";
+@import "../node_modules/bulma/sass/components/_all.sass";
+@import "../node_modules/bulma/sass/elements/_all.sass";
+@import "../node_modules/bulma/sass/form/_all.sass";
+@import "../node_modules/bulma/sass/layout/_all.sass";
+
+
+
+.treeView 
+  min-width: 800px
+  
+$spacer : 1.5em
+
+@for $n from 1 through 3
+
+  .nested#{$n} td:nth-child(1)
+    padding-left: $spacer * ($n + 1);
+    overflow : hidden
+    position: relative
+    
+  .nested#{$n} td:nth-child(1)::before
+    content : ""
+    background-color: $grey-lighter
+    width: $spacer * $n
+    height: 100%
+    position: absolute
+    top : 0
+    left : 0
+    
+
+.spring-tree-enter 
+  opacity : 0;
+  transform : scaleY(0)
+  transform-origin: top
+
+.spring-tree-enter-done 
+  opacity: 1;
+  transform : scaleY(1)
+  transform-origin: top
+  transition : opacity 300ms, transform 300ms;
+  
+.spring-tree-exit 
+  opacity : 1;
+
+.spring-tree-exit-done 
+  opacity : 0;
+  height: 0;
+  transition : opacity 400ms, height 400ms;
+  
+
+.spring-tree-exit-done * 
+  opacity : 0;
+  height: 0;
+  box-sizing: border-box;
+  display: none;
+  transition : opacity 400ms, height 400ms;
+  
+
+
+.hidden 
+  color : #7a7a7a;
+  background-color: #efefef;
+
+.unreverse 
+  transform : rotateZ(360deg);
+  transition : transform 300ms;
+  
+.reverse 
+  transform : rotateZ(180deg);
+  transition : transform 300ms;
+
+.lastRow
+  border-bottom: 3px solid $grey-lighter
+
+.textEditorCell
+  height : 425px;
+
+.textEditorCell div.quill
+  height : 350px;
+  position: absolute;
+  top : 30px;
+  right : 20px;
+  width : 500px;
