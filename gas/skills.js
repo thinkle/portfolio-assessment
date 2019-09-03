@@ -26,7 +26,6 @@ function castVal (name, v) {
     }
 }
 
-
 function set_skills_list (skillsList, metadata) {
     metadata = JSON.parse(metadata);
     skillsList = JSON.parse(skillsList);
@@ -34,7 +33,9 @@ function set_skills_list (skillsList, metadata) {
     var sheet = ss.getActiveSheet();
     var output = []; 
     var fields = Object.keys(skillsList[0]);
+    fields.sort();
     var headers = fields.map(function (f) {return headerMap[f]||f});
+    console.log('fields are: %s',fields)
     output.push(headers);
     skillsList.forEach(
         function (data) {
@@ -58,7 +59,9 @@ function append_to_skills_list (skillsList, metadata) {
     var sheet = ss.getActiveSheet();
     var output = []; 
     var fields = Object.keys(skillsList[0]);
+    fields.sort();
     var headers = fields.map(function (f) {return headerMap[f]||f});
+    console.log('Headers are: %s',headers)
     output.push(headers);
     skillsList.forEach(
         function (data) {
