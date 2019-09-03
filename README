@@ -31,7 +31,7 @@ Database or Google Docs DB ->
 DESIGN
 Let's (temporarily?) plan to build backend/frontend with a clean interface so they can be decoupled at a later date. For now, let's plan this...
 
-Backend -> Google Apps Script based API like we use for aspen. Use this API to access classroom, sheets, etc.
+Backend -> Google Apps Script based API like we use for aspen. Use this API to access classroom, sheets, etc. Note: this backend will necessitate asymmetrical data flow since we can only make get requests and get data back through jsonp. Given this, we can only push small amounts of data at a time though we can pull much larger amounts :)
 
 Frontend -> Netlify-hosted modern single-page web-app. Might use React? Can (possibly) cache data to avoid making multiple calls to the backend for e.g. rubric descriptors etc.
 
@@ -43,8 +43,9 @@ put_table(class,id)
 
 
 get_classes(student)
-get_teacher_classes(teacher)
-get_skills(class,assignment)
+get_teacher_classes(teacher) (x)
+get_sheet (id) (x)
+get_skills(class,assignment) (x)
 get_portfolio_assignments(class,student)
 
 
