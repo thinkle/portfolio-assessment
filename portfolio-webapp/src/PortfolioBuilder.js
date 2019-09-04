@@ -2,13 +2,22 @@ import React, {useEffect,useState} from 'react';
 import {InputWithEnter} from './widgets.js';
 import { inspect } from 'util' // or directly
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown,faAngleUp,faPenSquare,faWindowClose,faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faRedo,faSave,faAngleDown,faAngleUp,faPenSquare,faWindowClose,faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import {AnimateOnChange,AnimateGroup,animations} from 'react-animation';
 import Api from './api.js';
 import TreeView from './TreeView.js';
 import {classNames} from './utils.js';
 
-function PortfolioModel () {
+var FA = FontAwesomeIcon
+
+const DESCRIPTOR_TEMPLATE = `
+<ul>
+  <li>Add descriptors here.</li>
+  <li>You can copy paste rich text too :)</li>
+</ul>
+`
+
+function PortfolioModel (courseId) {
 
     function sanitizeKey (k) {
         k = k.replace('%','Perc'); // remove problem characters from keys...
@@ -18,6 +27,9 @@ function PortfolioModel () {
     var metadata = {
         sheetid : '1eQ06dgoeRDNdV8Zn7d2BaD0Pj1IbUPxX_FfBSbYqmwQ', // hardcoded for now :)
     };
+    var metadata = {
+        courseId : courseId
+    }
 
     function propagateChanges (treeData) {
         treeData.forEach(
@@ -45,7 +57,7 @@ function PortfolioModel () {
         );
     }
 
-    function fromFlatList (fl) {
+    function fromFlatList (fl, descriptors=[]) {
         var id = 0;
         
         function nextId () {
@@ -53,6 +65,16 @@ function PortfolioModel () {
             return id;
         }
         
+
+        // Get descriptors ready as a dictonary...
+        var descriptorMap = {}
+        descriptors.forEach(
+            (row)=>{
+                descriptorMap[row.item] = row.descriptor;
+            }
+        );
+        console.log(`Got descriptorMap ${inspect(descriptorMap)}`);
+
         var strands = {}
         var byStrandBySkill = {}
         fl.forEach( (item) => {
@@ -73,7 +95,7 @@ function PortfolioModel () {
             if (!byStrandBySkill[item.strand][item.skill]) {
                 byStrandBySkill[item.strand][item.skill] = {
                     data : {strand:item.strand,skill:item.skill||`${item.strand} skill`,
-                            descriptor:'<ul><li>This is </li><li>a test</li>'},
+                            descriptor:descriptorMap[item.skill]||DESCRIPTOR_TEMPLATE},
                     children : [],
                     id : nextId(),
                 }
@@ -101,259 +123,161 @@ function PortfolioModel () {
 
     function toFlatList (byStrand) {
         var leafs = []
+        var descriptors = []
         // We basically just keep the leafs...
         byStrand.forEach(
             (strand)=>{
-                strand.children.forEach(
+                strand.children && strand.children.forEach(
                     (skill)=>{
-                        skill.children.forEach(
+                        skill.children && skill.children.forEach(
                             (exemplar)=>{
                                 leafs.push(exemplar.data);
                             })
+                        if (skill.data.descriptor && skill.data.descriptor!==DESCRIPTOR_TEMPLATE) {
+                            descriptors.push(
+                                {item:skill.data.skill,
+                                 descriptor:skill.data.descriptor}
+                            )
+                        }
                     })
             });
-        return leafs;
+        return {
+            skills : leafs,
+            descriptors : descriptors
+        }
     }
 
-    function toGoogle (skillsList) {
+    function toGoogle (skillsList,descriptors) {
         console.log('Pushing %s skills to google...',skillsList.length);
-        const MAXROWS = 10
-        var idx = MAXROWS;
-        Api.runFunction('set_skills_list',
-                        skillsList.slice(0,idx),
-                        //[{points:100,strand:'AAA',skill:'BC',name:'Alignment/Space','Foo':'(B)A(R)!'},
-                       //],
-                         metadata)
-            .then(
-                keepAdding
-            )
-            .catch((err)=>{
-                console.log('First addition failed :(');
-                console.log('Maybe try again?');
-                console.log('Error: %s',err);
-                throw err;
-            });
-        ;
+        return new Promise((resolve,reject)=>{
+            var doneCount = 0;
+            Api.pushArrayInPieces(
+                'set_skills_list',
+                'append_to_skills_list',
+                skillsList,
+                metadata.courseId)
+                .then(()=>{
+                    console.log('Skils list done...');
+                    doneCount += 1;
+                    if (doneCount == 2) {
 
-        var RETRIES = 0;
-        const MAX_RETRIES = 3;
+                        resolve()
+                    }
+                    else {
+                        console.log('... waiting on descriptors');
+                    }
+                })
+                .catch((err)=>reject(err));
+            
+        Api.pushArrayInPieces(
+            'set_descriptors',
+            'append_to_descriptors',
+            descriptors,
+            metadata.courseId,
+        )
+                .then(()=>{
+                    console.log('Descriptors list done...');
+                    doneCount += 1;
+                    if (doneCount == 2) {
+                        
+                        resolve()
+                    }
+                    else {
+                        console.log('... waiting on skills');
+                    }
+                })
+                .catch((err)=>reject(err));
 
-        function keepAdding () {
-            if (idx < skillsList.length) {
-                console.log('We still have skills to add... adding %s to %s',idx,idx+MAXROWS);
-                var nextSkills = skillsList.slice(idx,idx+MAXROWS);
-                idx += MAXROWS;
-                Api.runFunction('append_to_skills_list',
-                                nextSkills,metadata)
-                    .then(keepAdding)
-                    .catch(()=>{
-                        RETRIES += 1;
-                        idx -= MAXROWS;
-                        console.log('FAILED ON ',idx);
-                        console.log('Try again?');
-                        if (RETRIES < MAX_RETRIES) {
-                            keepAdding()
-                        }
-                        else {
-                            console.log('Too many retries');
-                        }
-                    });
-            }
+            return; // BELOW NOT IN USE NOW -- template for pushArrayInPieces...
         }
+                      );
     }
 
-    function fromGoogle (gotData,handleError) {
-        console.log('Firing off request to google');
-        Api.runFunction('get_skills_list',
-                        metadata,
-                       )
-            .then((r)=>handleSkillsList(r))
-            .catch((e)=>{
-                console.log('Error fetching data from google %s',metadata);
-                console.log('Error: %s',inspect(e));
-                handleError && handleError(e)
-            });
-        function handleSkillsList (data) {
-            console.log("Got data... now let's parse it");
-            var headers = data[0]
-            
-            var myData = [];
-            for (var i=1; i<data.length; i++) {
-                var row = data[i];
-                var rowObj = {}
-                rowObj.strand = getField('Strand',row) || getField('Category',row);
-                rowObj.skill = getField('Skill',row) || getField('Assignment Name',row);
-                rowObj.dueDate = getField('Due Date',row) || getField('Date due',row);
-                rowObj.points = getField('Points',row) || getField('Total points',row);
-                if (rowObj.strand||rowObj.skill||rowObj.points) {
-                    if (typeof rowObj.dueDate == 'string') {
-                        console.log('Got a string date %s',rowObj.dueDate)
-                        try {
-                            rowObj.dueDate = new Date(rowObj.dueDate);
-                        }
-                        catch (err) {
-                            console.log("Couldn't cast date to Date %s",rowObj.dueDate);
-                        }
-                    }
-                    // Include other data in case we want it...
-                    for (var h of headers) {
-                        if (['Strand','Category','Skill','Assignment Name',
-                             'Due Date','Date due','Points','Total points'].indexOf(h)==-1) {
-                            rowObj[sanitizeKey(h)] = getField(h,row);
-                        }
-                    }
-                    myData.push(rowObj);
-                }
-                //console.log('parsed row %s',i);
-            }
-            gotData(myData);
-
-            function getField (fieldName, row) {
-                var colIndex = headers.indexOf(fieldName)
-                if (colIndex == -1) {return undefined}
-                if (colIndex >= row.length) {
-                    throw 'Row '+row+' does not have enough data? index='+colIndex;
-                }
-                else {
-                    return row[colIndex]
-                }
-            }
-            
-        }
+    function fromGoogle () {
+        return Api.runFunction('get_portfolio_desc',metadata.courseId)
     }
 
-    return {fromFlatList,toFlatList,toGoogle,fromGoogle,propagateChanges,metadata}
+    function getSheet () {
+        return Api.runFunction('get_sheet_url',metadata.courseId);
+    }
+
+    return {fromFlatList,toFlatList,toGoogle,fromGoogle,propagateChanges,metadata,getSheet}
     
 }
 
-var pm = PortfolioModel();
 
-function initializeTreeState (treeData) {
-    // Given nested data, initialize state for whether children are shown -- default to no children.
-    var treeState = {
-        nodeMap : {},
-    }
 
-    treeState.nodes = treeData.map(makeNodeState);
-    treeState.getNode = function (id) {
-        if (treeState.nodeMap[id]) {return treeState.nodeMap[id]}
-        else {
-            console.log('WARNING: No node for %s',id);
-            console.log('Returning dummy state');
-            return {
-                ref : {}, parent:{showChildren:false},showChildren:false,edit:false,selected:false
-            };
-        }
-    }
-    treeState.clone = function () {
-        var newState = {...treeState}
-        return newState;
-    }
-
-    treeState.turnOffEdit = function () {
-        treeState.nodes.forEach(turnOffEdit);
-        function turnOffEdit (node) {
-            node.edit = false;
-            node.children.forEach(turnOffEdit)
-        }
-    }
-    
-    treeState.isEdited = function () {
-        var val = false;
-        treeState.nodes.forEach(crawlForEdit);
-        return val;
-
-        function crawlForEdit (node) {
-            if (node.edit) {val = true}
-            else {
-                node.children.forEach(crawlForEdit);
-            }
-        }
-            
-    }
-    // treeState.getNodeState (id) {
-    //     var address = treeState.nodeMap[id]
-    //     var item = {children:treeState.nodes};
-    //     for (var idx of address) {
-    //         item = item.children[idx];
-    //     }
-    //     return item;
-    // }
-
-    return treeState;
-
-    function makeNodeState (node, idx, parent) {
-        var state = {
-            ref : {}, // a home for references to editable widgets
-            parent : parent,
-            showChildren : false,
-            edit : false,
-            selected: false,
-            index: idx,
-        }
-        state.children = (node.children && node.children.map((n,i)=>makeNodeState(n,i,state))) || []
-        var address = [idx];
-        var item = state;
-        // while (item.parent) {
-        //     address.unshift(item.parent.idx)
-        //     item = item.parent
-        // }
-        treeState.nodeMap[node.id] = state;
-        return state;
-    }
-    
-}
-
-function PortfolioBuilder () {
+function PortfolioBuilder (props) {
+    var pm = PortfolioModel(props.courseId);
 
     const [skills,setSkills] = useState(
         [
-            {strand:'Modeling',skill:'DRY',dueDate:new Date(2019,9,1),points:100},
-            {strand:'Modeling',skill:'DRY',dueDate:new Date(2019,10,10),points:100},
-            {strand:'Modeling',skill:'DRY',dueDate:new Date(2019,11,11),points:100},
-            {strand:'Modeling',skill:'WET',dueDate:new Date(2019,9,1),points:100},
-            {strand:'Modeling',skill:'WET',dueDate:new Date(2019,10,10),points:100},
-            {strand:'Modeling',skill:'WET',dueDate:new Date(2019,11,11),points:100},
-            {strand:'EU',skill:'Function Def',dueDate:new Date(2019,9,1),points:100},
-            {strand:'EU',skill:'Function Def',dueDate:new Date(2019,10,10),points:100},
-            {strand:'EU',skill:'Data Types',dueDate:new Date(2019,10,11),points:100},
-            {strand:'EU',skill:'Data Types',dueDate:new Date(2020,1,11),points:100},
         ]
     );
+    const [descriptors,setDescriptors] = useState(
+        [
+        ]
+    )
+    const [latestDataCount,setLatestDataCount] = useState(1);
+    const [treeData,setTreeData] = useState(pm.fromFlatList(skills,descriptors));
+    
+    const [errorState,setErrorState] = useState(false);
+    const [busyState,setBusyState] = useState(false);
+    const [sheetUrl,setSheetUrl] = useState(false);
 
-    //const [nextSkill,setNextSkill] = useState('Skill?');
-    //const [nextStrand,setNextStrand] = useState('Strand?');
+    useEffect(pullPortfolioFromGoogle,[])
+
+    useEffect(()=>{
+        console.log('Grabbing sheet from google...');
+        pm.getSheet()
+            .then(setSheetUrl)
+            .catch((err)=>setErrorState);
+    },[]);
+
     useEffect(
         ()=>{
-            console.log('Effect: just once!');
-            /*
-            pm.fromGoogle(
-                (skills)=>{
-                    console.log(`Got ${skills.length} skills`);
-                    treeData = pm.fromFlatList(skills);
-                    setTreeState(initializeTreeState(treeData));
-                    setSkills(skills);
-                }
-            );*/
-        },[]);
+            console.log('skll or descriptor changed! just once!');
+            setTreeData(pm.fromFlatList(
+                skills,
+                descriptors
+            ));            
+        },[skills, descriptors]);
 
-    var treeData = pm.fromFlatList(skills);
-    /*var treeData = pm.fromFlatList(skills);
-    function setTreeData (v) {
-        treeData = v;
-    }*/
-    const [treeState,setTreeState] = useState(initializeTreeState(treeData)); // uiState of tree
-
+    function pullPortfolioFromGoogle () {
+        setBusyState('Pulling data from google...');
+        pm.fromGoogle()
+        .then((portfolioData)=>{
+            setSkills(portfolioData.skills);
+            setDescriptors(portfolioData.descriptors);
+            setLatestDataCount(latestDataCount+1);
+            setBusyState(false);
+        })
+            .catch((err)=>{
+                setBusyState(false);setErrorState(err)
+            });
+    }        
 
     function saveTree (newTreeData) {
-        var newSkills = pm.toFlatList(newTreeData);
+        var portfolio = pm.toFlatList(newTreeData);
         console.log('Set skills!');
-        setSkills(newSkills);
+        setSkills(portfolio.skills);
+        setDescriptors(portfolio.descriptors);
     }
 
 
     function getNewRowData ({nlevel,parent}) {
-        console.log(`getNewRowData(${nlevel},${parent})`)
+        const labelsByLevel = {
+            0 : 'New Strand',
+            1 : 'New Skill',
+            2 : 'New Exemplar',
+        }
+        return {
+            label : labelsByLevel[nlevel],
+            data : getNewRowDataData({nlevel,parent})
+        }
+    }
+
+    function getNewRowDataData ({nlevel,parent}) {
         const rowData = {
             data:{
                 strand : 'New Strand',
@@ -362,17 +286,17 @@ function PortfolioBuilder () {
         }
         
         if (nlevel==0) {
-            console.log(`Add children to ${rowData}`)
             rowData.children.push(
-                getNewRowData({nlevel:nlevel+1,parent:rowData.data})
+                getNewRowDataData({nlevel:nlevel+1,parent:rowData.data})
             );
-            console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
+            console.log(`getNewRowData(${nlevel},${parent})=>${JSON.stringify(rowData)}`)
             return rowData;
         }
         // Otherwise strand is populated
         rowData.data.strand = parent.strand;
         if (nlevel==1) {
-            rowData.data.skill = "New Skill"
+            rowData.data.skill = "New Skill";
+            rowData.data.descriptor = "<ul><li>New Skill description...</li></ul>";
             rowData.children.push(
                 getNewRowData({nlevel:nlevel+1,parent:rowData.data})
             )
@@ -399,12 +323,32 @@ function PortfolioBuilder () {
     }
 
     return (
-        <div>
-          <h4>Skills List ({skills.length})</h4>
-          <a href={`https://docs.google.com/spreadsheets/d/${pm.metadata.sheetid}`}>As Sheet</a>
-          <button onClick={()=>pm.toGoogle(skills)}>
-            Push to Google
-          </button>
+        <div className="container">
+          <h4 className="title">Skills List ({skills.length})</h4>
+          <div className="section">
+            {busyState && (<progress className="progress is-medium is-primary" max="100">Busy... {busyState}</progress>)}
+            {errorState && (<b>ERROR: {inspect(errorState)}</b>)}
+          </div>
+          <nav className="navbar">
+            {sheetUrl && <a className="navbar-item" target="_BLANK" href={sheetUrl}>Edit as Spreadsheet</a>}
+            <div className='navbar-item'>
+              <button className='button is-danger' onClick={pullPortfolioFromGoogle}>
+                <span className="icon"><FA icon={faRedo}/></span>
+                <span>Reload from Google (wipe out changes)</span>
+              </button>
+            </div>
+            <div className="navbar-item navbar-end">
+              <button className="is-primary button" onClick={()=>{
+                  setBusyState('Pushing portfolio to google sheet...');
+                  pm.toGoogle(skills,descriptors)
+                      .then(()=>setBusyState(false))
+                      .catch((err)=>{setBusyState(false);setErrorState(err)});
+              }}>
+                <span className="icon"><FA icon={faSave}/></span>
+                <span>Save to Google</span>
+              </button>
+            </div>
+          </nav>
           <hr/>
           <TreeView
             data={treeData}
@@ -414,6 +358,7 @@ function PortfolioBuilder () {
             getNewRowData={getNewRowData}
             maxNesting={2}
             cols={5}
+            key={latestDataCount}
             getRenderers={
             (params)=>{
                 if (params.level==0) {
