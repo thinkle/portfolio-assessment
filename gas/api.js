@@ -2,14 +2,36 @@ var functions = {}; var tests = {}
 
 function get_sheet (id,tab) {
     console.log('get_sheet(%s)',id);
-    var ssheet = SpreadsheetApp.openById(id);
+    try {
+        var ssheet = SpreadsheetApp.openById(id);
+    }
+    catch (err) {
+        console.log('Bad spreadsheet ID: %s',id);
+        throw err;
+    }
     if (!tab) {
-        var sheet = ssheet.getActiveSheet()
+        var sheet = ssheet.getActiveSheet();
     }
     else {
-        var sheet = ssheet.getSheetByname(tab);
+        var sheet = ssheet.getSheetByName(tab);
     }
-    return sheet.getDataRange().getValues()
+    return sheet.getDataRange().getValues();
+}
+
+function get_sheet_json (id, tab) {
+    var data = get_sheet(id,tab);
+    var headers = data[0];
+    var json = [];
+    for (var rn=1; rn<data.length; rn++) {
+        var obj = {}
+        headers.forEach(
+            function (h,cn) {
+                obj[h] = data[rn][cn];
+            }
+        );
+        json.push(obj)
+    }
+    return json;
 }
 
 function test_get_sheet () {

@@ -1,56 +1,64 @@
-function PortfolioDesc (classId) {
+function PortfolioDesc (courseId) {
+    console.log("PortfolioDesc(%s)",courseId);
 
     var headers = ['strand','skill','points','dueDate','assignedDate'];
+    var descriptorHeaders = ['item','descriptor'];
     
-    var fileId = get_user_prop('portfolio-desc-'+classId);
+    var fileId = get_user_prop('portfolio-desc-'+courseId);
     if (!fileId) {
         fileId = DocumentManager().createSheet(
-            getClassTitle(classId)+' Portfolio Description',
+            getClassTitle(courseId)+' Portfolio Description',
             ['skills','descriptors'],
-            classId
+            courseId
         )
-        set_user_prop('portfolio-desc-'+classId,fileId);
+        set_user_prop('portfolio-desc-'+courseId,fileId);
     }
+
+    console.log('fileId: %s',fileId);
     
     return {
+        get_sheet_url : function () {
+            return SpreadsheetApp.openById(fileId).getUrl()
+        },
+        
         get_skills_list : function () {
-            return get_sheet(fileId,'skills');
+            return get_sheet_json(fileId,'skills');
         },
         
         set_skills_list : function (skillsList) {
             SheetManager(fileId)
                 .setupTab([headers],'skills')
                 .addRowsFromJSON(skillsList,'skills');
-            return {success:true, sheetId:fileId,classId:classId}
+            return {success:true, sheetId:fileId,courseId:courseId}
         },
         append_to_skills_list : function (skillsList) {
             SheetManager(fileId)
                 .addRowsFromJSON(skillsList,'skills');
-            return {success:true, sheetId:fileId,classId:classId}
+            return {success:true, sheetId:fileId,courseId:courseId}
         },
 
         set_descriptors : function (descriptors) {
             SheetManager(fileId)
                 .setupTab([descriptorHeaders],'descriptors')
                 .addRowsFromJSON(descriptors,'descriptors');
-            return {success:true,sheetId:fileId,classId:classId}
+            return {success:true,sheetId:fileId,courseId:courseId}
         },
 
         append_to_descriptors : function (descriptors) {
             SheetManager(fileId)
                 .addRowsFromJSON(descriptors,'descriptors');
-            return {success:true,sheetId:fileId,classId:classId}
+            return {success:true,sheetId:fileId,courseId:courseId}
         },
 
         get_descriptors : function () {
-            return get_sheet(fileId,'descriptors');
+            return get_sheet_json(fileId,'descriptors');
         },
 
         get_portfolio : function () {
             return {
                 skills : this.get_skills_list(),
                 descriptors : this.get_descriptors(),
-                classId : classId,
+                courseId : courseId,
                 sheetId : fileId,
             }
         }
@@ -59,21 +67,42 @@ function PortfolioDesc (classId) {
 
 }
 
-functions.get_portfolio_desc = function (classId) {
-    return PortfolioDesc(classId).get_portfolio();
+functions.get_sheet_url = function (courseId) {
+    return PortfolioDesc(courseId).get_sheet_url();
 }
 
-functions.get_skills_list = function (classId) {
-    return PortfolioDesc(classId).get_skills_list();
-}
-functions.set_skills_list = function (skillsList, classId) {
-    return PortfolioDesc(classId).set_skills_list(JSON.parse(skillsList));
-}
-functions.append_to_skills_list = function (skillsList, classId) {
-    return PortfolioDesc(classId).append_to_skills_list(JSON.parse(skillsList));
+functions.get_portfolio_desc = function (courseId) {
+    return PortfolioDesc(courseId).get_portfolio();
 }
 
+function parseJson (itm) {
+    try {
+        return JSON.parse(itm)
+    }
+    catch (err) {
+        console.log('Error parsing JSON');
+        console.log('Item was: ');
+        console.log(itm);
+        throw err;
+    }
+}
 
+// Make getter and setter functions
+var lsts = ['skills_list','descriptors']
+lsts.forEach(
+    function (lstName) {
+        console.log('Defining %s functions',lstName)
+        functions['get_'+lstName] = function (courseId) {
+            return PortfolioDesc(courseId)['get_'+lstName]
+        }
+        functions['set_'+lstName] = function (lst,courseId) {
+            return PortfolioDesc(courseId)['set_'+lstName](parseJson(lst))
+        }
+        functions['append_to_'+lstName] = function (lst, courseId) {
+            return PortfolioDesc(courseId)['append_to_'+lstName](parseJson(lst))
+        }
+    }
+);
 
 function test_new_set_skills_list () {
     PortfolioDesc('test2').set_skills_list(
