@@ -1,18 +1,27 @@
 import fetchJsonp from 'fetch-jsonp';
-import { inspect } from 'util' // or directly
+import { inspect } from 'util'; // or directly
+import {useState} from 'react';
 
 function sanitize (arg) {
-    if (typeof arg == 'string') {return arg}
-    if (typeof arg == 'object') {return JSON.stringify(arg)}
+    if (typeof arg == 'string') {
+        console.log(`String arg ${arg}`)
+        return encodeURIComponent(arg)
+    }
+    if (typeof arg == 'object') {
+        console.log(`object arg ${JSON.stringify(arg)}`);
+        return encodeURIComponent(JSON.stringify(arg));
+    }
     if (arg===undefined) {
         return arg;
     }
     console.log('Unknown arg type: %s %s',arg,typeof arg)
-    return arg;
+    return encodeURIComponent(arg);
 }
 
 var Api = {
     //url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbwU-L5LTC68yB4IE0Dm0a6SzaZUi9l04w0DL-RN3n0OfN2iCZM/exec',
+
+    
     url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbw37U73iU1Ei_sOsX77GbyW7RvueieogCKHevPUVIQ/dev',
 
     getUrl (funcName, arg, arg2, arg3, arg4) {
@@ -58,9 +67,81 @@ var Api = {
         });
     },
 
+    pushArrayInPieces ( // FINISH ME -- GENERIC version of toGoogle from PortfolioBuilder.js
+        initialFuncName,
+        appendFuncName,
+        arrayArg,
+        arg2,arg3,arg4
+    ) {
+        // attempt the whole thing at once if we can :)
+        var url = this.getUrl(initialFuncName,arrayArg,arg2,arg3,arg4);
+        if (url.length < 2000) {
+            return this.runFunction(initialFuncName,arrayArg,arg2,arg3,arg4);
+        }
+        else {
+            console.log('Uh oh, URL would be %s characters long',url.length);
+            const averageRowLength = JSON.stringify(arrayArg[0]).length
+            // How many rows can we do at a time?
+            var rowsAtATime = Math.floor(500 / averageRowLength);
+            var idx = rowsAtATime;
+            if (rowsAtATime==0) {
+                console.log('Uh oh: we think even one row might be too much?');
+                console.log('Attempting to run %s (%s)',initialFuncName,appendFuncName);
+                console.log('Trying this one row at a time');
+                rowsAtATime=1;
+            }
+            // FINISH...
+            const maxRetries = 3;
+            var retries = 0;
+
+            Api.runFunction(initialFuncName,
+                            arrayArg.slice(0,rowsAtATime),
+                            arg2,
+                            arg3,
+                            arg4)
+                .then(keepAdding)
+                .catch((err)=>{
+                    console.log('First addition failed with %s',initialFuncName)
+                    console.log('Abandoning ship');
+                    throw err;
+                });
+
+            function keepAdding () {
+                if (idx < arrayArg.length) {
+                    console.log('Pushing next chunk to %s',appendFuncName);
+                    var nextArray = arrayArg.slice(idx,idx+rowsAtATime);
+                    idx += rowsAtATime;
+                    Api.runFunction(
+                        appendFuncName,
+                        nextArray,arg2,arg3,arg4)
+                        .then(keepAdding)
+                        .catch((err)=>{
+                            console.log('Failed at idx %s',idx);
+                            console.log('Retry?');
+                            retries += 1;
+                            idx -= rowsAtATime;
+                            if (rowsAtATime > 2) {
+                                rowsAtATime = Math.floor(rowsAtATime/2); // try half as many rows
+                            }
+                            if (retries < maxRetries) {
+                                keepAdding();
+                            }
+                            else {
+                                console.log('Too many retries: giving up :(');
+                                throw err;
+                            }
+                        });
+                }
+            }
+            
+            
+        }
+        
+    },
+
     runFunction (funcName, arg, arg2, arg3, arg4) {
         const url = this.getUrl(funcName,arg, arg2, arg3, arg4);
-        console.log('runFunction calling URL: %s',url);
+        console.log('runFunction calling URL: %s (encoded: %s)',url,encodeURI(url));
         return new Promise((resolve,reject)=>{
             fetchJsonp(url)
                 .then(function (response) {
@@ -72,13 +153,13 @@ var Api = {
                     }
                     else {
                         console.log(`runFunction ${funcName}(${arg}) returned unexpected result with no result: ${json}`);
-                        console.log(`URL was: ${url}`);
+                        console.log(`URL was: ${encodeURI(url)} \nUnencoded ${url}`);
                         reject(json)
                     }
                 })
                 .catch((err)=>{
                     console.log(`runFunction ${funcName}(${arg}) failed with ${err}`);
-                    console.log(`URL was: ${url}`);
+                    console.log(`URL was: ${encodeURI(url)} \nUnencoded ${url}`);
                     reject(err)
                 })
         });
@@ -126,7 +207,7 @@ var Api = {
 
 
     testPost () { // fails
-        console.log('Fetching %s',this.url);
+        console.log('Fetching %s',encodeURI(this.url));
         fetch(`${this.url}`,
               {
                   method : 'POST',
@@ -165,6 +246,5 @@ function GoogleSheet ({id, tabNames}) {
 
 function GoogleProp (key) {
 }
-
 
 export default Api;
