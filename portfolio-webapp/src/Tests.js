@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import ClassList from './ClassList.js';
 import SkillsList from './SkillsList.js';
 import SheetWidget from './SheetWidget.js';
@@ -11,7 +11,6 @@ import Api from './api.js';
 function TestView () {
     const [page,setPage] = useState('none')
     const [prop,setProp] = useState(undefined);
-
     var setting = Setting({name:'test-123',
                            data : {
                                testId : 'dummy-placeholder-value',
@@ -65,7 +64,7 @@ function TestView () {
           </div>
           SETTING: {testId}
           
-          {page=='builder' && <PortfolioBuilder/>}
+          {page=='builder' && <PortfolioBuilder courseId='test2'/>}
           {page=='editor' &&
            (
                <div>
