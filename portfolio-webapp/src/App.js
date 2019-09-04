@@ -1,11 +1,13 @@
 import React,{useState} from 'react';
 import './App.sass';
 import TestView from './Tests.js';
+import TeacherView from './TeacherView.js';
 
 function MainView () {
     const [userType,setUserType] = useState(undefined);
     return (
         <div className="section">
+          {userType && <a className="button delete is-medium" onClick={()=>setUserType(undefined)}></a>}
           <p>Are you a teacher or a student?</p>
           {!userType && (
               <div className="buttons">
@@ -14,8 +16,8 @@ function MainView () {
               </div>
           )}
           {userType=='student' && 'Student View... coming soon'}
-          {userType=='teacher' && 'Teacher View... coming soon'}
-          {userType && <a className="button delete is-medium" onClick={()=>setUserType(undefined)}></a>}
+          {userType=='teacher' && <TeacherView/>}
+
         </div>
     );
 }
@@ -32,6 +34,7 @@ function App() {
           <div className="section">
             {page=='test'&&<TestView/>}
             {page=='main' && <MainView/>}
+
           </div>
         </div>
     );
