@@ -30,6 +30,13 @@ function TreeHead (props) {
 function AddRowRow (props) {
     var newRowIndex = 0;
 
+    var newRowMetadata = props.getNewRowData({
+                           nlevel:props.nlevel,
+                           parent:props.parent.data,
+                           siblings:props.parent.children,
+                       })
+
+
     if (props.parent.children) {
         newRowIndex = props.parent.children.length;
     }
@@ -42,13 +49,7 @@ function AddRowRow (props) {
         else {
             id = `${newRowIndex}`
         }
-        props.onAddRow(id,
-                       props.getNewRowData({
-                           nlevel:props.nlevel,
-                           parent:props.parent.data,
-                           siblings:props.parent.children,
-                       })
-                      );
+        props.onAddRow(id,newRowMetadata.data);
     }
 
     return (
@@ -59,10 +60,13 @@ function AddRowRow (props) {
     >
       <td colSpan={props.colsToSkip}/>
       <td className="control">
-        <span
-          className="button icon"
-          onClick={addRowCallback}>
-          <FA icon={faPlus}/>
+        <span onClick={addRowCallback}>
+          {newRowMetadata.label}
+          <span
+            className="button icon"
+            >
+            <FA icon={faPlus}/>
+          </span>
         </span>
       </td>
     </tr>)
