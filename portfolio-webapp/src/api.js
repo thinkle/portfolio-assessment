@@ -73,70 +73,78 @@ var Api = {
         arrayArg,
         arg2,arg3,arg4
     ) {
-        // attempt the whole thing at once if we can :)
-        var url = this.getUrl(initialFuncName,arrayArg,arg2,arg3,arg4);
-        if (url.length < 2000) {
-            return this.runFunction(initialFuncName,arrayArg,arg2,arg3,arg4);
-        }
-        else {
-            console.log('Uh oh, URL would be %s characters long',url.length);
-            const averageRowLength = JSON.stringify(arrayArg[0]).length
-            // How many rows can we do at a time?
-            var rowsAtATime = Math.floor(500 / averageRowLength);
-            var idx = rowsAtATime;
-            if (rowsAtATime==0) {
-                console.log('Uh oh: we think even one row might be too much?');
-                console.log('Attempting to run %s (%s)',initialFuncName,appendFuncName);
-                console.log('Trying this one row at a time');
-                rowsAtATime=1;
+        return new Promise((resolve,reject)=>{
+            // attempt the whole thing at once if we can :)
+            var url = this.getUrl(initialFuncName,arrayArg,arg2,arg3,arg4);
+            if (url.length < 2000) {
+                return this.runFunction(initialFuncName,arrayArg,arg2,arg3,arg4)
+                    .then(resolve)
+                    .catch(reject);
             }
-            // FINISH...
-            const maxRetries = 3;
-            var retries = 0;
-
-            Api.runFunction(initialFuncName,
-                            arrayArg.slice(0,rowsAtATime),
-                            arg2,
-                            arg3,
-                            arg4)
-                .then(keepAdding)
-                .catch((err)=>{
-                    console.log('First addition failed with %s',initialFuncName)
-                    console.log('Abandoning ship');
-                    throw err;
-                });
-
-            function keepAdding () {
-                if (idx < arrayArg.length) {
-                    console.log('Pushing next chunk to %s',appendFuncName);
-                    var nextArray = arrayArg.slice(idx,idx+rowsAtATime);
-                    idx += rowsAtATime;
-                    Api.runFunction(
-                        appendFuncName,
-                        nextArray,arg2,arg3,arg4)
-                        .then(keepAdding)
-                        .catch((err)=>{
-                            console.log('Failed at idx %s',idx);
-                            console.log('Retry?');
-                            retries += 1;
-                            idx -= rowsAtATime;
-                            if (rowsAtATime > 2) {
-                                rowsAtATime = Math.floor(rowsAtATime/2); // try half as many rows
-                            }
-                            if (retries < maxRetries) {
-                                keepAdding();
-                            }
-                            else {
-                                console.log('Too many retries: giving up :(');
-                                throw err;
-                            }
-                        });
+            else {
+                console.log('Uh oh, URL would be %s characters long',url.length);
+                const averageRowLength = JSON.stringify(arrayArg[0]).length
+                // How many rows can we do at a time?
+                var rowsAtATime = Math.floor(500 / averageRowLength);
+                var idx = rowsAtATime;
+                if (rowsAtATime==0) {
+                    console.log('Uh oh: we think even one row might be too much?');
+                    console.log('Attempting to run %s (%s)',initialFuncName,appendFuncName);
+                    console.log('Trying this one row at a time');
+                    rowsAtATime=1;
                 }
+                // FINISH...
+                const maxRetries = 3;
+                var retries = 0;
+
+                Api.runFunction(initialFuncName,
+                                arrayArg.slice(0,rowsAtATime),
+                                arg2,
+                                arg3,
+                                arg4)
+                    .then(keepAdding)
+                    .catch((err)=>{
+                        console.log('First addition failed with %s',initialFuncName)
+                        console.log('Abandoning ship');
+                        reject(err);
+                        throw err;
+                    });
+
+                function keepAdding () {
+                    if (idx < arrayArg.length) {
+                        console.log('Pushing next chunk to %s',appendFuncName);
+                        var nextArray = arrayArg.slice(idx,idx+rowsAtATime);
+                        idx += rowsAtATime;
+                        Api.runFunction(
+                            appendFuncName,
+                            nextArray,arg2,arg3,arg4)
+                            .then(keepAdding)
+                            .catch((err)=>{
+                                console.log('Failed at idx %s',idx);
+                                console.log('Retry?');
+                                retries += 1;
+                                idx -= rowsAtATime;
+                                if (rowsAtATime > 2) {
+                                    rowsAtATime = Math.floor(rowsAtATime/2); // try half as many rows
+                                }
+                                if (retries < maxRetries) {
+                                    keepAdding();
+                                }
+                                else {
+                                    console.log('Too many retries: giving up :(');
+                                    reject(err)
+                                    throw err;
+                                }
+                            });
+                    }
+                    else {
+                        resolve();
+                    }
+                }
+            
+            
             }
-            
-            
-        }
-        
+        });
     },
 
     runFunction (funcName, arg, arg2, arg3, arg4) {
