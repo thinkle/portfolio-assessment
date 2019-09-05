@@ -91,7 +91,6 @@ function parseJson (itm) {
 var lsts = ['skills_list','descriptors']
 lsts.forEach(
     function (lstName) {
-        console.log('Defining %s functions',lstName)
         functions['get_'+lstName] = function (courseId) {
             return PortfolioDesc(courseId)['get_'+lstName]
         }
