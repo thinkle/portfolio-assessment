@@ -19,10 +19,41 @@ function sanitize (arg) {
 }
 
 var Api = {
-    //url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbwU-L5LTC68yB4IE0Dm0a6SzaZUi9l04w0DL-RN3n0OfN2iCZM/exec',
-
+    url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbwU-L5LTC68yB4IE0Dm0a6SzaZUi9l04w0DL-RN3n0OfN2iCZM/exec',
     
-    url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbw37U73iU1Ei_sOsX77GbyW7RvueieogCKHevPUVIQ/dev',
+    //url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbw37U73iU1Ei_sOsX77GbyW7RvueieogCKHevPUVIQ/dev',
+    user : undefined,
+
+    getUser () {
+        console.log('getUser...');
+        return new Promise ((resolve,reject)=>{
+            if (this.user) {
+                console.log('Using cached user %s',this.user);
+                resolve(this.user)
+            }
+            else {
+                console.log('Fetching user from google...');
+                return this.runFunction('get_user');
+            }
+        });
+    },
+
+    getRegisterUrl () {
+        return `${this.url}?register=true`
+    },
+
+    havePermissions () {
+        return new Promise ((resolve,reject)=>{
+            this.runFunction('get_user') // try basic call to the API
+                .then((user)=>{
+                    this.user = user;
+                    resolve(true)
+                })
+                .catch((err)=>{
+                    resolve(false)
+                });
+        });
+    },
 
     getUrl (funcName, arg, arg2, arg3, arg4) {
         arg=sanitize(arg);
@@ -156,14 +187,10 @@ var Api = {
                     return response.json()
                 }).
                 then((json)=>{
-                    if (json.result) {
-                        resolve(json.result);
+                    if (json.result===undefined) {
+                        console.log(`runFunction ${funcName}(${arg}) returned empty result: ${json}`);
                     }
-                    else {
-                        console.log(`runFunction ${funcName}(${arg}) returned unexpected result with no result: ${json}`);
-                        console.log(`URL was: ${encodeURI(url)} \nUnencoded ${url}`);
-                        reject(json)
-                    }
+                    resolve(json.result);
                 })
                 .catch((err)=>{
                     console.log(`runFunction ${funcName}(${arg}) failed with ${err}`);
