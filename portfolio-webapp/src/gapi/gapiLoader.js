@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from 'react';
 //import apiInfo from './secrets.js'; // comment out before committing
-//var apiInfo
+var apiInfo
 
 /* Note: to use this, you need to include the following <script> tag in your index.html
 
