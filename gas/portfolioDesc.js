@@ -3,20 +3,17 @@ function PortfolioDesc (courseId) {
 
     var headers = ['strand','skill','points','dueDate','assignedDate'];
     var descriptorHeaders = ['item','descriptor'];
+    var dm = DocumentManager();
     
-    var fileId = get_user_prop('portfolio-desc-'+courseId);
-    if (!fileId) {
-        fileId = DocumentManager().createSheet(
-            getClassTitle(courseId)+' Portfolio Description',
-            ['skills','descriptors'],
-            courseId
-        )
-        set_user_prop('portfolio-desc-'+courseId,fileId);
-    }
+    var fileId = dm.getCourseSheet(
+        'portfolio-desc',
+        courseId,
+        'Portfolio Description',
+        ['skills','descriptors']
+    );
 
-    console.log('fileId: %s',fileId);
-    
     return {
+
         get_sheet_url : function () {
             return SpreadsheetApp.openById(fileId).getUrl()
         },
@@ -31,6 +28,11 @@ function PortfolioDesc (courseId) {
                 .addRowsFromJSON(skillsList,'skills');
             return {success:true, sheetId:fileId,courseId:courseId}
         },
+
+        get_skills_url : function () {
+            return SpreadsheetApp.openById(fileId).getUrl()
+        },
+        
         append_to_skills_list : function (skillsList) {
             SheetManager(fileId)
                 .addRowsFromJSON(skillsList,'skills');
@@ -50,6 +52,8 @@ function PortfolioDesc (courseId) {
             return {success:true,sheetId:fileId,courseId:courseId}
         },
 
+        get_descriptors_url : function () {return this.get_skills_url()},
+
         get_descriptors : function () {
             return get_sheet_json(fileId,'descriptors');
         },
@@ -61,7 +65,32 @@ function PortfolioDesc (courseId) {
                 courseId : courseId,
                 sheetId : fileId,
             }
-        }
+        },
+
+        set_aspen_assignments : function (rows) {
+            var headers = ['GB column name','Assignment name','Category','Date assigned','Date due','Total points','Extra credit points','Grade Scale','Grade Term'];
+            var exportSheetId = dm.getCourseSheet(
+                'portfolio-desc-export',courseId,'Portfolio Assignments for Aspen'
+            );
+            SheetManager(exportSheetId)
+                .setupTab([headers])
+                .addRowsFromJSON(rows);
+        },
+
+        append_to_aspen_assignments : function (rows) {
+            var exportSheetId = dm.getCourseSheet(
+                'portfolio-desc-export',courseId,'Portfolio Assignments for Aspen'
+            );
+            SheetManager(exportSheetId)
+                .addRowsFromJSON(rows);
+        },
+
+        get_aspen_assignments_url : function () {
+            var exportSheetId = dm.getCourseSheet(
+                'portfolio-desc-export',courseId,'Portfolio Assignments for Aspen'
+            );
+            return SpreadsheetApp.openById(exportSheetId).getUrl();
+        },
 
     }
 
@@ -88,7 +117,7 @@ function parseJson (itm) {
 }
 
 // Make getter and setter functions
-var lsts = ['skills_list','descriptors']
+var lsts = ['skills_list','descriptors','aspen_assignments']
 lsts.forEach(
     function (lstName) {
         functions['get_'+lstName] = function (courseId) {
@@ -99,6 +128,9 @@ lsts.forEach(
         }
         functions['append_to_'+lstName] = function (lst, courseId) {
             return PortfolioDesc(courseId)['append_to_'+lstName](parseJson(lst))
+        }
+        functions['get_'+lstName+'_url'] = function (courseId) {
+            return PortfolioDesc(courseId)['get_'+lstName+'_url']()
         }
     }
 );

@@ -1,5 +1,18 @@
 var functions = {}; var tests = {}
 
+function get_user () {
+    // Basically a hello world: let's just see if we can
+    // get the username or not.
+    return Session.getActiveUser().getEmail();
+}
+functions.get_user = get_user;
+
+function showWelcomePage () {
+    // return an HTML welcome page.
+    return HtmlService.createTemplateFromFile('welcome.html')
+        .evaluate();
+}
+
 function get_sheet (id,tab) {
     console.log('get_sheet(%s)',id);
     try {
@@ -50,16 +63,16 @@ function parseQuery (params, json) {
             json['error'] = 'Function '+f+' not found';
             return json;
         }
-        console.log('Running function %s(%s,%s,%s,%s)',f, params.arg&&params.arg[0],
-                    params.arg2&&params.arg2[0],
-                    params.arg3&&params.arg3[0],
-                    params.arg4&&params.arg4[0]
+        console.log('Running function %s(%s,%s,%s,%s)',f, params.arg&&decodeURIComponent(params.arg[0]),
+                    params.arg2&&decodeURIComponent(params.arg2[0]),
+                    params.arg3&&decodeURIComponent(params.arg3[0]),
+                    params.arg4&&decodeURIComponent(params.arg4[0])
                    );
         json['result'] = functions[f](
-            params.arg&&params.arg[0],
-            params.arg2&&params.arg2[0],
-            params.arg3&&params.arg3[0],
-            params.arg4&&params.arg4[0]
+            params.arg&&decodeURIComponent(params.arg[0]),
+            params.arg2&&decodeURIComponent(params.arg2[0]),
+            params.arg3&&decodeURIComponent(params.arg3[0]),
+            params.arg4&&decodeURIComponent(params.arg4[0])
         );
         console.log('=> RETURNS %s',json['result']);
     }
@@ -70,6 +83,9 @@ function parseQuery (params, json) {
 }
 
 function doGet (e) {
+    if (e.parameters.register) {
+        return showWelcomePage();
+    }
     var output =  {
         query : e.parameters
     };

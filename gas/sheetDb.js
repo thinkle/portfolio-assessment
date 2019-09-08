@@ -54,6 +54,27 @@ function DocumentManager () {
         set_user_prop('portfolio-root-folder',rootFolderId)
     }
 
+    function getCourseSheet (prop, courseId, title, tabs) {
+        var propname = prop+'-'+courseId
+        var fileId = get_user_prop(propname);
+        if (fileId) {
+            try {
+                DriveApp.getFile(fileId)
+            }
+            catch (err) {
+                console.log('Invalid ID set for %s-%s: %s',prop,courseId,fileId);
+            }
+            return fileId
+        }
+        else {
+            fileId = this.createSheet(
+                getClassTitle(courseId)+' '+'Portfolio Descripton',
+                tabs
+            );
+            set_user_prop(propname,fileId);
+        }
+    }
+
     function rootFolder () {
         return DriveApp.getFolderById(rootFolderId);
     }
@@ -113,6 +134,7 @@ function DocumentManager () {
     return {
         rootFolder : rootFolder,
         createSheet : createSheet,
+        getCourseSheet : getCourseSheet,
     }
     
 }
