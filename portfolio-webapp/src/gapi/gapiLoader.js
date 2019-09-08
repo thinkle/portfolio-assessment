@@ -1,5 +1,5 @@
 import React,{useEffect,useState} from 'react';
-import apiInfo from './secrets.js';
+var apiInfo
 
 /* Note: to use this, you need to include the following <script> tag in your index.html
 
@@ -131,8 +131,17 @@ function Gapi () {
 
     
     useEffect( ()=>{
-        console.log('handleClientLoad()!');
-        handleClientLoad();
+        fetch('https://portfolio-assessment.netlify.com/.netlify/functions/apiInfo/')
+            .then((resp)=>{
+                resp.json()
+                    .then((data)=>{
+                        console.log('Got our API Info!');
+                        apiInfo = JSON.parse(data);
+                        console.log('handleClientLoad()!');
+                        handleClientLoad();
+                    });
+            })
+            .catch((err)=>console.log('oops?'));
     },[]);
 
 
