@@ -349,6 +349,16 @@ TreeView.DateCol = (field,params = {}) => ({data,onPropChange}) => {
         inputVal = v.toISOString().substring(0,10);
         v = v.toLocaleDateString();
     }
+    else if (v) {
+        try {
+            v = new Date(v);
+            inputVal = v.toISOString().substring(0,10);
+            v = v.toLocaleDateString();
+        }
+        catch (err) {
+            console.log('Unable to convert date value: %s (%s)',v,err)
+        }
+    }
 
     return (<td colSpan={params.colSpan}>
 

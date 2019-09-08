@@ -1,30 +1,50 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import './App.sass';
 import TestView from './Tests.js';
 import TeacherView from './TeacherView.js';
 import RegisterView from './Register.js';
+import Api from './api.js';
 
-function MainView () {
-    
-    const [userType,setUserType] = useState(undefined);
+function MainView (props) {
+    const userTypeProp = 'user-type='+props.user
+    const [userType,setUserType] = useState(Api.getLocalCachedProp(userTypeProp));
+    var settingFromGoogle = false;
+    useEffect(()=>{
+        console.log('grab setting');
+        Api.getProp(userTypeProp).then((val)=>{
+            console.log('fetched prop from google');
+            setUserType(val)
+        });
+    },[]);
+
+    function setAndSaveUserType (val) {
+        Api.setProp(userTypeProp,val);
+        setUserType(val);
+    }
+
     return (
         
-        <div className="section">
+        <div className="container">
           <nav className="navbar">
             <div className="navbar-brand">
-              <span className="navbar-item">Portfolio Tool &nbsp;
-                {userType=='teacher' && 'Teacher Mode' || 'Student Mode'}
-              </span>
+              <div className="navbar-item">Portfolio Tool</div>
             </div>
-            {userType && <div className="navbar-item navbar-end"><a className="button delete is-medium is-danger" onClick={()=>setUserType(undefined)}></a></div>}
+            <div className="navbar-item is-secondary">Logged in as {Api.user}</div>
+            <div className="navbar-item navbar-end tag">
+              {userType=='teacher' && 'Teacher Mode' || 
+               userType=='student' && 'Student Mode'}
+              {userType!=undefined &&
+               <a className="button delete is-small is-dark" onClick={()=>setUserType(undefined)}></a>
+              }
+            </div>
           </nav>
           {!userType && (
               <div className="card">
                 <div className="card-header">Are you a teacher or a student?</div>
                 <div className="card-body">
                   <div className="buttons">
-                    <button onClick={()=>setUserType('teacher')} className="button is-large">Teacher</button>
-                    <button onClick={()=>setUserType('student')} className="button is-large">Student</button>
+                    <button onClick={()=>setAndSaveUserType('teacher')} className="button is-large">Teacher</button>
+                    <button onClick={()=>setAndSaveUserType('student')} className="button is-large">Student</button>
                   </div>
                 </div>
               </div>
@@ -37,18 +57,19 @@ function MainView () {
 }
 
 function App() {
-    const [page,setPage] = useState('register')
+    //const [page,setPage] = useState('register')
+    const [page,setPage] = useState('test')
     return (
         <div className="App">
-          <div className="navbar">
-            <div className="container buttons">
-              <button className="button" onClick={()=>setPage('test')}>Run Tests</button>
-            </div>
-          </div>
-          <div className="section">
+          <div className="wrapper">
             {page=='register' && <RegisterView onConnectedToApi={()=>setPage('main')}/>}
             {page=='test'&&<TestView/>}
-            {page=='main' && <MainView/>}
+            {page=='main' && <MainView user={Api.user}/>}
+          </div>
+          <div className="footer">
+            <div className="buttons">
+              <button className="button" onClick={()=>setPage('test')}>Run Tests</button>
+            </div>
           </div>
         </div>
     );

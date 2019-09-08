@@ -5,11 +5,15 @@ import SheetWidget from './SheetWidget.js';
 import PortfolioBuilder from './PortfolioBuilder.js';
 import Editor from './RichText.js';
 import Setting from './settings.js';
-import Api from './api.js';
-
+//import Api from './api.js';
+import Api from './gapi/gapi.js';
+import Gapi from './gapi/gapiLoader.js';
+import DocumentManager from './gapi/DocumentManager.js';
+import SheetDB from './gapi/SheetDB.js';
+import Prefs from './gapi/Prefs.js';
 
 function TestView () {
-    const [page,setPage] = useState('none')
+    const [page,setPage] = useState('gapi')
     const [prop,setProp] = useState(undefined);
     var setting = Setting({name:'test-123',
                            data : {
@@ -18,7 +22,10 @@ function TestView () {
                                numerals : 24,
                                decimals: 3.33333333333333333
                            }})
-    const [testId,setTestId] = useState(setting.data.testId);    
+    const [testId,setTestId] = useState(setting.data.testId);
+    const [testUrl,setTestUrl] = useState('');
+    const [testData,setTestData] = useState('');
+    const prefs = Prefs();
 
     return (
         <div>
@@ -40,6 +47,8 @@ function TestView () {
             <button className="button" onClick={()=>Api.testLongGet()}>Test Long Get</button>
             <button className="button" onClick={()=>Api.getProp('foo').then((v)=>setProp(v))}>Get Foo Prop</button>
             <button className="button" onClick={()=>setPage('editor')}>Test Editor</button>
+            <button className="button" onClick={()=>setPage('gapi')}>Test GApi</button>
+            <button className="button" onClick={()=>{setTestUrl('http://www.google.com');setTestData({test:'me',hello:'world'})}}>Test TestData & URL</button>
             <button className="button" onClick={()=>{
                 var val = 'foo' + Math.random()
                 Api.setProp('foo',val).then((v)=>setProp(v))}
@@ -48,20 +57,85 @@ function TestView () {
                 var val = {name:'Tom',age:Math.random()*40+20,height:Math.random()*24+60+' inches'}
                 Api.setProp('foo',val).then((v)=>setProp(v))}
                                                }>Set Foo Prop to JSON magic</button>
+            <button className='button' onClick={()=>{
+                prefs.createPropFile().then((result)=>console.log('success! %s',JSON.stringify(result)));
+            }}>Create new pref file...</button>
+
+            <button className='button' onClick={()=>{
+                prefs.getPropFile().then((result)=>console.log('success! %s',JSON.stringify(result)));
+            }}>Test new pref interface...</button>
+
+            <button className='button' onClick={()=>{
+                prefs.getProps().then((result)=>setTestData(result))
+            }}>Show props</button>
+            <button className='button' onClick={()=>{
+                prefs.setProp('foo','val'+Math.random());
+            }}>Update prop!</button>
+            <button className='button' onClick={()=>{
+                prefs.getPropFile().
+                    then((id)=>{
+                        prefs.updateFile(id,{foo:'bar',new:'baz',bang:'booo'})
+                    });
+            }}>Clobber props!</button>
+
+            <button className='button'
+                    onClick={()=>{
+                        DocumentManager().createSheet(
+                            'testTitle',
+                            [
+                                {
+                                    title:'Names',
+                                    data:[['First','Last'],
+                                          ['Tom','Hinkle'],
+                                          ['Kat','Hinkle']
+                                         ]
+                                },
+                                {
+                                    title:'Birthdays',
+                                    data:[
+                                        ['name','bday'],
+                                        ['Tom',new Date(1979,1,21)],
+                                        ['Kat',new Date(1980,4,11)],
+                                        ['Grace',new Date(2007,10,13)],
+                                        ['Clara',new Date(2009,8,22)],
+                                        ['Lila',new Date(2011,6,26)]
+                                    ]
+                                }
+                                ]
+                        ).then(
+                            (result)=>{
+                                console.log('Got result! %s',JSON.stringify(result))
+                                setTestUrl(result.spreadsheetUrl)
+                            }
+                        )
+                    }
+                            }
+            >Test Create Sheet
+            </button>
+            <button className='button'
+                    onClick={
+                        ()=>{SheetDB('1EDFnmkEUgH-3wjMHFQk1EOtV5sUMco_esBKfvw2nVlk').getJson('Birthdays').then(
+                            (result)=>{
+                                console.log('Got data: %s',JSON.stringify(result));
+                                setTestData(result)
+                            }
+                        )
+                            }
+                    }>Test Read Sheet
+            </button>
+            
           </div>
 
-          <div>{page=='courses' && <ClassList></ClassList>}</div>
+
+          <div>
+            {testUrl && <a href={testUrl} target='blank'>Test URL was created!</a>}
+            {testData && <pre>TEST DATA:
+                           {JSON.stringify(testData)}</pre>}
+          </div>
+          
+          <div>{page=='courses' && <ClassList onCourseSelected={(c)=>console.log('Selected course %s',JSON.stringify(c))} user='thinkle@innovationcharter.org'></ClassList>}</div>
           <div>{page=='portfolio' && <SkillsList></SkillsList>}</div>
           {prop && <p>{JSON.stringify(prop)} {prop.name}</p>}
-          <div>
-            <h3>API test links</h3>
-            <a target='blank' href={Api.getUrl('get_teacher_classes','thinkle@innovationcharter.org')}>
-              Get teacher classes
-            </a>
-            <a target='blank' href={Api.getUrl('get_sheet','1RP7wlpGOrrfUbdvBXKYvRygomATov6DTp1OocBEinqI')}>
-              Get sheet
-            </a>
-          </div>
           SETTING: {testId}
           
           {page=='builder' && <PortfolioBuilder courseId='test2'/>}
@@ -77,7 +151,7 @@ function TestView () {
                </div>
            )}
           {page=='embed' && <SheetWidget url="https://docs.google.com/spreadsheets/d/1RP7wlpGOrrfUbdvBXKYvRygomATov6DTp1OocBEinqI/edit#gid=0"/>}
-          
+          {page=='gapi' && (<div>GAPI:<Gapi/></div>)}
         </div>
     );
 }

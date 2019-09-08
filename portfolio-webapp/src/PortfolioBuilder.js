@@ -2,11 +2,15 @@ import React, {useEffect,useState} from 'react';
 import {InputWithEnter} from './widgets.js';
 import { inspect } from 'util' // or directly
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRedo,faSave,faAngleDown,faAngleUp,faPenSquare,faWindowClose,faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faFileExport,faRedo,faSave,faAngleDown,
+         faAngleUp,faPenSquare,faWindowClose,
+         faCheck,faPlus } from '@fortawesome/free-solid-svg-icons'
 import {AnimateOnChange,AnimateGroup,animations} from 'react-animation';
 import Api from './api.js';
 import TreeView from './TreeView.js';
 import {classNames} from './utils.js';
+import Shortener from './shortener.js';
+import {Modal} from './widgets.js';
 
 var FA = FontAwesomeIcon
 
@@ -147,15 +151,47 @@ function PortfolioModel (courseId) {
         }
     }
 
+    function toAspen (skillsList, params) {
+        
+        var gbShortener = Shortener({maxLength:10})
+        var assignmentShortener = Shortener({maxLength:50})
+
+        const mapper = {
+            'GB column name':(row)=>gbShortener.shorten(row.skill),
+            'Assignment name':(row)=>assignmentShortener.shorten(row.skill),
+            'Category':(row)=>(row)=>row.strand,
+            'Date assigned':(row)=>row.assignedDate,
+            'Date due':(row)=>row.dueDate,
+            'Total points':(row)=>row.points,
+            'Extra credit points':(row)=>params.extraCredit||0,
+            'Grade Scale':(row)=>params.gradingScale||'Current High School Grading Scale',
+            'Grade Term':(row)=>params.semester||'S1',
+        };
+        var aspenList = skillsList.map(
+            (row)=>{
+                const newRow = {}
+                for (var col in mapper) {
+                    const converter = mapper[col];
+                    newRow[col] = converter(row);
+                }
+                return newRow;
+            });
+
+        return new Promise((resolve,reject)=>{
+            Api.set_aspen_assignments(aspenList,courseId)
+                .then(()=>{
+                    Api.get_aspen_assignments_url(courseId)
+                        .then((url)=>resolve(url))
+                })
+                .catch((err)=>reject(err));
+        });
+    }
+        
     function toGoogle (skillsList,descriptors) {
         console.log('Pushing %s skills to google...',skillsList.length);
         return new Promise((resolve,reject)=>{
             var doneCount = 0;
-            Api.pushArrayInPieces(
-                'set_skills_list',
-                'append_to_skills_list',
-                skillsList,
-                metadata.courseId)
+            Api.set_skills_list(skillsList,metadata.courseId)
                 .then(()=>{
                     console.log('Skils list done...');
                     doneCount += 1;
@@ -194,14 +230,14 @@ function PortfolioModel (courseId) {
     }
 
     function fromGoogle () {
-        return Api.runFunction('get_portfolio_desc',metadata.courseId)
+        return Api.get_portfolio_desc(metadata.courseId)
     }
 
     function getSheet () {
-        return Api.runFunction('get_sheet_url',metadata.courseId);
+        return Api.get_sheet_url(metadata.courseId);
     }
 
-    return {fromFlatList,toFlatList,toGoogle,fromGoogle,propagateChanges,metadata,getSheet}
+    return {fromFlatList,toFlatList,toGoogle,fromGoogle,propagateChanges,metadata,getSheet,toAspen}
     
 }
 
@@ -225,6 +261,9 @@ function PortfolioBuilder (props) {
     const [busyState,setBusyState] = useState(false);
     const [sheetUrl,setSheetUrl] = useState(false);
 
+    const [exportUrl,setExportUrl] = useState();
+    const [showExportForm,setShowExportForm] = useState(false);
+
     useEffect(pullPortfolioFromGoogle,[])
 
     useEffect(()=>{
@@ -245,6 +284,7 @@ function PortfolioBuilder (props) {
 
     function pullPortfolioFromGoogle () {
         setBusyState('Pulling data from google...');
+        setErrorState(false)
         pm.fromGoogle()
         .then((portfolioData)=>{
             setSkills(portfolioData.skills);
@@ -324,11 +364,7 @@ function PortfolioBuilder (props) {
 
     return (
         <div className="container">
-          <h4 className="title">Skills List ({skills.length})</h4>
-          <div className="section">
-            {busyState && (<progress className="progress is-medium is-primary" max="100">Busy... {busyState}</progress>)}
-            {errorState && (<b>ERROR: {inspect(errorState)}</b>)}
-          </div>
+          <h4 className="title">{props.courseTitle} Portfolio Builder</h4>
           <nav className="navbar">
             {sheetUrl && <a className="navbar-item" target="_BLANK" href={sheetUrl}>Edit as Spreadsheet</a>}
             <div className='navbar-item'>
@@ -337,9 +373,18 @@ function PortfolioBuilder (props) {
                 <span>Reload from Google (wipe out changes)</span>
               </button>
             </div>
+
+            <div className='navbar-item'>
+              <button className='button is-secondary' onClick={()=>setShowExportForm(true)}>
+                <span className="icon"><FA icon={faFileExport}/></span>
+                <span>Export Assignments to Aspen</span>
+              </button>
+            </div>
+
             <div className="navbar-item navbar-end">
               <button className="is-primary button" onClick={()=>{
                   setBusyState('Pushing portfolio to google sheet...');
+                  setErrorState(false)
                   pm.toGoogle(skills,descriptors)
                       .then(()=>setBusyState(false))
                       .catch((err)=>{setBusyState(false);setErrorState(err)});
@@ -353,7 +398,7 @@ function PortfolioBuilder (props) {
           <TreeView
             data={treeData}
             onDataChange={saveTree}
-            headers={['Skill','Strand','Due','Points']}
+            headers={['Skill','Strand','Assigned','Due','Points','Description']}
             onChangeHook={TreeView.CascadeHook(['skill','strand'])}
             getNewRowData={getNewRowData}
             maxNesting={2}
@@ -362,13 +407,14 @@ function PortfolioBuilder (props) {
             getRenderers={
             (params)=>{
                 if (params.level==0) {
-                    return [TreeView.HeaderCol('strand',{colSpan:3,editable:true}),
+                    return [TreeView.HeaderCol('strand',{colSpan:4,editable:true}),
                             TreeView.SumCol('points'),
                             TreeView.BlankCol()];
                 }
                 if (params.level==1) {
                     return [TreeView.TextCol('skill',{editable:true}),
                             TreeView.TagCol('strand'),
+                            TreeView.BlankCol(),
                             TreeView.BlankCol(),
                             TreeView.SumCol('points'),
                             TreeView.RichTextCol('descriptor'),
@@ -377,6 +423,7 @@ function PortfolioBuilder (props) {
                 if (params.level==2) {
                     return [TreeView.TextCol('skill'),
                             TreeView.TagCol('strand'),
+                            TreeView.DateCol('assignedDate',{editable:true}),
                             TreeView.DateCol('dueDate',{editable:true}),
                             TreeView.NumCol('points',{editable:true}),
                             TreeView.BlankCol()
@@ -385,10 +432,77 @@ function PortfolioBuilder (props) {
             }
         }
           />
-          <hr/>
-          
-        </div>
+          <div className="section">
+            {busyState && (<progress className="progress is-medium is-primary" max="100">Busy... {busyState}</progress>)}
+            {errorState && (<b>ERROR: {inspect(errorState)}</b>)}
+          </div>
+        {
+         (<Modal 
+            active={showExportForm}
+            onClose={()=>setShowExportForm(false)}
+            title="Export to Aspen"
+          >
+            <div>
+          {exportUrl
+           && (<p><a href={exportUrl} target='_BLANK'>Jump to spreadsheet</a></p>)
+           ||
+              <AspenProps 
+                onExport={(params)=>{
+                    console.log('Got Aspen params: %s',JSON.stringify(params));
+                    setBusyState(true)
+                    setErrorState(false)
+                    pm.toAspen(skills,params)
+                        .then((url)=>{
+                            setExportUrl(url);
+                            setBusyState(false);
+                            setErrorState(false);
+                        })
+                        .catch((err)=>{
+                            setErrorState(err);
+                        });
+                }}
+           />}
+            {busyState && (<progress className="progress is-medium is-primary" max="100">Busy... {busyState}</progress>)}
+            {errorState && (<b>ERROR: {inspect(errorState)}</b>)}
+            </div>
+            <div>
+              {exportUrl &&
+               <button className="button" onClick={()=>setExportUrl(undefined)}>Redo export?</button>
+               }
+            </div>
+          </Modal>
+         )}
+      </div>
     )
+}
+function AspenProps (props) {
+
+    const refs = {}
+
+    function onExport (event) {
+        //console.log('Export: check out refs: %s',inspect(refs));
+        var params = {}
+        for (var param in refs) {
+            if (refs[param].type=='number') {
+                params[param] = Number(refs[param].value)
+            }
+            else {
+                params[param] = refs[param].value
+            }
+        }
+        props.onExport(params);
+        event.preventDefault();
+    }
+    
+    return (
+      <form onSubmit={onExport}>
+        <label>Semester <input defaultValue="S1" className="input" ref={(n)=>refs['semester']=n}/></label>
+        <label>Extra Credit Points <input defaultValue={0} type="number" className="input" ref={(n)=>refs['extraCredit']=n}/></label>
+        <label>Grading Scale <input defaultValue="High School Grading Scale" type="text" className="input" ref={(n)=>refs['gradingScale']=n}/></label>
+        <input type="submit" value={props.submitButtonText||"Push Aspen Headers to Spreadsheet"} className="button space-top is-primary"/>
+      </form>
+    );
+    
 }
 
 export default PortfolioBuilder;

@@ -19,9 +19,10 @@ function sanitize (arg) {
 }
 
 var Api = {
-    url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbwU-L5LTC68yB4IE0Dm0a6SzaZUi9l04w0DL-RN3n0OfN2iCZM/exec',
-    
-    //url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbw37U73iU1Ei_sOsX77GbyW7RvueieogCKHevPUVIQ/dev',
+    // production
+    //url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbwU-L5LTC68yB4IE0Dm0a6SzaZUi9l04w0DL-RN3n0OfN2iCZM/exec',
+    //dev
+    url : 'https://script.google.com/a/innovationcharter.org/macros/s/AKfycbw37U73iU1Ei_sOsX77GbyW7RvueieogCKHevPUVIQ/dev',
     user : undefined,
 
     getUser () {
@@ -72,10 +73,29 @@ var Api = {
         return `${this.url}?function=${funcName}&arg=${arg}`;
     },
 
+    getLocalCachedProp (prop) {
+        return JSON.parse(window.localStorage.getItem(prop))
+    },
+
+    cacheResult (cacheName, result) {
+        window.localStorage.setItem(cacheName,JSON.stringify(result))
+    },
+
     getProp (prop) {
         return new Promise((resolve,reject)=>{
             this.runFunction('get_user_prop',prop)
-                .then((result)=>resolve(JSON.parse(result)))
+                .then((result)=>{
+                    try {
+                        var parsed = JSON.parse(result)
+                    }
+                    catch (err) {
+                        console.log('Error parsing property value: %s',result);
+                        console.log('Treat as non-JSON?');
+                        resolve(result);
+                    }
+                    resolve(parsed)
+                }
+                )
                 .catch((err)=>reject(err));
         });
     },
@@ -88,6 +108,8 @@ var Api = {
             console.log(`Unable to stringify ${inspect(val)}`);
             throw err;
         }
+        // push to localStorage?
+        window.localStorage.setItem(prop,payload); // double up :)
         return new Promise((resolve,reject)=>{
             this.runFunction('set_user_prop',prop,payload)
                 .then((result)=>{
@@ -260,7 +282,49 @@ var Api = {
               })
             .then((r)=>console.log('Got result: %s',JSON.stringify(r)))
             .catch((e)=>console.log('Error? %s %s',e,JSON.stringify(e)))
-    }
+    },
+
+
+    get_teacher_classes : function (user) {
+        return Api.runFunction('get_teacher_classes',user);
+    },
+
+    get_aspen_assignments_url : function (courseId) {
+        return Api.runFunction('get_aspen_assignments_url',courseId);
+    },
+
+    get_portfolio_desc : function (courseId) {
+        return Api.runFunction('get_portfolio_desc',courseId);
+    },
+
+    get_sheet_url : function (courseId) {
+        return Api.runFunction('get_sheet_url',courseId);
+    },
+
+    set_aspen_assignments : function (aspenList, courseId) {
+        return this.pushArrayInPieces(
+            'set_aspen_assignments',
+            'append_to_aspen_assignments',
+            aspenList,courseId)
+    },
+
+    set_skills_list (skillsList, courseId) {
+        return Api.pushArrayInPieces(
+                'set_skills_list',
+                'append_to_skills_list',
+                skillsList,
+                courseId)
+    },
+
+    set_descriptors (descriptors, courseId) {
+        return Api.pushArrayInPieces(
+            'set_descriptors',
+            'append_to_descriptors',
+            descriptors,
+            courseId,
+        );
+    },
+    
     
 }
 
