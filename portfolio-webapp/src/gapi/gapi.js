@@ -1,5 +1,6 @@
 import { inspect } from 'util'; // or directly
 import Prefs from './Prefs.js';
+import PortfolioDesc from './PortfolioDesc.js';
 
 var gapi = window.gapi;
 var auth2 = gapi.auth2;
@@ -60,42 +61,42 @@ var Api = {
 
 
     // To do...
-
     get_aspen_assignments_url : function (courseId) {
-        return Api.runFunction('get_aspen_assignments_url',courseId);
+        PortfolioDesc(courseId).get_aspen_assignments_url()
     },
 
     get_portfolio_desc : function (courseId) {
-        return Api.runFunction('get_portfolio_desc',courseId);
+        PortfolioDesc(courseId).get_portfolio_desc();
     },
 
     get_sheet_url : function (courseId) {
-        return Api.runFunction('get_sheet_url',courseId);
+        PortfolioDesc(courseId).get_sheets_url()
     },
 
     set_aspen_assignments : function (aspenList, courseId) {
-        return this.pushArrayInPieces(
-            'set_aspen_assignments',
-            'append_to_aspen_assignments',
-            aspenList,courseId)
+        PortfolioDesc(courseId).set_aspen_assignments(aspenList);
     },
 
-    set_skills_list (skillsList, courseId) {
-        return Api.pushArrayInPieces(
-                'set_skills_list',
-                'append_to_skills_list',
-                skillsList,
-                courseId)
+    set_portfolio_desc : function (portfolio, courseId) {
+        PortfolioDesc(courseId).set_portfolio(portfolio)        
     },
 
-    set_descriptors (descriptors, courseId) {
-        return Api.pushArrayInPieces(
-            'set_descriptors',
-            'append_to_descriptors',
-            descriptors,
-            courseId,
-        );
-    },
+    // set_skills_list (skillsList, courseId) {
+    //     return Api.pushArrayInPieces(
+    //             'set_skills_list',
+    //             'append_to_skills_list',
+    //             skillsList,
+    //             courseId)
+    // },
+
+    // set_descriptors (descriptors, courseId) {
+    //     return Api.pushArrayInPieces(
+    //         'set_descriptors',
+    //         'append_to_descriptors',
+    //         descriptors,
+    //         courseId,
+    //     );
+    // },
 
     getProp (prop) {
         return this.getPrefs().getProp(prop);
