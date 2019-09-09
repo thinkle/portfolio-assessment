@@ -3,7 +3,8 @@ import './App.sass';
 import TestView from './Tests.js';
 import TeacherView from './TeacherView.js';
 import RegisterView from './Register.js';
-import Api from './api.js';
+import Api from './gapi/gapi.js';
+import Gapi from './gapi/gapiLoader.js';
 
 function MainView (props) {
     const userTypeProp = 'user-type='+props.user
@@ -58,13 +59,28 @@ function MainView (props) {
 
 function App() {
     //const [page,setPage] = useState('register')
-    const [page,setPage] = useState('main')
+    const [page,setPage] = useState('login')
+    const [user,setUser] = useState()
+
+    function apiReady () {
+        Api.getUser().then(
+            (user)=>{
+                setUser(user);
+                setPage('main')
+            }
+        );
+    }
+    
     return (
         <div className="App">
+          
+          
+          <Gapi onReady={apiReady} onLoggedOut={()=>console.log('logged out?')}/>
           <div className="wrapper">
+            {page=='login' && <h1>Log in, would you?</h1>}
             {page=='register' && <RegisterView onConnectedToApi={()=>setPage('main')}/>}
             {page=='test'&&<TestView/>}
-            {page=='main' && <MainView user={Api.user}/>}
+            {page=='main' && <MainView user={user}/>}
           </div>
           <div className="footer">
             <div className="buttons">
