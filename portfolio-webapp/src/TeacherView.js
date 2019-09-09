@@ -1,7 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import ClassList from './ClassList.js';
 import PortfolioBuilder from './PortfolioBuilder.js';
-import Api from './api.js';
+import Api from './gapi/gapi.js';
 
 const COURSECHOOSER = 0;
 const BUILDPORTFOLIO = 1;
