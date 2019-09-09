@@ -189,44 +189,8 @@ function PortfolioModel (courseId) {
         
     function toGoogle (skillsList,descriptors) {
         console.log('Pushing %s skills to google...',skillsList.length);
-        return new Promise((resolve,reject)=>{
-            var doneCount = 0;
-            Api.set_skills_list(skillsList,metadata.courseId)
-                .then(()=>{
-                    console.log('Skils list done...');
-                    doneCount += 1;
-                    if (doneCount == 2) {
-
-                        resolve()
-                    }
-                    else {
-                        console.log('... waiting on descriptors');
-                    }
-                })
-                .catch((err)=>reject(err));
-            
-        Api.pushArrayInPieces(
-            'set_descriptors',
-            'append_to_descriptors',
-            descriptors,
-            metadata.courseId,
-        )
-                .then(()=>{
-                    console.log('Descriptors list done...');
-                    doneCount += 1;
-                    if (doneCount == 2) {
-                        
-                        resolve()
-                    }
-                    else {
-                        console.log('... waiting on skills');
-                    }
-                })
-                .catch((err)=>reject(err));
-
-            return; // BELOW NOT IN USE NOW -- template for pushArrayInPieces...
-        }
-                      );
+        return Api.set_portfolio_desc({skills:skillsList,
+                                   descriptors:descriptors},courseId)
     }
 
     function fromGoogle () {
