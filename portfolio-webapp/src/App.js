@@ -58,7 +58,7 @@ function MainView (props) {
 
 function App() {
     //const [page,setPage] = useState('register')
-    const [page,setPage] = useState('test')
+    const [page,setPage] = useState('main')
     return (
         <div className="App">
           <div className="wrapper">
@@ -69,6 +69,8 @@ function App() {
           <div className="footer">
             <div className="buttons">
               <button className="button" onClick={()=>setPage('test')}>Run Tests</button>
+              <button className="button" onClick={()=>setPage('main')}>Main View</button>
+              <button className="button" onClick={()=>setPage('register')}>Reg View</button>
             </div>
           </div>
         </div>
