@@ -1,4 +1,4 @@
-var gapi, drive;
+var gapi;
 
 const PREF_FILENAME = 'portconf.json'
 
