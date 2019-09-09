@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from 'react';
-//import apiInfo from './secrets.js'; // comment out before committing
-var apiInfo
+import apiInfo from './secrets.js'; // comment out before committing
+//var apiInfo // comment to work local
 
 /* Note: to use this, you need to include the following <script> tag in your index.html
 
@@ -87,9 +87,10 @@ const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/classroom/
                         "https://sheets.googleapis.com/$discovery/rest?version=v4"
                        ]
 console.log('scopes are ',SCOPES);
-function Gapi () {
+function Gapi (props) {
     const [authorized,setAuthorized] = useState(false);
     const [signedIn,setSignedIn] = useState(false);
+
     var gapi = window.gapi;
     console.log('Got gapi? %s',gapi);
     
@@ -108,11 +109,20 @@ function Gapi () {
                     (isSignedIn)=>{
                         console.log('is signed in? %s',isSignedIn);
                         setAuthorized(isSignedIn)
+                        if (isSignedIn) {
+                            props.onReady && props.onReady();
+                        }
+                        else {
+                            props.onLoggedOut && props.onLoggedOut();
+                        }
                     }
                 )
                 var state = gapi.auth2.getAuthInstance().isSignedIn.get();
                 console.log('initial sign-in state? %s',state);
                 setAuthorized(state);
+                if (state) {
+                    props.onReady && props.onReady();
+                }
             })
             .catch((err)=>{
                 console.log('client init failed :(');
@@ -132,7 +142,7 @@ function Gapi () {
 
     
     useEffect( ()=>{
-        //handleClientLoad(); // comment out before committing
+        handleClientLoad(); // comment out before committing
         fetch('https://portfolio-assessment.netlify.com/.netlify/functions/apiInfo/')
             .then((resp)=>{
                 resp.json()
