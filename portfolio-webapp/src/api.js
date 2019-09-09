@@ -308,6 +308,24 @@ var Api = {
             aspenList,courseId)
     },
 
+    set_portfolio_desc (portfolioDesc, courseId) {
+        var doneCount = 0;
+        return new Promise((resolve,reject)=>{
+            this.set_skills_list(portfolioDesc.skills,courseId).then(amIDone).catch(reject)
+            this.set_portfolio_desc(portfolioDesc.descriptors,courseId).then(amIDone).catch(reject)
+
+            function amIDone (arg) {
+                doneCount += 1;
+                if (doneCount==2) {
+                    resolve(arg);
+                }
+                else {
+                    console.log('Waiting on other process...');
+                }
+            }
+        });
+    },
+
     set_skills_list (skillsList, courseId) {
         return Api.pushArrayInPieces(
                 'set_skills_list',
