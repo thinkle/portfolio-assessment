@@ -81,7 +81,7 @@ var Sheets = {
         }
     },
    
-    getSheetBody ({title,data}) {
+    getSheetBody ({title,rowData,data}) {
         console.log('Handle sheet %s: %s',title,JSON.stringify(data))
         return {
             properties : {
@@ -91,7 +91,7 @@ var Sheets = {
                 {
                     startRow:0,
                     startColumn:0,
-                    rowData : data.map(
+                    rowData : rowData||data.map(
                         getRowData
                     )
                 }
@@ -99,9 +99,26 @@ var Sheets = {
         }
     },
 
+    jsonToRowData (jsonArray, headers=undefined) {
+        if (!headers) {
+            headers = Object.keys(jsonArray[0]);
+            headers.sort(); // alphabetical!
+        }
+        const rowData = [getRowData(headers)]
+        for (var rn=0; rn<jsonArray.length; rn++) {
+            var jsonRow = jsonArray[rn]
+            var vanillaRow = headers.map((h)=>jsonRow[h]);
+            rowData.push(getRowData(vanillaRow))
+        }
+        return rowData;
+    },
+
+
     fromRowToJS (row) {
         return row.values.map(fromCellData)
-    }
+    },
+
+    getRowData,
     
 }
 
