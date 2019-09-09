@@ -9,7 +9,8 @@ import Setting from './settings.js';
 import Api from './gapi/gapi.js';
 import Gapi from './gapi/gapiLoader.js';
 import DocumentManager from './gapi/DocumentManager.js';
-import SheetDB from './gapi/SheetDB.js';
+import Sheets from './gapi/SheetBasics.js';
+import SheetManager from './gapi/SheetManager.js';
 import Prefs from './gapi/Prefs.js';
 
 function TestView () {
@@ -110,11 +111,30 @@ function TestView () {
                         )
                     }
                             }
-            >Test Create Sheet
+            >Test Create Sheet (raw)
+            </button>
+            <button className='button'
+                    onClick={()=>{
+                        DocumentManager()
+                            .createSheetForProp(
+                                'testcourse',
+                                'fakeProp',
+                                'A New Sheet',
+                                [{name:'Name sheet',rowData:Sheets.jsonToRowData([{name:'Tom',age:40},{name:'Kat',age:39},{name:'Grace',age:11}])},
+                                 {name:'Dates?',rowData:Sheets.jsonToRowData([{date:new Date(),name:'Today!'},{date:'some time',name:'FoO!'}])},
+                                 {name:'Straight Data?',data:[[1,2,3],[4,5,6],[7,8,9]]},
+                                 ]
+                            ).then((data)=>{
+                                setTestData(data);
+                                setTestUrl(data.spreadsheetUrl);
+                            })
+                    }}
+            >
+              Test Create Sheet for Course
             </button>
             <button className='button'
                     onClick={
-                        ()=>{SheetDB('1EDFnmkEUgH-3wjMHFQk1EOtV5sUMco_esBKfvw2nVlk').getJson('Birthdays').then(
+                        ()=>{SheetManager('1EDFnmkEUgH-3wjMHFQk1EOtV5sUMco_esBKfvw2nVlk').getJson('Birthdays').then(
                             (result)=>{
                                 console.log('Got data: %s',JSON.stringify(result));
                                 setTestData(result)
@@ -122,7 +142,21 @@ function TestView () {
                         )
                             }
                     }>Test Read Sheet
-            </button>
+        </button>
+        <button className='button'
+        onClick={()=>{
+            SheetManager('1mlEdDoe_dnu8RxKbknCIG-1fXDXawnEWoZEhl-FcDuY')
+                .updateData(
+                    [
+                        {title:'worry',
+                         data:[[1,2,3,],[2,4,6],[3,6,9],[4,8,12],[new Date(),'no more worries','sleep well']]},
+                        {title:'nooboodoogoo',
+                         data:[[7,6,5],[4,3,2],[2,1,0],['a','b','c']]}
+                    ]
+                )
+                .then((r)=>setTestData(r));
+            
+        }}>Test Update Sheet</button>
             
           </div>
 
