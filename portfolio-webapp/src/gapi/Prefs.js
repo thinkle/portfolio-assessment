@@ -31,7 +31,6 @@ function Prefs () {
                     hello : 'world'
                 })],{type:'application/json'})
                 
-                console.log('Got token: %s',getAccessToken());
                 var form = new FormData();
                 form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}))
                 form.append('file',file);
@@ -46,18 +45,15 @@ function Prefs () {
                     )
                     .then(
                         (val)=>{
-                            console.log(val)
                             propFileId = val;
                             resolve(val);
                         }
                     );
-                console.log('sent form...');
             }); // end promise
         },
         updateFile : function (id, data) {
             return new Promise((resolve,reject)=>{
                 var file = JSON.stringify(data)
-                console.log('Data is %s => %s',data,JSON.stringify(data));
                 var form = new FormData();
                 form.append('file',file);
                 fetch(
@@ -71,12 +67,12 @@ function Prefs () {
                     )
                     .then(
                         (val)=>{
-                            console.log('PUT worked %s',val)
+                            console.log('PUT worked %s',JSON.stringify(val))
+                            console.log('Pushed data: %s',file);
                             resolve(val);
                         }
                     )
                     .catch(reject);
-                console.log('sent update form...');
             });
         },
         getFile : function (id) {
@@ -89,10 +85,10 @@ function Prefs () {
                         headers : new Headers({'Authorization':'Bearer '+getAccessToken()}),
                     }).then(
                         (resp)=>{
-                            console.log('response!');
                             resp.json().then(
                                 (jsonData)=>{
-                                    console.log('Got response! %s %s %s',
+                                    console.log('getFile %s got JSON response! %s %s',
+                                                id,
                                                 resp,jsonData);
                                     resolve(jsonData);
                                 }
@@ -101,7 +97,7 @@ function Prefs () {
                         }
                     )
                     .catch((err)=>{
-                        console.log('Error with data? %s',err);
+                        console.log('file %s Error with data? %s',id,err);
                         reject(err);
                     });
             }); // end promise
@@ -121,7 +117,7 @@ function Prefs () {
                     .then(
                         (resp)=>{
                             var searchResult = resp.result
-                            console.log('Done with search... %s',JSON.stringify(searchResult));
+                            //console.log('Done with search... %s',JSON.stringify(searchResult));
                             if (searchResult.files && searchResult.files.length >= 1) {
                                 if (searchResult.files.length > 1) {
                                     console.log('WARNING: There seem to be extra config files. We will use the first one.');
@@ -165,6 +161,7 @@ function Prefs () {
             });
         },
         setProp : function (key, val) {
+            console.log('setProp',key,val);
             return new Promise((resolve,reject)=>{
                 this.getProps().then(
                     (allProps)=>{
