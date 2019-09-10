@@ -36,6 +36,10 @@ var Api = {
     getUser () {
         console.log('getUser...');
         return new Promise ((resolve,reject)=>{
+            if (!auth2) {
+                console.log('Tried to call Api before auth2');
+                reject('Auth2 not loaded yet');
+            }
             var authInst = auth2.getAuthInstance()
             if (authInst.isSignedIn.get()) {
                 resolve(authInst.currentUser.get().getBasicProfile().getEmail());
@@ -62,23 +66,23 @@ var Api = {
 
     // To do...
     get_aspen_assignments_url : function (courseId) {
-        PortfolioDesc(courseId).get_aspen_assignments_url()
+        return PortfolioDesc(courseId).get_aspen_assignments_url()
     },
 
     get_portfolio_desc : function (courseId) {
-        PortfolioDesc(courseId).get_portfolio_desc();
+        return PortfolioDesc(courseId).get_portfolio_desc();
     },
 
     get_sheet_url : function (courseId) {
-        PortfolioDesc(courseId).get_sheets_url()
+        return PortfolioDesc(courseId).get_portfolio_url()
     },
 
     set_aspen_assignments : function (aspenList, courseId) {
-        PortfolioDesc(courseId).set_aspen_assignments(aspenList);
+        return PortfolioDesc(courseId).set_aspen_assignments(aspenList);
     },
 
     set_portfolio_desc : function (portfolio, courseId) {
-        PortfolioDesc(courseId).set_portfolio(portfolio)        
+        return PortfolioDesc(courseId).set_portfolio_desc(portfolio)        
     },
 
     // set_skills_list (skillsList, courseId) {
