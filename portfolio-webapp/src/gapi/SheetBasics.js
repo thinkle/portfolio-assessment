@@ -13,6 +13,9 @@ function getExcelDateFromJs (jsDate) {
 
 
 function fromCellData (cell) {
+    if (!cell.userEnteredValue) {
+       return undefined;
+    }
     if (cell.effectiveFormat.numberFormat &&
         cell.effectiveFormat.numberFormat.type == 'DATE') {
         return getJsDateFromExcel(cell.userEnteredValue.numberValue);
@@ -32,6 +35,9 @@ function toCellData (v) {
     }
 
     function getValue (v) {
+        if (v===undefined) {
+            return {stringValue:""}
+        }
         if (v.toLocaleDateString) {
             // We are a date!
             return {numberValue:getExcelDateFromJs(v)};
@@ -51,8 +57,7 @@ function toCellData (v) {
     }
 
     function getFormat (v) {
-        if (v.toLocaleDateString) {
-            console.log('learn to fomrat dates, wouldja?');
+        if (v && v.toLocaleDateString) {
             return {
                 numberFormat : {
                     type : 'DATE',
@@ -64,7 +69,6 @@ function toCellData (v) {
 }
 
 function getRowData (row) {
-    console.log('handle row data: %s',row);
     return {
         values : row.map(toCellData),
     }
@@ -82,7 +86,6 @@ var Sheets = {
     },
    
     getSheetBody ({title,rowData,data}) {
-        console.log('Handle sheet %s: %s',title,JSON.stringify(data))
         return {
             properties : {
                 title:title
