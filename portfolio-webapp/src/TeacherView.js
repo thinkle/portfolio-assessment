@@ -57,7 +57,7 @@ function TeacherView (props) {
     }
 
     function portfolioBuilder () {
-        return (<PortfolioBuilder courseId={course.id} courseTitle={course.name}/>);
+        return (<PortfolioBuilder course={course}/>);
     }
     
 }
