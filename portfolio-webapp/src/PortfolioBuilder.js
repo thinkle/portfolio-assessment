@@ -6,11 +6,14 @@ import { faFileExport,faRedo,faSave,faAngleDown,
          faAngleUp,faPenSquare,faWindowClose,
          faCheck,faPlus } from '@fortawesome/free-solid-svg-icons'
 import {AnimateOnChange,AnimateGroup,animations} from 'react-animation';
-import Api from './api.js';
+//import Api from './api.js';
+import Api from './gapi/gapi.js';
 import TreeView from './TreeView.js';
 import {classNames} from './utils.js';
 import Shortener from './shortener.js';
 import {Modal} from './widgets.js';
+
+var BE_FUSSY = false;
 
 var FA = FontAwesomeIcon
 
@@ -21,7 +24,7 @@ const DESCRIPTOR_TEMPLATE = `
 </ul>
 `
 
-function PortfolioModel (courseId) {
+function PortfolioModel (course) {
 
     function sanitizeKey (k) {
         k = k.replace('%','Perc'); // remove problem characters from keys...
@@ -32,7 +35,7 @@ function PortfolioModel (courseId) {
         sheetid : '1eQ06dgoeRDNdV8Zn7d2BaD0Pj1IbUPxX_FfBSbYqmwQ', // hardcoded for now :)
     };
     var metadata = {
-        courseId : courseId
+        courseId : course.id
     }
 
     function propagateChanges (treeData) {
@@ -61,7 +64,7 @@ function PortfolioModel (courseId) {
         );
     }
 
-    function fromFlatList (fl, descriptors=[]) {
+    function fromFlatList (fl, descriptors=[]) {       
         var id = 0;
         
         function nextId () {
@@ -77,7 +80,6 @@ function PortfolioModel (courseId) {
                 descriptorMap[row.item] = row.descriptor;
             }
         );
-        console.log(`Got descriptorMap ${inspect(descriptorMap)}`);
 
         var strands = {}
         var byStrandBySkill = {}
@@ -159,7 +161,7 @@ function PortfolioModel (courseId) {
         const mapper = {
             'GB column name':(row)=>gbShortener.shorten(row.skill),
             'Assignment name':(row)=>assignmentShortener.shorten(row.skill),
-            'Category':(row)=>(row)=>row.strand,
+            'Category':(row)=>row.strand,
             'Date assigned':(row)=>row.assignedDate,
             'Date due':(row)=>row.dueDate,
             'Total points':(row)=>row.points,
@@ -178,9 +180,9 @@ function PortfolioModel (courseId) {
             });
 
         return new Promise((resolve,reject)=>{
-            Api.set_aspen_assignments(aspenList,courseId)
+            Api.set_aspen_assignments(aspenList,course)
                 .then(()=>{
-                    Api.get_aspen_assignments_url(courseId)
+                    Api.get_aspen_assignments_url(course)
                         .then((url)=>resolve(url))
                 })
                 .catch((err)=>reject(err));
@@ -189,16 +191,21 @@ function PortfolioModel (courseId) {
         
     function toGoogle (skillsList,descriptors) {
         console.log('Pushing %s skills to google...',skillsList.length);
+        skillsList = skillsList.slice()
+        skillsList.forEach((i)=>{
+            delete i.children; // don't need nested
+            delete i.data; // nested...
+        });
         return Api.set_portfolio_desc({skills:skillsList,
-                                   descriptors:descriptors},courseId)
+                                       descriptors:descriptors},course)
     }
 
     function fromGoogle () {
-        return Api.get_portfolio_desc(metadata.courseId)
+        return Api.get_portfolio_desc(course)
     }
 
     function getSheet () {
-        return Api.get_sheet_url(metadata.courseId);
+        return Api.get_sheet_url(course);
     }
 
     return {fromFlatList,toFlatList,toGoogle,fromGoogle,propagateChanges,metadata,getSheet,toAspen}
@@ -208,7 +215,7 @@ function PortfolioModel (courseId) {
 
 
 function PortfolioBuilder (props) {
-    var pm = PortfolioModel(props.courseId);
+    var pm = PortfolioModel(props.course);
 
     const [skills,setSkills] = useState(
         [
@@ -234,7 +241,8 @@ function PortfolioBuilder (props) {
         console.log('Grabbing sheet from google...');
         pm.getSheet()
             .then(setSheetUrl)
-            .catch((err)=>setErrorState);
+            .catch((err)=>{setErrorState(err);
+                           if (BE_FUSSY) throw err});
     },[]);
 
     useEffect(
@@ -250,14 +258,18 @@ function PortfolioBuilder (props) {
         setBusyState('Pulling data from google...');
         setErrorState(false)
         pm.fromGoogle()
-        .then((portfolioData)=>{
-            setSkills(portfolioData.skills);
-            setDescriptors(portfolioData.descriptors);
-            setLatestDataCount(latestDataCount+1);
-            setBusyState(false);
-        })
+            .then((portfolioData)=>{
+                console.log('Got data: %s',JSON.stringify(portfolioData));
+                if (portfolioData) {
+                    setSkills(portfolioData.skills);
+                    setDescriptors(portfolioData.descriptors);
+                    setLatestDataCount(latestDataCount+1);
+                }
+                setBusyState(false);
+            })
             .catch((err)=>{
-                setBusyState(false);setErrorState(err)
+                setBusyState(false);setErrorState(err);
+                if (BE_FUSSY) throw err;
             });
     }        
 
@@ -293,7 +305,7 @@ function PortfolioBuilder (props) {
             rowData.children.push(
                 getNewRowDataData({nlevel:nlevel+1,parent:rowData.data})
             );
-            console.log(`getNewRowData(${nlevel},${parent})=>${JSON.stringify(rowData)}`)
+            //console.log(`getNewRowData(${nlevel},${parent})=>${JSON.stringify(rowData)}`)
             return rowData;
         }
         // Otherwise strand is populated
@@ -304,19 +316,19 @@ function PortfolioBuilder (props) {
             rowData.children.push(
                 getNewRowData({nlevel:nlevel+1,parent:rowData.data})
             )
-            console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
+            //console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
             return rowData;
         }
         if (nlevel==2) {
             rowData.data.skill = parent.skill;
             rowData.data.points = 100;
             rowData.data.dueDate = new Date();
-            console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
+            //console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
             return rowData;
         }
         else {
-            console.log('Unknown nlevel %s',nlevel);
-            console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
+            //console.log('Unknown nlevel %s',nlevel);
+            //console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
             return {
                 data : {
                     strand : 'WTF',
@@ -328,7 +340,7 @@ function PortfolioBuilder (props) {
 
     return (
         <div className="container">
-          <h4 className="title">{props.courseTitle} Portfolio Builder</h4>
+          <h4 className="title">{props.course.title} Portfolio Builder</h4>
           <nav className="navbar">
             {sheetUrl && <a className="navbar-item" target="_BLANK" href={sheetUrl}>Edit as Spreadsheet</a>}
             <div className='navbar-item'>
@@ -350,7 +362,11 @@ function PortfolioBuilder (props) {
                   setBusyState('Pushing portfolio to google sheet...');
                   setErrorState(false)
                   pm.toGoogle(skills,descriptors)
-                      .then(()=>setBusyState(false))
+                      .then((result)=>{
+                          setBusyState(false);
+                          console.log('Successful push to google: %s',result);
+                          console.log(JSON.stringify(result))
+                      })
                       .catch((err)=>{setBusyState(false);setErrorState(err)});
               }}>
                 <span className="icon"><FA icon={faSave}/></span>
