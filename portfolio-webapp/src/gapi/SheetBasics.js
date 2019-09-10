@@ -13,18 +13,19 @@ function getExcelDateFromJs (jsDate) {
 
 
 function fromCellData (cell) {
-    if (!cell.userEnteredValue) {
+    
+    if (!cell.effectiveValue) {
        return undefined;
     }
     if (cell.effectiveFormat.numberFormat &&
         cell.effectiveFormat.numberFormat.type == 'DATE') {
-        return getJsDateFromExcel(cell.userEnteredValue.numberValue);
+        return getJsDateFromExcel(cell.effectiveValue.numberValue);
     }
-    else if (cell.userEnteredValue.numberValue) {
-        return cell.userEnteredValue.numberValue
+    else if (cell.effectiveValue.numberValue) {
+        return cell.effectiveValue.numberValue
     }
     else {
-        return cell.userEnteredValue.stringValue;
+        return cell.effectiveValue.stringValue;
     }
 }
 
