@@ -37,7 +37,7 @@ function DocumentManager () {
             }); // end promise
         },
 
-        createSheetForProp (courseId, prop,title, sheets) {
+        createSheetForProp (course, prop,title, sheets) {
             return new Promise((resolve,reject)=>{
                 var spreadsheetObj = Sheets.getSpreadsheetBody({title,sheetsData:sheets});
                 gsheets.spreadsheets.create(
@@ -47,16 +47,20 @@ function DocumentManager () {
                         (response)=>{
                             console.log('Created sheet! %s',JSON.stringify(response.result));
                             console.log('ID=%s',response.result.id);
-                            Api.setProp(propname(courseId,prop),response.result.id)
+                            Api.setProp(propname(course.id,prop),response.result.spreadsheetId)
                                 .then(resolve(response.result))
                                 .catch((err)=>{
-                                    console.log('Unable to store prop %s with result %s',propname(courseId,prop),response.result);
+                                    console.log('Unable to store prop %s with result %s',propname(course.id,prop),response.result);
                                     reject(err)
                                 });
                         }
                     )
                     .catch((err)=>{
                         console.log('Error creating spreadsheet');
+                        console.log('Data was: ')
+                        console.log('%s %s %s',course.id,prop,title);
+                        console.log('sheets: %s',JSON.stringify(sheets))
+                        console.log('spreadsheetObj: %s',JSON.stringify(spreadsheetObj));
                         reject(err)
                     });
             }); // end Promise
