@@ -1,6 +1,20 @@
 import Sheets from './SheetBasics.js';
 var gapi, gsheets;
 
+function arrayToJson (data) {
+    if (data.length <= 1 ) {return []}
+    var headers = data[0];
+    var jsonData = []
+    for (var rn=1; rn<data.length; rn++) {
+        var row = {}
+        for (var cn=0; cn<headers.length; cn++) {
+            row[headers[cn]] = data[rn][cn];
+        }
+        jsonData.push(row);
+    }
+    return jsonData;
+}
+
 function getApi () {
     gapi = window.gapi;
     gsheets = gapi.client.sheets;
@@ -47,14 +61,30 @@ function SheetManager (sheetId) {
             }); // end Promise
         },
 
+        getSheetsData : function () {
+            return new Promise((resolve,reject)=>{
+                getWithGrid()
+                    .then((ssheet)=>{
+                        var sheets = {};
+                        console.log('getSheetsData got result: %s',ssheet);
+                        ssheet.sheets.forEach(
+                            (sheet) => {
+                                sheets[sheet.properties.title] = sheet.data[0].rowData.map(Sheets.fromRowToJS)
+                            }
+                        );
+                        resolve(sheets)
+                    })
+                    .catch((err)=>reject(err))
+            });
+        },
+
         getSheetData : function (tab) {
             return new Promise((resolve,reject)=>{
                 getWithGrid()
-                    .then((resp)=>{
-                        var ssheet = resp.result
+                    .then((ssheet)=>{
                         ssheet.sheets.forEach(
                             (sheet) => {
-                                if (sheet.properties.title==tab) {
+                                if (!tab||sheet.properties.title==tab) {
                                     if (sheet.data.length > 1) {
                                         console.log('weird: got more than one dataset???');
                                     }
@@ -65,6 +95,19 @@ function SheetManager (sheetId) {
                     })
                     .catch((err)=>reject(err))
             });
+        },
+
+        getSheetDataJson : async function (tab) {
+            var data = await this.getSheetData(tab);
+            return arrayToJson(data);
+        },
+
+        getSheetsDataJson : async function () {
+            var data = await this.getSheetsData();
+            for (var sheet in data) {
+                data[sheet] = arrayToJson(data[sheet]);
+            }
+            return data;
         },
 
         updateData (sheets) {
@@ -142,7 +185,14 @@ function SheetManager (sheetId) {
                                 requests : requests,
                             }
                         }
-                    ).then(resolve).catch(reject)
+                    )
+                        .then(resolve)
+                        .catch((err)=>{
+                            console.log('Error pushing requests.');
+                            console.log('Requests were: ');
+                            console.log(requests)
+                            console.log('err is',err);
+                            reject(err)})
                 }
                 /** end helper functions **/
 
@@ -175,7 +225,10 @@ function SheetManager (sheetId) {
         },
 
 
-        getUrl : function () {
+        getUrl : async function () {
+            var ssheet = await getNoGrid()
+            console.log('Get URL returning: ',ssheet.spreadsheetUrl);
+            return ssheet.spreadsheetUrl;
         },
     }
 
