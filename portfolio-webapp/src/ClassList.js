@@ -69,7 +69,7 @@ function ClassList (props) {
                    <div className="level">
                      {
                          courses.map((c)=>(
-                             <a className='button is-medium level-item space-right classroom-green-button'
+                             <a key={c.id} className='button is-medium level-item space-right classroom-green-button'
                                 onClick={()=>props.onCourseSelected(c)}>
                                {c.name}
                              </a>
