@@ -5,7 +5,7 @@ import {classNames} from './utils.js';
 import {TransitionGroup,CSSTransition} from 'react-transition-group';
 import { inspect } from 'util'; // or directly
 import Editor from './RichText.js';
-import {Icon} from './widgets.js';
+import {Icon,Modal,Button} from './widgets.js';
 import './TreeView.sass';
 
 
@@ -16,13 +16,17 @@ function TreeHead (props) {
         return (<thead/>)
     }
     return (
-        <thead>
-          <tr><th></th>
+        <div className='treehead'>
+          <div className='treerow'
+            style={
+                {'grid-template-columns':props.template}
+            }
+          ><div className='treecell'></div>
         {props.headers.map((h)=>(
-            <th>{h}</th>
+            <div className='treecell'>{h}</div>
         ))}
-          </tr>
-        </thead>
+          </div>
+        </div>
     )
 }
 
@@ -52,19 +56,23 @@ function AddRowRow (props) {
     }
 
     return (
-        <tr className={classNames({
+        <div className={classNames({
+            treerow:true,
             ['nested'+(props.nlevel)]:props.nlevel,
             lastRow:true,
-        })}
-    >
-      <td colSpan={props.colsToSkip}/>
-      <td className="control">
-        <Icon icon={faPlus}
-              onClick={addRowCallback}
-        />
-      </td>
-    </tr>)
+        })} style={
+            {'grid-template-columns':props.template}
+        }
+        >
+          <div className={"treecell colSpan"+props.colsToSkip}/>
+          <div className="control treecell" >
+            <Icon icon={faPlus}
+                  onClick={addRowCallback}
+            />
+          </div>
+        </div>)
 }
+
 
 function TreeRow (props) {
     
@@ -77,17 +85,26 @@ function TreeRow (props) {
     }
 
     return (
-        <React.Fragment>
-          <tr
+        <div className={
+            classNames({
+                rowGroup : props.data.children && props.data.children.length > 0,
+                ['nested'+nlevel] : nlevel,
+            })
+        }>
+          <div
             key={props.id}
             className={
                 classNames({
                     ['nested'+nlevel] : nlevel,
                     hidden : !props.show,
+                    treerow : true,
                 })
             }
+            style={
+                {'grid-template-columns':props.template}
+            }
           >
-            <td className="controls">
+            <div className="controls treecell" >
               {props.data.children && props.data.children.length > 0 && 
                (<span className={classNames({
                    icon:true,
@@ -100,7 +117,7 @@ function TreeRow (props) {
                       }
                 />
                </span>)}
-            </td>
+            </div>
                        
             
             {props.getRenderers({
@@ -108,38 +125,46 @@ function TreeRow (props) {
                 level:nlevel
             }).map((renderer)=>{
                 try {
-                    return renderer({...props.data,
-                                     onPropChange:(p,v)=>props.onChange(props.id,p,v)
-                                    }
-                                   );
+                    return renderer(
+                        {...props.data,
+                         onPropChange:(p,v)=>props.onChange(props.id,p,v)
+                        }
+                    );
                 }
                 catch (err) {
+                    console.log('RENDERING ERROR with renderer %s',renderer)
                     console.log('RENDERING ERROR %s',err);
                     return (<span>Error rendering data</span>)
                 }
             })}
-            <td className="controls">
+            <div className="controls treecell" >
               <Icon icon={faTrash}
                     onClick={
                         ()=>props.onDeleteRow(props.id)
                     }
               />
-            </td>
-          </tr>
+            </div>
+          </div>
           
 
           {props.data.children &&
-           props.data.children.map(
-               (child,count)=>(
+            <CSSTransition              
+              timeout={400}
+              classNames='spring-tree'
+              in={showChildren}
+              unmountOnExit
+            >
+             <div className={
+                 classNames({
+                     'row-children':true,
+                 })
+             }>
 
-                   <CSSTransition
-                       in={props.show && showChildren}
-                       classNames="spring-tree"
-                       timeOut={750}
-                       unmountOnExit
-                     >
+               {props.data.children.map(
+                   (child,count)=>(
                        <TreeRow
                          id={`${props.id}-${count}`}
+                         template={props.template}
                          level={nlevel+1}
                          data={child}
                          getRenderers={props.getRenderers}
@@ -151,21 +176,25 @@ function TreeRow (props) {
                          getNewRowData={props.getNewRowData}
                          cols={props.cols}
                        />
-                   </CSSTransition>
-               ))}
-          {(nlevel < props.maxNesting || props.maxNesting===undefined) && showChildren && (
-              <AddRowRow
-                nlevel={nlevel+1}
-                onAddRow={props.onAddRow}
-                parent={props.data}
-                parentId={props.id}
-                getNewRowData={props.getNewRowData}
-                colsToSkip={props.cols+1}
-              />
-          )
+
+                   ))}
+               {(nlevel < props.maxNesting || props.maxNesting===undefined) && 
+                props.getNewRowData && (
+                   <AddRowRow
+                     nlevel={nlevel+1}
+                     template={props.template}
+                     onAddRow={props.onAddRow}
+                     parent={props.data}
+                     parentId={props.id}
+                     getNewRowData={props.getNewRowData}
+                     colsToSkip={props.cols+2}
+                   />
+               )
+               }
+             </div>
+           </CSSTransition>
           }
-          
-        </React.Fragment>
+        </div>
     );
 
 }
@@ -230,6 +259,9 @@ function TreeView (props) {
     
     const [data,setData] = useState(props.data);
 
+    var widths = ['60px',...props.widths,'60px']
+    var template = widths.join(' ');
+
     useEffect(
         ()=>{
             console.log('Data changed!');
@@ -281,12 +313,13 @@ function TreeView (props) {
     return (
         <TransitionGroup>
         <table className="table treeView container is-striped">
-          <TreeHead headers={props.headers}/>
+          <TreeHead headers={props.headers} template={template}/>
           
 
         {data.map(
             (row,count)=>(<TreeRow
                             id={''+count}
+                            template={template}
                             level={0}
                             data={row}
                             getRenderers={props.getRenderers}
@@ -300,22 +333,22 @@ function TreeView (props) {
                             cols={props.cols}
                             />)
         )}
-          <AddRowRow
+        {props.getNewRowData && <AddRowRow
             nlevel={0}
             onAddRow={insertRow}
             parent={{children:data}}
             parentId=''
             getNewRowData={props.getNewRowData}
-            colsToSkip={props.cols+1}
-          />
+            colsToSkip={props.cols+2}
+            template={template}
+                                />}
         </table>
         </TransitionGroup>
     )
 }
 
 TreeView.TextCol = (field,params = {}) => ({data,onPropChange}) => {
-    return (<td colSpan={params.colSpan} className='text-col'>
-              
+    return (<div className={'treecell text-col colSpan'+params.colSpan}>              
               {params.editable && <input className="input" value={data[field]}
                      onChange={
                          (event)=>{
@@ -325,13 +358,13 @@ TreeView.TextCol = (field,params = {}) => ({data,onPropChange}) => {
                                   />
                ||
                ''+data[field]}
-            </td>
+            </div>
            )
 }
 TreeView.TagCol = (field,params = {}) => ({data,onPropChange}) => {
-    return (<td colSpan={params.colSpan} className='tag-col'>
+    return (<div className={"treecell colSpan"+params.colSpan} className='tag-col'>
               <span className="tag">{data[field]+''}</span>
-            </td>)
+            </div>)
 }
 TreeView.DateCol = (field,params = {}) => ({data,onPropChange}) => {
     var v = data[field];
@@ -351,7 +384,7 @@ TreeView.DateCol = (field,params = {}) => ({data,onPropChange}) => {
         }
     }
 
-    return (<td colSpan={params.colSpan}>
+    return (<div className={"treecell colSpan"+params.colSpan}>
 
               {params.editable &&
                <input
@@ -364,15 +397,16 @@ TreeView.DateCol = (field,params = {}) => ({data,onPropChange}) => {
                v
               }
               
-            </td>)
+            </div>)
 }
 TreeView.BlankCol = (field,params = {}) => ({data}) => {
-    return (<td colSpan={params.colSpan}
-                className='blank'>&nbsp;</td>)
+    return (<div
+              className={"blank treecell colSpan"+params.colSpan}
+                >&nbsp;</div>)
 }
 TreeView.HeaderCol = (field,params = {}) => ({data,onPropChange}) => {
-    return (<td colSpan={params.colSpan}
-                className='is-bold'>              
+    return (<div className={"treecell is-bold colSpan"+params.colSpan}
+                 >              
               {params.editable && <input className="input" value={data[field]}
                      onChange={
                          (event)=>{
@@ -384,7 +418,7 @@ TreeView.HeaderCol = (field,params = {}) => ({data,onPropChange}) => {
                ||
                data[field]
               }
-            </td>)
+            </div>)
 }
 
 TreeView.SumCol = (field,params = {}) => ({data,children}) => {
@@ -398,12 +432,12 @@ TreeView.SumCol = (field,params = {}) => ({data,children}) => {
         }
     }
     children.forEach(crawl);
-    return <td>
+    return <div className={"treecell colSpan"+params.colSpan}>
              {tot}
-           </td>
+           </div>
 }
 TreeView.NumCol = (field,params = {}) => ({data,onPropChange}) => {
-    return <td>
+    return <div className={"treecell colSpan"+params.colSpan}>
              {
                  params.editable &&
                      <input className="input"
@@ -414,22 +448,38 @@ TreeView.NumCol = (field,params = {}) => ({data,onPropChange}) => {
                  ||
                  Number(data[field])
              }
-           </td>
+           </div>
 }
 
 TreeView.RichTextCol = (field,params) => ({data,onPropChange}) => {
     const [showEditor,setShowEditor] = useState(false);
     return(
-        <td>
+        <div className={"treecell colSpan"+(params&&params.colSpan)}>
           <div>
             <span>{snippet(data[field])}</span>
             <Icon
               onClick={()=>setShowEditor(!showEditor)}
               icon={faPenSquare}
             />
-            {showEditor && popupEditor()}
+            <Modal active={showEditor} onClose={()=>setShowEditor(false)}
+                   title={params.makeHeader && params.makeHeader(data)}
+            >
+              <div>
+              {showEditor &&
+                <Editor editorHtml={data[field]}
+                     onChange={(v)=>{
+                         onPropChange(field,v)
+                     }}
+                />
+              }
+               </div>
+              <Button icon={faCheck} onClick={()=>setShowEditor(false)}>
+                Close
+              </Button>
+            </Modal>
+            {/*showEditor && popupEditor()*/}
           </div>
-        </td>
+        </div>
     );
 
     function snippet (htmlVal) {
@@ -470,4 +520,4 @@ TreeView.CascadeHook = (props) => (data,node,prop,val) => {
 }
 
 
-export default TreeView;
+export default TreeView
