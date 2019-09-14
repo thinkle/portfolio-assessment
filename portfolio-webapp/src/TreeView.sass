@@ -5,59 +5,73 @@
 @import "../node_modules/bulma/sass/form/_all.sass";
 @import "../node_modules/bulma/sass/layout/_all.sass";
 
+.treehead .treecell
+  font-weight: bold
 
+
+.treerow 
+  display: grid;
+  grid-column-gap: 3px;
+
+@for $span from 2 through 20
+  .colSpan#{$span}
+    grid-column: span $span
 
 .treeView 
   min-width: 1024px
   
-$spacer : 1.5em
+$spacer : 0.5em
 
-@for $n from 1 through 3
-
-  .nested#{$n} td:nth-child(1)
-    padding-left: $spacer * ($n + 1);
-    overflow : hidden
-    position: relative
-    
-  .nested#{$n} td:nth-child(1)::before
-    content : ""
-    background-color: $grey-lighter
-    width: $spacer * $n
-    height: 100%
-    position: absolute
-    top : 0
-    left : 0
-    
-
-.spring-tree-enter 
-  opacity : 0;
-  transform : scaleY(0)
-  transform-origin: top
-
-.spring-tree-enter-done 
-  opacity: 1;
-  transform : scaleY(1)
-  transform-origin: top
-  transition : opacity 300ms, transform 300ms;
+.rowchildren
+  border-bottom-color: $grey-lighter
+  border-bottom-style: solid
+  border-width: $spacer
+  margin-bottom: 6px
   
-.spring-tree-exit 
-  opacity : 1;
+.rowchildren .treerow.lastRow .treecell
+  padding-bottom: 3px
 
-.spring-tree-exit-done 
-  opacity : 0;
-  height: 0;
-  transition : opacity 400ms, height 400ms;
-  
+@for $n from 1 through 4
+  $darkPercent : ($n - 1) * 10
+  $parent : $n - 1
+  .nested#{$parent} .rowchildren
+    border-width: $spacer
+    border-color: darken($grey-lighter,$darkPercent)
 
-.spring-tree-exit-done * 
-  opacity : 0;
-  height: 0;
-  box-sizing: border-box;
+  .nested#{$n} .treecell:nth-child(1)
+    border-color: darken($grey-lighter,$darkPercent)
+    border-left-style: solid
+    border-width: $spacer * $n
+    padding-left: 2px
+
+.spring-tree-enter-done
+  transform: none
+
+.spring-tree-exit-done
   display: none;
-  transition : opacity 400ms, height 400ms;
+
+.spring-tree-exit
+  transform: scaleY(1);
+  transform-origin: top;
+  max-height: 500px;
+  transition : transform 300ms;
   
+.spring-tree-exit-active
+  transform : scaleY(0);
+  transform-origin: top
+  max-height: 0px;
+  transition : transform 300ms, max-height 600ms;
 
+.spring-tree-enter
+  transform : scaleY(0);
+  transform-origin: top
+  transition : transform 300ms;
 
+.spring-tree-enter-active
+  transform: scaleY(1);
+  transform-origin: top;
+  transition : transform 300ms;
+  
 .hidden 
   color : #7a7a7a;
   background-color: #efefef;
@@ -69,9 +83,6 @@ $spacer : 1.5em
 .reverse 
   transform : rotateZ(180deg);
   transition : transform 300ms;
-
-.lastRow
-  border-bottom: 3px solid $grey-lighter
 
 .textEditorCell
   height : 425px;
