@@ -5,9 +5,8 @@ import {classNames} from './utils.js';
 import {TransitionGroup,CSSTransition} from 'react-transition-group';
 import { inspect } from 'util'; // or directly
 import Editor from './RichText.js';
+import {Icon} from './widgets.js';
 import './TreeView.sass';
-
-var FA = FontAwesomeIcon;
 
 
 // Nevermind -- let's abstract the treeview out into a widget.
@@ -60,14 +59,9 @@ function AddRowRow (props) {
     >
       <td colSpan={props.colsToSkip}/>
       <td className="control">
-        <span onClick={addRowCallback}>
-          {newRowMetadata.label}
-          <span
-            className="button icon"
-            >
-            <FA icon={faPlus}/>
-          </span>
-        </span>
+        <Icon icon={faPlus}
+              onClick={addRowCallback}
+        />
       </td>
     </tr>)
 }
@@ -100,10 +94,10 @@ function TreeRow (props) {
                    reverse:showChildren,
                    unreverse:!showChildren
                })}>
-                <FA icon={faAngleDown}
-                  onClick={
-                    ()=>setShowChildren(!showChildren)
-                  }
+                <Icon icon={faAngleDown}
+                      onClick={
+                          ()=>setShowChildren(!showChildren)
+                      }
                 />
                </span>)}
             </td>
@@ -125,14 +119,11 @@ function TreeRow (props) {
                 }
             })}
             <td className="controls">
-              <span className="icon">
-                <FA icon={faTrash}
-                  onClick={
-                      ()=>props.onDeleteRow(props.id)
-                  }
-
-                />
-               </span>
+              <Icon icon={faTrash}
+                    onClick={
+                        ()=>props.onDeleteRow(props.id)
+                    }
+              />
             </td>
           </tr>
           
@@ -431,17 +422,14 @@ TreeView.RichTextCol = (field,params) => ({data,onPropChange}) => {
     return(
         <td>
           <div>
-          <span>{snippet(data[field])}</span>
-          <span className="icon"
-                onClick={()=>setShowEditor(!showEditor)}
-          >
-            <FA icon={faPenSquare}/>
-          </span>
-          {showEditor && popupEditor()}
-        </div>
+            <span>{snippet(data[field])}</span>
+            <Icon
+              onClick={()=>setShowEditor(!showEditor)}
+              icon={faPenSquare}
+            />
+            {showEditor && popupEditor()}
+          </div>
         </td>
-                       
-    
     );
 
     function snippet (htmlVal) {
