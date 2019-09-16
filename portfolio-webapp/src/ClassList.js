@@ -21,7 +21,7 @@ function ClassList (props) {
     const [showCustomModal,setShowCustomModal] = useState(false);
     var customCourseWidget;
     useEffect(()=>{
-        Api.get_teacher_classes(props.user)
+        Api.Classroom.get_teacher_classes(props.user)
             .then(function (result) {
                 setCourses(result);
                 Api.cacheResult(
