@@ -38,16 +38,24 @@ function PortfolioDesc (course) {
         return dm.getSheetUrl(course.id,ASPENEX);
     }
 
-    async function set_portfolio_desc ({skills,descriptors}) {
-        console.log('set_portfolio_desc!');
-        console.log('set portfolio desc!',skills.length,descriptors.length)
-        console.log('Got skills: %s',JSON.stringify(skills));
-        console.log('Got descriptors: %s',JSON.stringify(descriptors));
-        var skillsRowData = Sheets.jsonToRowData(skills);
-        var descriptorsRowData = Sheets.jsonToRowData(descriptors);
-        var data = [{rowData:skillsRowData,title:'skills'},
-                 {rowData:descriptorsRowData,title:'descriptors'}
-                   ]
+    async function set_portfolio_desc ({skills,descriptors,assignments}) {
+        var data = []
+        if (skills) {
+            data.push({rowData:Sheets.jsonToRowData(skills),
+                       title:'skills'})
+        }
+        if (descriptors) {
+            data.push({
+                rowData : Sheets.jsonToRowData(descriptors),
+                title:'descriptors'
+            });
+        }
+        if (assignments) {
+            data.push({
+                rowData : Sheets.jsonToRowData(assignments),
+                title:'assignments'
+            });
+        }
         console.log('Fetching existing sheet ID?');
         var sheetId = await dm.getSheetId(course.id,PDESC);
         if (sheetId) {
@@ -60,7 +68,7 @@ function PortfolioDesc (course) {
             dm.createSheetForProp(
                 course,
                 PDESC,
-                `${course.title} Portfolio Assessment Description`,
+                `${course.name} Portfolio Assessment Description`,
                 data)
         }
     }
@@ -78,7 +86,7 @@ function PortfolioDesc (course) {
             return dm.createSheetForProp(
                 course,
                 ASPENEX,
-                `${course.title} Aspen Export`,
+                `${course.name} Aspen Export`,
                 [{title:'Aspen Export',rowData}]
             );
         }
