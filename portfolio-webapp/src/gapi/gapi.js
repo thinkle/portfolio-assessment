@@ -1,6 +1,7 @@
 import { inspect } from 'util'; // or directly
 import Prefs from './Prefs.js';
 import PortfolioDesc from './PortfolioDesc.js';
+import Classroom from './classroom.js';
 
 var gapi = window.gapi;
 var auth2 = gapi.auth2;
@@ -47,19 +48,6 @@ var Api = {
             else {
                 reject('not signed in');
             }
-        });
-    },
-
-    get_teacher_classes : function (user) {
-        return new Promise((resolve,reject)=>{
-            var cr = gapi.client.classroom;
-            cr.courses.list({
-                pageSize:25,
-                courseStates:['ACTIVE'],
-                teacherId:user,
-            }).then((resp)=>{
-                resolve(resp.result.courses);
-            })
         });
     },
 
@@ -111,7 +99,14 @@ var Api = {
     },
 
     getLocalCachedProp (prop) {
-        return JSON.parse(window.localStorage.getItem(prop))
+        try {
+            return JSON.parse(window.localStorage.getItem(prop))
+        }
+        catch (err) {
+            console.log('Bad prop stored in %s',prop);
+            console.log('BAD VALUE WAS: %s',window.localStorage.getItem(prop));
+            return undefined;
+        }
     },
 
     cacheResult (cacheName, result) {
@@ -120,5 +115,6 @@ var Api = {
 
 }
 
+Api.Classroom = Classroom
 
 export default Api;
