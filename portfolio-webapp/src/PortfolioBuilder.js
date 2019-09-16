@@ -11,7 +11,7 @@ import Api from './gapi/gapi.js';
 import TreeView from './TreeView.js';
 import {classNames} from './utils.js';
 import Shortener from './shortener.js';
-import {Modal} from './widgets.js';
+import {Modal,Button,Icon} from './widgets.js';
 
 var BE_FUSSY = false;
 
@@ -362,7 +362,7 @@ function PortfolioBuilder (props) {
             </div>
 
             <div className="navbar-item navbar-end">
-              <button className="is-primary button" onClick={()=>{
+              <Button icon={Icon.save} className="is-primary button" onClick={()=>{
                   setBusyState('Pushing portfolio to google sheet...');
                   setErrorState(false)
                   pm.toGoogle(skills,descriptors)
@@ -373,9 +373,8 @@ function PortfolioBuilder (props) {
                       })
                       .catch((err)=>{setBusyState(false);setErrorState(err)});
               }}>
-                <span className="icon"><FA icon={faSave}/></span>
-                <span>Save to Google</span>
-              </button>
+                Save to Google
+              </Button>
             </div>
           </nav>
           <hr/>
