@@ -48,10 +48,11 @@ Step 2: Teacher set-up
    -> BACKEND WORK!
 
    next up -- get the backend ready for primetime...
-   -> Google Doc Generator functions (to create our "databases")
+   -> Google Doc Generator functions (to create our "databases") (x)
    -> Create and test file formats for...
-      -> Portfolio
-      -> Assessments
+      -> Portfolio (x)
+      -> Assessments (x)
+      
 
 
 2A:
@@ -59,13 +60,38 @@ Step 2: Teacher set-up
     - Class list (list of classes)
     - Skills list
     - Portfolio Editor
-      -> Associate skills w/ exemplars (points + due dates)
-      -> Weight whole thing...
-      -> Get portfolio editor sheet widget working:
+      -> Associate skills w/ exemplars (points + due dates) (x)
+      -> Weight whole thing... (x)
+      -> Get portfolio editor sheet widget working: (x)
              NOTES: Attempts to use various grid table widgets is a f**ing nightmare. Maybe worth just building
              from scratch after all -- state management is the crux of it and it's not being simplified by using
              other people's code :(
+      -> Export gradebook assignments...
+         -> exportGradebookSheet();
+         
 
+~~~ OKAY - SCREW THIS GAS APPROACH
+
+- As we look at pushing student assessment data, etc., the idea of
+  chunking info through GAS API calls to handle GET limits seems
+  really stupid. Instead, we're moving the whole thing to use the
+  google APIs directly from the browser -- no google apps script
+  needed.
+
+  => Get sheets api tested (x)
+  => Get classroom API tested (x)
+  => Get Drive API tested (x)
+  => Get "props" system replaced (x)
+  => Get DocumentManager replicated in new system (x)
+  => Get PortfolioDesc replicated in new system (x)
+  => Figure out the "right" way to handle API Keys not being in our repo...(x)
+     -- mix of local/remote solutions. API keys will be exposed in HTML but not in Repo.
+        Locally we just have a file we don't commit (secrets.js -- on the gitignore).
+        Remote/netlify we pull the data in from a lambda function
+
+-> Assignments list...
+   -> Associate google classroom assignment with skills.
+   
 
 Step 3: Student set-up
 - Allow student to link an assignment to a skill / multiple skills.
