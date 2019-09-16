@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from 'react';
-import apiInfo from './secrets.js'; // comment out before committing
-//var apiInfo // comment to work local
+//import apiInfo from './secrets.js'; // comment out before committing
+var apiInfo // comment to work local
 
 /* Note: to use this, you need to include the following <script> tag in your index.html
 
@@ -142,7 +142,7 @@ function Gapi (props) {
 
     
     useEffect( ()=>{
-        handleClientLoad(); // comment out before committing
+        //handleClientLoad(); // comment out before committing
         fetch('https://portfolio-assessment.netlify.com/.netlify/functions/apiInfo/')
             .then((resp)=>{
                 resp.json()
