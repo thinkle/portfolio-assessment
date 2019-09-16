@@ -1,8 +1,8 @@
 import React,{useState,useEffect} from 'react';
+import Brand from './brand.js';
 import './App.sass';
 import TestView from './Tests.js';
 import TeacherView from './TeacherView.js';
-import RegisterView from './Register.js';
 import Api from './gapi/gapi.js';
 import Gapi from './gapi/gapiLoader.js';
 
@@ -28,7 +28,7 @@ function MainView (props) {
         <div className="container">
           <nav className="navbar">
             <div className="navbar-brand">
-              <div className="navbar-item">Portfolio Tool</div>
+            <div className="navbar-item">{Brand.name}</div>
             </div>
             <div className="navbar-item is-secondary">Logged in as {Api.user}</div>
             <div className="navbar-item navbar-end tag">
@@ -59,14 +59,14 @@ function MainView (props) {
 
 function App() {
     //const [page,setPage] = useState('register')
-    const [page,setPage] = useState('login')
+    const [page,setPage] = useState('test')
     const [user,setUser] = useState()
 
     function apiReady () {
         Api.getUser().then(
             (user)=>{
                 setUser(user);
-                setPage('main')
+                //setPage('main')
             }
         );
     }
@@ -78,7 +78,6 @@ function App() {
           <Gapi onReady={apiReady} onLoggedOut={()=>console.log('logged out?')}/>
           <div className="wrapper">
             {page=='login' && <h1>Log in, would you?</h1>}
-            {page=='register' && <RegisterView onConnectedToApi={()=>setPage('main')}/>}
             {page=='test'&&<TestView/>}
             {page=='main' && <MainView user={user}/>}
           </div>
@@ -86,7 +85,6 @@ function App() {
             <div className="buttons">
               <button className="button" onClick={()=>setPage('test')}>Run Tests</button>
               <button className="button" onClick={()=>setPage('main')}>Main View</button>
-              <button className="button" onClick={()=>setPage('register')}>Reg View</button>
             </div>
           </div>
         </div>
