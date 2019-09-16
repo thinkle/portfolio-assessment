@@ -12,6 +12,9 @@ import DocumentManager from './gapi/DocumentManager.js';
 import Sheets from './gapi/SheetBasics.js';
 import SheetManager from './gapi/SheetManager.js';
 import Prefs from './gapi/Prefs.js';
+import AssignmentMapper from './AssignmentMapper.js';
+import Portfolio from './Portfolio.js';
+import {Button,Buttons} from './widgets.js';
 
 function TestView () {
     const [page,setPage] = useState('gapi')
@@ -28,58 +31,78 @@ function TestView () {
     const [testData,setTestData] = useState('');
     const prefs = Prefs();
 
+    const defaultCourse = {
+        "id": "20912946613",
+        "name": "Web Design 1",
+        "section": "Fall 2019",
+        "descriptionHeading": "Web Design 1 Fall 2019",
+        "room": "241",
+        "ownerId": "113561106451202000689",
+        "creationTime": "2019-08-29T10:18:54.365Z",
+        "updateTime": "2019-08-29T10:18:53.333Z",
+        "enrollmentCode": "mxji4e0",
+        "courseState": "ACTIVE",
+        "alternateLink": "https://classroom.google.com/c/MjA5MTI5NDY2MTNa",
+        "teacherGroupEmail": "Web_Design_1_Fall_2019_teachers_4eace9b4@innovationcharter.org",
+        "courseGroupEmail": "Web_Design_1_Fall_2019_146614c0@innovationcharter.org",
+        "teacherFolder": "Object",
+        "guardiansEnabled": true,
+        "calendarId": "innovationcharter.org_classroom5d9c6d99@group.calendar.google.com"
+    }
+
     return (
         <div>
           <h2>Test API</h2>
-          <div className="buttons">          
-            <button className="button" onClick={()=>setting.data.testId = 'zz'+Math.random()+'asieasdf'}>Change Setting</button>
-            <button className="button" onClick={()=>setting.saveLocal()}>Save Local</button>
-            <button className="button" onClick={()=>{setting.loadFromLocal(); setTestId(setting.data.testId)}}>Load Local</button>
-            <button className="button" onClick={()=>setting.loadFromRemote().then(()=>setTestId(setting.data.testId))}>Load Saved Google Setting from Remote</button>
-            <button className="button" onClick={()=>{
-                setting.saveRemote()
-                    .then((s)=>{console.log('set our id to %s',s.data.testId); setTestId(s.data.testId)})
-            }}>Save Setting</button>
-            <button className="button" onClick={()=>setPage('courses')}>List Classes</button>
-            <button className="button" onClick={()=>setPage('builder')}>Build Portfolio</button>
-            <button className="button" onClick={()=>setPage('embed')}>Test Embed</button>
-            <button className="button" onClick={()=>setPage('portfolio')}>Show Portfolio</button>
-            <button className="button" onClick={()=>Api.testPost()}>Test Post</button>
-            <button className="button" onClick={()=>Api.testLongGet()}>Test Long Get</button>
-            <button className="button" onClick={()=>Api.getProp('foo').then((v)=>setProp(v))}>Get Foo Prop</button>
-            <button className="button" onClick={()=>setPage('editor')}>Test Editor</button>
-            <button className="button" onClick={()=>setPage('gapi')}>Test GApi</button>
-            <button className="button" onClick={()=>{setTestUrl('http://www.google.com');setTestData({test:'me',hello:'world'})}}>Test TestData & URL</button>
-            <button className="button" onClick={()=>{
+            <Buttons className="buttons">
+            <Button onClick={()=>setPage('portf')}>Show Portf</Button>
+            <Button onClick={()=>setPage('assm')}>Show Assignment Mapper</Button>
+            <Button onClick={()=>DocumentManager().getRootFolderId().then(setTestData)}>Create root folder?
+            </Button>
+              <Button onClick={()=>{
+                  DocumentManager().getCourseFolder({title:'Test Course',id:'test-course-id'}).then(setTestData);
+              }}>
+                createTestClassFolder
+              </Button>
+            <Button onClick={()=>setPage('courses')}>List Classes</Button>
+            <Button onClick={()=>setPage('builder')}>Build Portfolio</Button>
+            <Button onClick={()=>setPage('embed')}>Test Embed</Button>
+            <Button onClick={()=>setPage('portfolio')}>Show Portfolio</Button>
+            <Button onClick={()=>Api.testPost()}>Test Post</Button>
+            <Button onClick={()=>Api.testLongGet()}>Test Long Get</Button>
+            <Button onClick={()=>Api.getProp('foo').then((v)=>setProp(v))}>Get Foo Prop</Button>
+            <Button onClick={()=>setPage('editor')}>Test Editor</Button>
+            <Button onClick={()=>setPage('gapi')}>Test GApi</Button>
+            <Button onClick={()=>{setTestUrl('http://www.google.com');setTestData({test:'me',hello:'world'})}}>Test TestData & URL</Button>
+            <Button onClick={()=>{
                 var val = 'foo' + Math.random()
                 Api.setProp('foo',val).then((v)=>setProp(v))}
-                                               }>Set Foo Prop</button>
-            <button className="button" onClick={()=>{
+                                               }>Set Foo Prop</Button>
+            <Button onClick={()=>{
                 var val = {name:'Tom',age:Math.random()*40+20,height:Math.random()*24+60+' inches'}
                 Api.setProp('foo',val).then((v)=>setProp(v))}
-                                               }>Set Foo Prop to JSON magic</button>
-            <button className='button' onClick={()=>{
+                                               }>Set Foo Prop to JSON magic</Button>
+            <Button onClick={()=>{
                 prefs.createPropFile().then((result)=>console.log('success! %s',JSON.stringify(result)));
-            }}>Create new pref file...</button>
+            }}>Create new pref file...</Button>
 
-            <button className='button' onClick={()=>{
+            <Button onClick={()=>{
                 prefs.getPropFile().then((result)=>console.log('success! %s',JSON.stringify(result)));
-            }}>Test new pref interface...</button>
+            }}>Test new pref interface...</Button>
 
-            <button className='button' onClick={()=>{
+            <Button onClick={()=>{
                 prefs.getProps().then((result)=>setTestData(result))
-            }}>Show props</button>
-            <button className='button' onClick={()=>{
+            }}>Show props</Button>
+            <Button onClick={()=>{
                 prefs.setProp('foo','val'+Math.random());
-            }}>Update prop!</button>
-            <button className='button' onClick={()=>{
-                prefs.getPropFile().
-                    then((id)=>{
-                        prefs.updateFile(id,{foo:'bar',new:'baz',bang:'booo'})
-                    });
-            }}>Clobber props!</button>
+            }}>Update prop!</Button>
+            {/* <Button onClick={()=>{ */}
+            {/*     prefs.getPropFile(). */}
+            {/*         then((id)=>{ */}
+            {/*             prefs.updateFile(id,{foo:'bar',new:'baz',bang:'booo'}) */}
+            {/*         }); */}
+            {/* }}>Clobber props!</Button> */}
 
-            <button className='button'
+            <Button
                     onClick={()=>{
                         DocumentManager().createSheet(
                             'testTitle',
@@ -112,12 +135,12 @@ function TestView () {
                     }
                             }
             >Test Create Sheet (raw)
-            </button>
-            <button className='button'
+            </Button>
+            <Button
                     onClick={()=>{
                         DocumentManager()
                             .createSheetForProp(
-                                'testcourse',
+                                {title:'testcourse',id:'test-id'},
                                 'fakeProp',
                                 'A New Sheet',
                                 [{name:'Name sheet',rowData:Sheets.jsonToRowData([{name:'Tom',age:40},{name:'Kat',age:39},{name:'Grace',age:11}])},
@@ -131,8 +154,8 @@ function TestView () {
                     }}
             >
               Test Create Sheet for Course
-            </button>
-            <button className='button'
+            </Button>
+            <Button
                     onClick={
                         ()=>{SheetManager('1EDFnmkEUgH-3wjMHFQk1EOtV5sUMco_esBKfvw2nVlk').getJson('Birthdays').then(
                             (result)=>{
@@ -142,8 +165,8 @@ function TestView () {
                         )
                             }
                     }>Test Read Sheet
-        </button>
-        <button className='button'
+        </Button>
+        <Button
         onClick={()=>{
             SheetManager('1mlEdDoe_dnu8RxKbknCIG-1fXDXawnEWoZEhl-FcDuY')
                 .updateData(
@@ -156,9 +179,9 @@ function TestView () {
                 )
                 .then((r)=>setTestData(r));
             
-        }}>Test Update Sheet</button>
+        }}>Test Update Sheet</Button>
             
-          </div>
+          </Buttons>
 
 
           <div>
@@ -166,13 +189,14 @@ function TestView () {
             {testData && <pre>TEST DATA:
                            {JSON.stringify(testData)}</pre>}
           </div>
-          
+          {page=='portf' && <Portfolio course={defaultCourse}/>}
+          {page=='assm' && <AssignmentMapper course={defaultCourse}/>}
           <div>{page=='courses' && <ClassList onCourseSelected={(c)=>console.log('Selected course %s',JSON.stringify(c))} user='thinkle@innovationcharter.org'></ClassList>}</div>
           <div>{page=='portfolio' && <SkillsList></SkillsList>}</div>
           {prop && <p>{JSON.stringify(prop)} {prop.name}</p>}
           SETTING: {testId}
           
-          {page=='builder' && <PortfolioBuilder courseId='test2'/>}
+          {page=='builder' && <PortfolioBuilder course={defaultCourse}/>}
           {page=='editor' &&
            (
                <div>
