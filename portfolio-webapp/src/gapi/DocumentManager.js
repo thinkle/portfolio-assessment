@@ -15,8 +15,77 @@ function propname (courseId, prop) {
 
 function DocumentManager () {
     getGapi();
+    const rootFolderTitle = 'Portfolio Assessment Documents';
 
+    function createFolder (title, parent) {
+        var fileMetadata = {
+            name : title,
+            mimeType : 'application/vnd.google-apps.folder'
+        }
+        if (parent) {
+            fileMetadata.parents = [parent];
+        }
+        return gdrive.files.create({
+            resource : fileMetadata,
+            fields : 'id'
+        });
+    }
+
+    
     return {
+
+        async getRootFolderId () {
+            var id = await Api.getProp('root-folder-id');
+            if (id) {
+                return id;
+            }
+            else {
+                console.log('Creating root folder');
+                var newFolder = await createFolder(rootFolderTitle);
+                console.log('Got result: %s',JSON.stringify(newFolder.result));
+                Api.setProp('root-folder-id',newFolder.result.id);
+                return newFolder.id;
+            }
+        },
+
+        async createCourseFolder (course) {
+            var root = await this.getRootFolderId();
+            var fileResp = await createFolder(
+                course.name+' Portfolio Assessment Docs',
+                root
+            )
+            
+            Api.setProp(course.id+'-folder',fileResp.result.id);
+            return fileResp.result.id;
+        },
+
+        async getCourseFolder (course) {
+            var id = await Api.getProp(course.id+'-folder')
+            if (id) {
+                return id;
+            }
+            else {
+                id = await this.createCourseFolder(course);
+                return id
+            }
+        },
+
+        addToFolder (id, folder) {
+            return gdrive.files.update(
+                {
+                    fileId : id,
+                    addParents : folder,
+                }
+            );
+        },
+        
+        async addToCourseFolder (id, course) {
+            var folder = await this.getCourseFolder(course);
+            console.log('Got course folder: %s',folder);
+            var result = await this.addToFolder(id,folder);
+            return result
+        },
+
         createSheet (title, sheetsData) {
             console.log('createSheet(%s)',JSON.stringify(sheetsData));
             return new Promise((resolve,reject)=>{
@@ -28,7 +97,12 @@ function DocumentManager () {
                 ).then(
                     (response)=>{
                         console.log('Complete! %s',JSON.stringify(response.result));
-                        resolve (response.result);
+                        this.getRootFolderId()
+                            .then(
+                                (rootId)=>this.addToFolder(response.result.id,rootId)
+                                    .then(resolve(response.result))
+                            )
+                            .catch(reject);
                     })
                     .catch((err)=>{
                         console.log('Error creating spreadsheet: %s',err);
@@ -48,7 +122,15 @@ function DocumentManager () {
                             console.log('Created sheet! %s',JSON.stringify(response.result));
                             console.log('ID=%s',response.result.id);
                             Api.setProp(propname(course.id,prop),response.result.spreadsheetId)
-                                .then(resolve(response.result))
+                                .then(()=>{
+                                    this.addToCourseFolder(response.result.spreadsheetId,course)
+                                        .then(resolve(response.result))
+                                        .catch((err)=>{
+                                            console.log('Error adding to folder :(');
+                                            throw err;
+                                            reject(err);
+                                        });
+                                })
                                 .catch((err)=>{
                                     console.log('Unable to store prop %s with result %s',propname(course.id,prop),response.result);
                                     reject(err)
