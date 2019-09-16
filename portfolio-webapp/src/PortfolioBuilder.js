@@ -130,18 +130,28 @@ function PortfolioModel (course) {
     function toFlatList (byStrand) {
         var leafs = []
         var descriptors = []
+        var skills = [];
         // We basically just keep the leafs...
+
+        var antiDupShortener = Shortener({maxLength:100000}); // enforce unique skill names
+
         byStrand.forEach(
             (strand)=>{
                 strand.children && strand.children.forEach(
                     (skill)=>{
+                        var theSkill = antiDupShortener.shorten(skill.data.skill||'');
+                        if (theSkill != skill.data.skill) {
+                            console.log('Modified DUPLICATE SKILL %s => %s',skill.data.skill,theSkill);
+                            skill.data.skill = theSkill;
+                        }
                         skill.children && skill.children.forEach(
                             (exemplar)=>{
+                                exemplar.data = {...exemplar.data, skill:theSkill}
                                 leafs.push(exemplar.data);
                             })
                         if (skill.data.descriptor && skill.data.descriptor!==DESCRIPTOR_TEMPLATE) {
                             descriptors.push(
-                                {item:skill.data.skill,
+                                {item:theSkill,
                                  descriptor:skill.data.descriptor}
                             )
                         }
@@ -275,7 +285,6 @@ function PortfolioBuilder (props) {
 
     function saveTree (newTreeData) {
         var portfolio = pm.toFlatList(newTreeData);
-        console.log('Set skills!');
         setSkills(portfolio.skills);
         setDescriptors(portfolio.descriptors);
     }
@@ -305,7 +314,6 @@ function PortfolioBuilder (props) {
             rowData.children.push(
                 getNewRowDataData({nlevel:nlevel+1,parent:rowData.data})
             );
-            //console.log(`getNewRowData(${nlevel},${parent})=>${JSON.stringify(rowData)}`)
             return rowData;
         }
         // Otherwise strand is populated
@@ -316,19 +324,15 @@ function PortfolioBuilder (props) {
             rowData.children.push(
                 getNewRowData({nlevel:nlevel+1,parent:rowData.data})
             )
-            //console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
             return rowData;
         }
         if (nlevel==2) {
             rowData.data.skill = parent.skill;
             rowData.data.points = 100;
             rowData.data.dueDate = new Date();
-            //console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
             return rowData;
         }
         else {
-            //console.log('Unknown nlevel %s',nlevel);
-            //console.log(`getNewRowData(${nlevel},${parent})=>${inspect(rowData)}`)
             return {
                 data : {
                     strand : 'WTF',
@@ -340,7 +344,7 @@ function PortfolioBuilder (props) {
 
     return (
         <div className="container">
-          <h4 className="title">{props.course.title} Portfolio Builder</h4>
+          <h4 className="title">{props.course.name} Portfolio Builder</h4>
           <nav className="navbar">
             {sheetUrl && <a className="navbar-item" target="_BLANK" href={sheetUrl}>Edit as Spreadsheet</a>}
             <div className='navbar-item'>
@@ -379,6 +383,11 @@ function PortfolioBuilder (props) {
             data={treeData}
             onDataChange={saveTree}
             headers={['Skill','Strand','Assigned','Due','Points','Description']}
+            widths={
+                [
+                    '250px','80px','160px','160px','100px','200px'
+                ]
+            }
             onChangeHook={TreeView.CascadeHook(['skill','strand'])}
             getNewRowData={getNewRowData}
             maxNesting={2}
@@ -397,7 +406,10 @@ function PortfolioBuilder (props) {
                             TreeView.BlankCol(),
                             TreeView.BlankCol(),
                             TreeView.SumCol('points'),
-                            TreeView.RichTextCol('descriptor'),
+                            TreeView.RichTextCol(
+                                'descriptor',
+                                {makeHeader : (data) => `${data.skill} (${data.strand}) Description`}
+                            )
                            ]
                 }
                 if (params.level==2) {
