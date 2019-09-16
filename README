@@ -28,12 +28,20 @@ Database or Google Docs DB ->
          Student -> Work -> Skill -> Assessment
 
 
-DESIGN
-Let's (temporarily?) plan to build backend/frontend with a clean interface so they can be decoupled at a later date. For now, let's plan this...
+DESIGN Let's (temporarily?) plan to build backend/frontend with a
+clean interface so they can be decoupled at a later date. For now,
+let's plan this...
 
-Backend -> Google Apps Script based API like we use for aspen. Use this API to access classroom, sheets, etc. Note: this backend will necessitate asymmetrical data flow since we can only make get requests and get data back through jsonp. Given this, we can only push small amounts of data at a time though we can pull much larger amounts :)
+Backend -> Google Apps Script based API like we use for aspen chrome
+extension. Use this API to access classroom, sheets, etc. Note: this
+backend will necessitate asymmetrical data flow since we can only make
+get requests and get data back through jsonp. Given this, we can only
+push small amounts of data at a time though we can pull much larger
+amounts :)
 
-Frontend -> Netlify-hosted modern single-page web-app. Might use React? Can (possibly) cache data to avoid making multiple calls to the backend for e.g. rubric descriptors etc.
+Frontend -> Netlify-hosted modern single-page web-app. Might use
+React? Can (possibly) cache data to avoid making multiple calls to the
+backend for e.g. rubric descriptors etc.
 
 
 *Backend methods*
@@ -51,6 +59,9 @@ get_portfolio_assignments(class,student)
 
 update_skills -> create pretty google doc from our output.
 update_portfolio -> create pretty portfolio from our output
+
+
+**Backend "database" design**
 
 
 
