@@ -3,25 +3,44 @@ function cr () {
 }
 
 const Classroom = {
-    get_teacher_classes (teacher) {
+    get_teacher_classes ({teacher}) {
         var params = {
             pageSize:25,
             courseStates:['ACTIVE'],
             teacherId:teacher
         };
-        return this.fetchAll(cr().courses.list,params,'courses');
+        return Classroom.fetchAll(cr().courses.list,params,'courses');
     },
 
-    get_coursework (course) {
+    get_coursework ({course}) {
         const params = {
             courseId:course.id,
             pageSize:50,
         }
-        return this.fetchAll(
+        return Classroom.fetchAll(
             cr().courses.courseWork.list,
             params,
             'courseWork'
         );
+    },
+
+    get_student_work ({course, coursework, student}) {
+        const params = {
+            courseId:course.id,
+            courseWorkId:coursework&&coursework.id||'-',
+        }
+        if (student) {
+            params.userId = student.userId||'me';
+        }
+        return Classroom.fetchAll(cr().courses.courseWork.studentSubmissions.list,
+                        params,'studentSubmissions');
+    },
+
+    get_students ({course}) {
+        const params = {
+            courseId:course.id,
+        }
+        return Classroom.fetchAll(cr().courses.students.list, params, 'students');
     },
 
     async fetchAll (method, params, arrayName) {
@@ -37,6 +56,7 @@ const Classroom = {
         while (response.nextPageToken) {
             console.log('fetchAll getting another page...',method);
             params.pageToken = response.nextPageToken;
+            console.log('New token = %s',params.pageToken);
             var response = await method(params);
             response[arrayName].forEach((itm)=>resultArray.push(itm));
         }
