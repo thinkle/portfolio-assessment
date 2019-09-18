@@ -1,5 +1,10 @@
 import React from 'react';
-import {faSave,faExternalLinkAlt,faCheck,faTrash,faAngleDown,faAngleUp,faAngleRight,faAngleLeft,faPenSquare,faWindowClose} from '@fortawesome/free-solid-svg-icons'
+import {faSave,faExternalLinkAlt,faCheck,faUndo,
+        faTrash,
+        faAngleDown,faAngleUp,faAngleRight,faAngleLeft,
+        faClipboardCheck,faChalkboardTeacher,faHiking,faFolderOpen,
+        faPenSquare,
+        faWindowClose} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {classNames} from '../utils.js';
 
@@ -28,5 +33,12 @@ Icon.up = faAngleUp;
 Icon.right = faAngleRight;
 Icon.left = faAngleLeft;
 Icon.external = faExternalLinkAlt
+
+Icon.teacher = faChalkboardTeacher;
+Icon.clipboard = faClipboardCheck;
+Icon.folderOpen = faFolderOpen;
+Icon.undo = faUndo;
+Icon.work = faHiking;
+    
 
 export default Icon;
