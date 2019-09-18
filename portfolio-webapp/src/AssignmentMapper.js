@@ -1,9 +1,11 @@
 import React,{useState,useEffect} from 'react';
 import CourseworkList from './CourseworkList.js';
+import {useCoursework} from './gapi/hooks.js';
 import Api from './gapi/gapi.js';
-import {Button,Icon} from './widgets.js';
+import {Button,Icon,Menu} from './widgets.js';
 import {classNames,arrayProp,objProp} from './utils.js';
 import './AssignmentMapper.sass'
+
 
 function SkillPicker (props) {
   
@@ -16,10 +18,28 @@ function SkillPicker (props) {
     const [selectedStrand,setSelectedStrand] = useState(); // for sub-menu
     console.log('SkillPicker has strands:',strands.length,strands)
     console.log('SkillPicker has skills:',skills.length,skills)
+
+    return (
+        <div className="skillSelector">
+        {strands.map((strand)=>(
+          <div className="toplevelMenu">
+            <Menu
+              title={strand}
+              onSelected={(skill)=>props.onSelected(skill)}
+              items={skills.filter((sk)=>sk.strand==strand)}
+              renderItem={(sk)=>sk.skill}
+            />
+          </div>
+        ))}
+        </div>
+        )
+
+
+    
     return (
         <ul className='menu'>
           {strands.map((strand)=>(
-              <li className={classNames({
+              <li key={strand} className={classNames({
                   show:!selectedStrand,
                   hide:selectedStrand,
               })}
@@ -34,7 +54,7 @@ function SkillPicker (props) {
              </Button>
            </li>}
           {skills.filter((sk)=>sk.strand==selectedStrand).map((sk)=>(
-              <li>
+              <li key={sk.skill}>
                 <Button onClick={()=>{
                     console.log('Selected ',sk);
                     if (props.onSelected) {
@@ -51,10 +71,7 @@ function SkillPicker (props) {
     
 }
 
-function AssignmentMapper (props) {
-
-    const [coursework,setCoursework] = CourseworkList.useCourseworkState(props.course);
-
+function usePortfolioSkillHook (props) {
     const [skills,setSkills] = useState([])
     const [strands,setStrands] = useState([])
     const [assignments,setAssignments] = useState({});
@@ -62,35 +79,7 @@ function AssignmentMapper (props) {
 
     var skillsP = arrayProp(skills,setSkills)
     var strandsP = arrayProp(strands,setStrands)
-
-    const [selectedSkills,setSelectedSkills] = useState([]);
-    const [selectedCoursework,setSelectedCoursework] = useState();
-    var selectedSkillsP = arrayProp(selectedSkills,setSelectedSkills)
-    var selectedCourseworkP = arrayProp(selectedCoursework,setSelectedCoursework);
-
-
-    function getCourseworkById (cid) {
-        for (var cw of coursework) {
-            if (cw.id===cid) {
-                return cw;
-            }
-        }
-        return {}
-    }
-
-    function saveMappings () {
-        var mappings = []
-        for (var assignmentId in assignments) {
-            assignments[assignmentId].forEach(
-                (skill)=>{
-                    mappings.push({
-                        assignmentId:assignmentId,
-                        skill});
-                });
-        }
-        Api.set_portfolio_desc({assignments:mappings},props.course).then(console.log('success!'));
-    }
-
+    
     function processPortfolioData (portfolioData) {
         var uniqueSkills = {};
         var uniqueStrands = [];
@@ -114,7 +103,7 @@ function AssignmentMapper (props) {
                 if (uniqueStrands.indexOf(skill.strand)==-1) {
                     uniqueStrands.push(skill.strand)
                 }
-                var id = skill.strand + skill.skill;
+                var id = skill.skill; //skill.strand + skill.skill; // skills must be unique
                 if (! uniqueSkills[id]) {
                     uniqueSkills[id] = {
                         skill : skill.skill,
@@ -124,6 +113,14 @@ function AssignmentMapper (props) {
                 }
                 else {
                     uniqueSkills[id].exemplars.push(skill)
+                }
+            }
+        );
+        portfolioData.descriptors.forEach(
+            (descriptorSet)=>{
+                console.log('set descriptor for ',descriptorSet.item);
+                if (uniqueSkills[descriptorSet.item]) {
+                    uniqueSkills[descriptorSet.item].descriptor = descriptorSet.descriptor
                 }
             }
         );
@@ -142,6 +139,48 @@ function AssignmentMapper (props) {
         }
         getPortfolioDesc();
     },[props.course])
+
+    return {
+        skills, strands, assignments, skillsP, strandsP, assignmentsP
+    }
+    
+}
+
+
+function AssignmentMapper (props) {
+
+    const coursework = useCoursework({course:props.course});
+    const {
+        skills, strands, assignments, assignmentsP
+    } = usePortfolioSkillHook(props);
+
+    const [selectedSkills,setSelectedSkills] = useState([]);
+    const [selectedCoursework,setSelectedCoursework] = useState();
+    var selectedSkillsP = arrayProp(selectedSkills,setSelectedSkills)
+    var selectedCourseworkP = arrayProp(selectedCoursework,setSelectedCoursework);
+
+    function getCourseworkById (cid) {
+        for (var cw of coursework) {
+            if (cw.id===cid) {
+                return cw;
+            }
+        }
+        return {}
+    }
+
+    function saveMappings () {
+        var mappings = []
+        for (var assignmentId in assignments) {
+            assignments[assignmentId].forEach(
+                (skill)=>{
+                    mappings.push({
+                        assignmentId:assignmentId,
+                        skill});
+                });
+        }
+        Api.set_portfolio_desc({assignments:mappings},props.course).then(console.log('success!'));
+    }
+
     
     return (
         <div className="mapper">
@@ -169,7 +208,7 @@ function AssignmentMapper (props) {
                </div>
               }
               <div className="topMid"><Icon icon={Icon.right}/><Icon icon={Icon.right}/><Icon icon={Icon.right}/></div>
-                {selectedSkills.length>0 && <div className="topRight">{selectedSkills.length} skills:
+                {selectedSkills.length>0 && <div className="bottomRight">{selectedSkills.length} skills:
               {selectedSkills.map((skill)=>
                                   <div>
                                     {skill.skill} <span className='tag'>{skill.strand}</span>
@@ -180,10 +219,7 @@ function AssignmentMapper (props) {
                                     />
                                   </div>)}            
                                             </div>}
-              <div className={classNames({
-                  topRight: selectedSkills.length==0,
-                  bottomRight: selectedSkills.length>0
-              })}>Pick Skill:
+              <div className='topRight'>Pick Skill:
                 <SkillPicker
                   onSelected={selectedSkillsP.push}
                   course={props.course}
@@ -233,3 +269,4 @@ function AssignmentMapper (props) {
 }
 
 export default AssignmentMapper;
+export {SkillPicker,usePortfolioSkillHook}
