@@ -1,6 +1,5 @@
 function objProp (obj, setObj) {
     return {
-        forEach : obj.forEach,
         updateKey (k,v) {
             setObj({...obj,[k]:v});
         },
