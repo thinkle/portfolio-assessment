@@ -3,6 +3,7 @@ import ClassList from './ClassList.js';
 import SkillsList from './SkillsList.js';
 import SheetWidget from './SheetWidget.js';
 import PortfolioBuilder from './PortfolioBuilder.js';
+import ExemplarEditor from './ExemplarEditor.js';
 import Editor from './RichText.js';
 import Setting from './settings.js';
 //import Api from './api.js';
@@ -14,7 +15,8 @@ import SheetManager from './gapi/SheetManager.js';
 import Prefs from './gapi/Prefs.js';
 import AssignmentMapper from './AssignmentMapper.js';
 import Portfolio from './Portfolio.js';
-import {Button,Buttons} from './widgets.js';
+import {Button,Buttons,SelectableItem} from './widgets.js';
+import Menu from './widgets/Menu.js'
 
 function TestView () {
     const [page,setPage] = useState('gapi')
@@ -30,6 +32,14 @@ function TestView () {
     const [testUrl,setTestUrl] = useState('');
     const [testData,setTestData] = useState('');
     const prefs = Prefs();
+
+    const defaultStudent = {
+        "courseId":"20912946613",
+        "userId":"118286616169423182268",
+        "profile":{"id":"118286616169423182268",
+                   "name":{"givenName":"Fake","familyName":"Sans Idente","fullName":"Fake Sans Idente"}
+                  }
+    }
 
     const defaultCourse = {
         "id": "20912946613",
@@ -56,8 +66,26 @@ function TestView () {
             <Buttons className="buttons">
             <Button onClick={()=>setPage('portf')}>Show Portf</Button>
             <Button onClick={()=>setPage('assm')}>Show Assignment Mapper</Button>
-            <Button onClick={()=>DocumentManager().getRootFolderId().then(setTestData)}>Create root folder?
-            </Button>
+              <Button onClick={()=>DocumentManager().getRootFolderId().then(setTestData)}>Create root folder?
+              </Button>
+              <Button onClick={()=>{
+                  async function test () {
+                      console.log('fetch coursework...');
+                      var cwList = await Api.Classroom.get_coursework({course:defaultCourse});
+                      console.log('Fetch student work...');
+                      var work = await Api.Classroom.get_student_work({course:defaultCourse,courseWork:cwList[0]})
+                      console.log('Got it!');
+                      setTestData(work);
+                  }
+                  test();
+              } }>Get Student Work</Button>
+              <Button onClick={()=>{
+                  async function test () {
+                      var students = await Api.Classroom.get_students({course:defaultCourse});
+                      setTestData(students);
+                  };
+                  test();
+              }}>Get Students</Button>
               <Button onClick={()=>{
                   DocumentManager().getCourseFolder({title:'Test Course',id:'test-course-id'}).then(setTestData);
               }}>
@@ -72,6 +100,7 @@ function TestView () {
             <Button onClick={()=>Api.getProp('foo').then((v)=>setProp(v))}>Get Foo Prop</Button>
             <Button onClick={()=>setPage('editor')}>Test Editor</Button>
             <Button onClick={()=>setPage('gapi')}>Test GApi</Button>
+            <Button onClick={()=>setPage('exemplar')}>Test EXEMPLAR EDITOR</Button>
             <Button onClick={()=>{setTestUrl('http://www.google.com');setTestData({test:'me',hello:'world'})}}>Test TestData & URL</Button>
             <Button onClick={()=>{
                 var val = 'foo' + Math.random()
@@ -189,7 +218,7 @@ function TestView () {
             {testData && <pre>TEST DATA:
                            {JSON.stringify(testData)}</pre>}
           </div>
-          {page=='portf' && <Portfolio course={defaultCourse}/>}
+          {page=='portf' && <Portfolio course={defaultCourse} student={defaultStudent}/>}
           {page=='assm' && <AssignmentMapper course={defaultCourse}/>}
           <div>{page=='courses' && <ClassList onCourseSelected={(c)=>console.log('Selected course %s',JSON.stringify(c))} user='thinkle@innovationcharter.org'></ClassList>}</div>
           <div>{page=='portfolio' && <SkillsList></SkillsList>}</div>
@@ -210,8 +239,25 @@ function TestView () {
            )}
           {page=='embed' && <SheetWidget url="https://docs.google.com/spreadsheets/d/1RP7wlpGOrrfUbdvBXKYvRygomATov6DTp1OocBEinqI/edit#gid=0"/>}
           {page=='gapi' && (<div>GAPI:<Gapi/></div>)}
+          {page=='exemplar' && <ExemplarEditor student={defaultStudent} course={defaultCourse}/>}
+
+          <div style={{height:100}}/>
+          <hr/>
+
+          <div>
+            <SelectableItem title="Test me"
+                  items={[1,2,3,4,5,6,7]}
+                  itemRenderer={Menu.Item}
+                  onSelected={console.log}
+            >
+              
+            </SelectableItem>
+          </div>
+          
         </div>
     );
 }
+
+
 
 export default TestView;
