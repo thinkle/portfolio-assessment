@@ -77,6 +77,7 @@ console.log("APIs look like: %s",JSON.stringify(GOOGLESCOPES));
 
 const SCOPES = [GOOGLESCOPES.classroom.courses.readonly];
 SCOPES.push(GOOGLESCOPES.classroom.coursework.students.readonly);
+SCOPES.push(GOOGLESCOPES.classroom.rosters.readonly);
 SCOPES.push(GOOGLESCOPES.drive.file.all);
 SCOPES.push(GOOGLESCOPES.spreadsheets.all);
 SCOPES.push(GOOGLESCOPES.drive.appdata.all)
