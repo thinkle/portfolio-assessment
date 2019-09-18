@@ -1,5 +1,6 @@
 function objProp (obj, setObj) {
     return {
+        forEach : obj.forEach,
         updateKey (k,v) {
             setObj({...obj,[k]:v});
         },
@@ -48,12 +49,17 @@ function objProp (obj, setObj) {
 
 function arrayProp (arr, setArr) {
     return {
+        forEach : arr.forEach,
+        map : arr.map,
+        filter: arr.filter,
+        reduce : arr.reduce,
         remove (itm) {
             var copy = arr.slice();
             copy.splice(copy.indexOf(itm),1);
             setArr(copy);
         },
         push (itm) {
+            console.log('push to array: ',itm,arr);
             var copy = arr.slice();
             copy.push(itm);
             setArr(copy);
