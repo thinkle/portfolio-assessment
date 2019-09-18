@@ -4,6 +4,9 @@ function SheetWidget (props) {
     
     const [showEmbed,setShowEmbed] = useState(true);
 
+    var h = props.height || 800;
+    var w = props.width || 1200;
+
     return (
         <div>
           <a href={props.url} target="_blank">New window?</a>
@@ -11,7 +14,7 @@ function SheetWidget (props) {
            &&
            <div>
              <a href="#" onClick={()=>setShowEmbed(false)}>Hide</a>
-             <br/><iframe width={props.width||1200} height={props.height||800} src={props.url}/>
+             <br/><iframe style={{height:h+'px', width:w+'px'}} height={h} width={w} src={props.url}/>
            </div>
            ||
            <a href="#" onClick={()=>setShowEmbed(true)}>Show</a>
