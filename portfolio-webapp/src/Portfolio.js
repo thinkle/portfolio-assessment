@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import TreeView from './TreeView.js';
-import {Container,Button} from './widgets.js';
+import {Container,Button,Icon} from './widgets.js';
+import {useStudentPortfolio} from './gapi/hooks.js';
+import {usePortfolioSkillHook} from './AssignmentMapper.js';
 
 /****
 
@@ -60,72 +62,121 @@ var testExemplar = {
     classroomLink : "https://classroom.google.com/c/MjA5MTI5NDY2MTNa/a/Mzc3MzI2NTc5NDFa/submissions/student/NDY2NzI2Nlpa",
     permalink : "https://CSS-Intro--hannahsan.repl.co",
     reflection : `<p>Some long reflection in HTML</p>`,
-    assessmentComment : `<p>Some lengthy comment about the exemplars.</p>`,
-    score : 123, // some score
+    assessment : {
+        comment : `<p>Some lengthy comment about the exemplars.</p>`,
+        score : 123, // some score
+    },
     skill : 'Eating',
     due : new Date(),
 }
 
 function Portfolio (props) {
 
+    // needs props:
+    // course =
+    // student =
+
+    const {skills, strands, assignments} = usePortfolioSkillHook(props);
+    const {busy, portfolio, setPortfolio, savePortfolio, saved} = useStudentPortfolio(props);
+
+    function buildTreeDataStructure () {
+        var tree = [];
+        strands.forEach((strand)=>{
+            tree.push( {
+                data : {strand:strand},
+                children : skills.filter((skill)=>skill.strand==strand).map(
+                    (skill)=>({
+                        data : skill,
+                                // points:skill.exemplars && skill.exemplars.reduce((ex,i)=>i+ex.points),
+                                // nexemplars:skill.exemplars && skill.exemplars.length
+                               //},
+                        children : portfolio.filter(
+                            (exemplar)=>exemplar.skill == skill.skill
+                        )
+                    })
+                )
+            });
+        });
+        return tree;
+    }
+
+
+
+    useEffect(
+        ()=>{
+            console.log('build data...');
+            setTreeData(buildTreeDataStructure())
+            setDataCount(dataCount + 1);
+        },
+        [portfolio, skills, strands]
+    );
+    const [dataCount,setDataCount] = useState(1);
+    const [treeData,setTreeData] = useState([]);
 
     return (
         <Container>
-            {filters()}
+          <h3>{props.student.profile.name.fullName} Portfolio</h3>
+          {filters()}
+          {true && 
           <TreeView
-            data={[
-                {data:{strand:'EX'},
-                 children : [
-                     {data:{strand:'EX',skill:'Eating'},
-                      children:[
-                          {data:{strand:'EX',skill:'Eating',
-                                 classroom:'adsfa90s81234',
-                                 points:100,
-                                 exemplar:testExemplar,
-                                 url:'http://slashdot.org'}},
-                          {data:{strand:'EX',skill:'Eating',
-                                 classroom:'ddadsfa90s81234',
-                                 points:100,
-                                 exemplar:testExemplar,
-                                 url:'http://slashdot.org'}},
-                      ]
-                     },
-                     {data:{strand:'EX',skill:'Drinking'},
-                      children:[
-                          {data:{strand:'EX',skill:'Drinking',
-                                 points:100,
-                                 exemplar:testExemplar,
-                                 url:'http://slashdot.org'}},
-                          {data:{strand:'EX',skill:'Eating',
-                                 points:100,
-                                 exemplar:undefined,
-                                 url:'http://slashdot.org'}},
-                      ]
-                     }
+            noDelete={true}
+            key={dataCount}
+            data={treeData}
+            /* data={[ */
+            /*     {data:{strand:'EX'}, */
+            /*      children : [ */
+            /*          {data:{strand:'EX',skill:'Eating'}, */
+            /*           children:[ */
+            /*               {data:{strand:'EX',skill:'Eating', */
+            /*                      classroom:'adsfa90s81234', */
+            /*                      points:100, */
+            /*                      exemplar:testExemplar, */
+            /*                      url:'http://slashdot.org'}}, */
+            /*               {data:{strand:'EX',skill:'Eating', */
+            /*                      classroom:'ddadsfa90s81234', */
+            /*                      points:100, */
+            /*                      exemplar:testExemplar, */
+            /*                      url:'http://slashdot.org'}}, */
+            /*           ] */
+            /*          }, */
+            /*          {data:{strand:'EX',skill:'Drinking'}, */
+            /*           children:[ */
+            /*               {data:{strand:'EX',skill:'Drinking', */
+            /*                      points:100, */
+            /*                      exemplar:testExemplar, */
+            /*                      url:'http://slashdot.org'}}, */
+            /*               {data:{strand:'EX',skill:'Eating', */
+            /*                      points:100, */
+            /*                      exemplar:undefined, */
+            /*                      url:'http://slashdot.org'}}, */
+            /*           ] */
+            /*          } */
 
-                 ]}
-            ]}
-            onDataChange={()=>{}}
+            /*      ]} */
+            /* ]} */
+            onDataChange={()=>{console.log('tree data changed');}}
             headers={[
                 'Strand','Skill','Points','Exemplar','Assessment'
             ]}
             widths = {[
-                'auto','auto','auto','auto','auto'
+                '3em','15em','12em','15em','15em'
             ]}
             cols={5}
             getRenderers={(params)=>{
                 if (params.level==0) {
                     return [TreeView.HeaderCol('strand',{colSpan:2}),
-                            TreeView.SumCol('Points'),
+                            /*TreeView.SumCol('points'),*/
+                            TreeView.BlankCol(),
                             TreeView.BlankCol(),
                             TreeView.BlankCol()]
                 }
                 else if (params.level==1) {
                     return [TreeView.TextCol('strand'),
                             TreeView.TextCol('skill'),
-                            TreeView.SumCol('points'),
-                            TreeView.BlankCol(),
-                            TreeView.BlankCol()]
+                            PointsTotalCol,
+                            ExemplarCountCol,
+                            TreeView.ButtonCol({icon:Icon.plus,content:'Add exemplar',generateOnClick:makeExemplarCallback}),
+                           ]
                 }
                 else {
                     return [TreeView.TextCol('strand'),
@@ -133,12 +184,29 @@ function Portfolio (props) {
                             TreeView.NumCol('points'),
                             TreeView.TextCol('exemplar'),
                             TreeView.TextCol('assessment'),
+                            TreeView.ButtonCol({content:'See exemplar'}),
                            ];
                 }
             }}
-          />
+          />}
         </Container>
     )
+
+
+    function makeExemplarCallback ({data, children}) {
+        console.log('makeExemplarCallback...');
+        return function () {
+            console.log('We got a click!');
+            console.log('Make a new exemplar!');
+            console.log('Course: ',props.course)
+            console.log('Student: ',props.student)
+            console.log('Skill:',data.skill);
+            console.log('Strand:',data.strand);
+        }
+        
+    }
+
+
 
     function filters () {
         return (<div>Filters will go here</div>);
@@ -147,5 +215,20 @@ function Portfolio (props) {
 
     
 }
+
+function ExemplarCountCol ({data,children}) {
+    return data.exemplars && <span>{children&&children.length||0} of {data.exemplars.length}</span>
+}
+function PointsTotalCol ({data}) {
+    if (data.exemplars) {
+        var tot = 0;
+        data.exemplars.forEach((ex)=>tot+=ex.points);
+        return data.exemplars && <span>{tot}</span>
+    }
+    else {
+        return '-'
+    }
+}
+
 
 export default Portfolio;
