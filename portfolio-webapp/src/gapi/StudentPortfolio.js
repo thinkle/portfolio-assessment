@@ -57,7 +57,8 @@ function StudentPortfolio (course, student) {
     async function get_portfolio () {
         var id = await dm.getSheetId(course.id,PORTPROP,student.id);
         if (id) {
-            return SheetManager(id).getSheetsDataJson();
+            var sheets = await SheetManager(id).getSheetsDataJson();
+            return sheets.exemplars;
         }
         else {
             throw `No portfolio found for ${course.id}, ${PORTPROP},${student.id}`
@@ -67,7 +68,8 @@ function StudentPortfolio (course, student) {
     async function get_assessments () {
         var id = await dm.getSheetId(course.id,GRADEPROP,student.id);
         if (id) {
-            return SheetManager(id).getSheetsDataJson();
+            var sheets = await SheetManager(id).getSheetsDataJson();
+            return sheets.assessments;
         }
         else {
             throw `No portfolio found for ${course.id}, ${GRADEPROP},${student.id}`
