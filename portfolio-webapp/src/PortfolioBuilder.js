@@ -42,13 +42,13 @@ function PortfolioModel (course) {
         treeData.forEach(
             (strand)=>{
                 if (!strand.children) {
-                    console.log(`Strange: ${strand.data.strand} has no children? ${JSON.stringify(strand)}`);
+                    console.log(`Strange: ${strand.data.strand} has no children?`,strand);
                     return
                 }
                 strand.children.forEach(
                     (skill)=>{
                         if (!skill.children) {
-                            console.log(`Strange: ${skill.data.skill} has no children? ${JSON.stringify(skill)}`);
+                            console.log(`Strange: ${skill.data.skill} has no children?`,skill);
                             return
                         }
 
@@ -111,7 +111,6 @@ function PortfolioModel (course) {
         });
 
         strands = Object.values(strands);
-        //console.log('Got %s strands: %s',strands.length,JSON.stringify(strands));
 
         // Now let's go through and add some handy metadata...
         strands.forEach(
@@ -123,7 +122,6 @@ function PortfolioModel (course) {
 
             }
         );
-        //console.log('Built %s',JSON.stringify(strands));
         return strands
     }
 
@@ -269,7 +267,7 @@ function PortfolioBuilder (props) {
         setErrorState(false)
         pm.fromGoogle()
             .then((portfolioData)=>{
-                console.log('Got data: %s',JSON.stringify(portfolioData));
+                console.log('Got data:',portfolioData);
                 if (portfolioData) {
                     setSkills(portfolioData.skills);
                     setDescriptors(portfolioData.descriptors);
