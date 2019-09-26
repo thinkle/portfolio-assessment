@@ -9,8 +9,13 @@ function getGapi () {
     gsheets = gapi.client.sheets;
 }
 
-function propname (courseId, prop) {
-    return `${prop}-${courseId}`;
+function propname (courseId, prop, student) {
+    if (student) {
+        return `${prop}-${student}-${courseId}`;
+    }
+    else {
+        return `${prop}-${courseId}`;
+    }
 }
 
 function DocumentManager () {
@@ -77,6 +82,29 @@ function DocumentManager () {
                     addParents : folder,
                 }
             );
+        },
+
+        async createStudentSheet (course, student, prop, title, sheets, studentWrite) {
+            var spreadsheetObj = Sheets.getSpreadsheetBody({title,sheetsData:sheets});
+            console.log('Creating student sheet with spreadsheetObj',spreadsheetObj);
+            console.log(title,prop);
+            var response = await gsheets.spreadsheets.create(spreadsheetObj);
+            console.log('Created resulted in!',response);
+            var ssheet = response.result;
+            await Api.setProp(propname(course.id,prop,student.id),ssheet.spreadsheetId);
+            await this.addToCourseFolder(ssheet.spreadsheetId, course);
+
+            const permissionsParams = {
+                fileId : ssheet.spreadsheetId,
+                sendNotificationEmail : false,
+                resource : {
+                    role : studentWrite && 'writer' || 'reader',
+                    type : 'user',
+                    emailAddress : student.profile.emailAddress,
+                }
+            }
+            await gdrive.permissions.create(permissionsParams);
+            return ssheet;
         },
         
         async addToCourseFolder (id, course) {
@@ -148,15 +176,16 @@ function DocumentManager () {
             }); // end Promise
         },
 
-        getSheetId (courseId, prop) {
-            const propname = prop+'-'+courseId;
-            return Api.getProp(propname) // is a promise
+        getSheetId (courseId, prop, studentId) {
+            //hello
+            const fullprop = propname(courseId,prop,studentId)
+            return Api.getProp(fullprop) // is a promise
         },
 
-        getSheetUrl (courseId, prop) {
-            const propname = prop+'-'+courseId;
+        getSheetUrl (courseId, prop, studentId) {
+            const fullprop = propname(courseId, prop, studentId);
             return new Promise((resolve,reject)=>{
-                Api.getProp(propname)
+                Api.getProp(fullprop)
                     .then((id)=>{
                         if (id) {
                             return SheetManager(id).getUrl().then(resolve)
@@ -169,6 +198,8 @@ function DocumentManager () {
             });
         },
 
+                    
+                    
         
         
         
