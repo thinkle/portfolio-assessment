@@ -47,11 +47,7 @@ function objProp (obj, setObj) {
 }
 
 function arrayProp (arr, setArr) {
-    return {
-        forEach : arr.forEach,
-        map : arr.map,
-        filter: arr.filter,
-        reduce : arr.reduce,
+    var o = {
         remove (itm) {
             var copy = arr.slice();
             copy.splice(copy.indexOf(itm),1);
@@ -64,6 +60,15 @@ function arrayProp (arr, setArr) {
             setArr(copy);
         }
     }
+
+    if (arr) {
+        o.forEach = arr.forEach;
+        o.map = arr.map;
+        o.filter = arr.filter;
+        o.reduce = arr.reduce;
+    }
+    return o;
+    
 }
 
 function classNames (obj) {
@@ -76,4 +81,59 @@ function classNames (obj) {
     return out.join(' ');
 }
 
-export  {classNames, arrayProp, objProp}
+function getItemById (arr, id, idprop='id') {
+    for (let i=0; i<arr.length; i++) {
+        const item = arr[i];
+        if (item[idprop]==id) {
+            return item
+        }
+    }
+}
+
+/*
+Allow a . separated list of properties in a string.
+Also, return undefined if any parent is undefined. 
+*/
+function getProp (obj, prop) {
+    const props = prop.split('.');
+    for (var p of props) {
+        if (obj===undefined) { return obj }
+        obj = obj[p]
+    }
+    return obj;
+}
+
+function replaceItemInArray (array, targetItem, idprop='id', pushIfNoMatch=false) {
+    var replaced = false;
+    for (let idx=0; idx<array.length; idx++) {
+        const item = array[idx]
+        if (item[idprop]==targetItem[idprop]) {
+            array[idx] = targetItem;
+            replaced = true;
+        }
+    }
+    if (!replaced) {
+        if (pushIfNoMatch) {
+            array.push(targetItem);
+        }
+        else {
+            throw {
+                name : 'Error: item not found',
+                id : targetItem[idprop],
+                idprop : idprop,
+                targetArray : array,
+                newValue : targetItem
+            }
+        }
+    }
+}
+
+function getById (array, idvalue, idprop='id') {
+    for (var itm of array) {
+        if (itm[idprop] == idvalue) {
+            return itm;
+        }
+    }
+}
+
+export  {classNames, arrayProp, objProp, getItemById, getProp, replaceItemInArray,getById}
