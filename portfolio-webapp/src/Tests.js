@@ -37,8 +37,9 @@ function TestView () {
         "courseId":"20912946613",
         "userId":"118286616169423182268",
         "profile":{"id":"118286616169423182268",
-                   "name":{"givenName":"Fake","familyName":"Sans Idente","fullName":"Fake Sans Idente"}
-                  }
+                   "name":{"givenName":"Fake","familyName":"Sans Idente","fullName":"Fake Sans Idente"},
+                   emailAddress:'test.student@innovationcharter.org',                   
+                  },
     }
 
     const defaultCourse = {
@@ -63,9 +64,23 @@ function TestView () {
     return (
         <div>
           <h2>Test API</h2>
-            <Buttons className="buttons">
-            <Button onClick={()=>setPage('portf')}>Show Portf</Button>
-            <Button onClick={()=>setPage('assm')}>Show Assignment Mapper</Button>
+          <Buttons className="buttons">
+            <Button onClick={
+                ()=>{
+                    DocumentManager().createStudentSheet(
+                        defaultCourse,
+                        defaultStudent,
+                        'sample-prop',
+                        'Test Spreadsheet',
+                        [{rowData:Sheets.jsonToRowData([{hello:'world'},{hello:'sheets'},{hello:'moon'},{hello:'sun'}]),
+                          title:'howdy'}]
+                    ).then(setTestData);
+                }
+            }>
+              Test Create Student Sheet
+            </Button>
+              <Button onClick={()=>setPage('portf')}>Show Portf</Button>
+              <Button onClick={()=>setPage('assm')}>Show Assignment Mapper</Button>
               <Button onClick={()=>DocumentManager().getRootFolderId().then(setTestData)}>Create root folder?
               </Button>
               <Button onClick={()=>{
@@ -239,7 +254,9 @@ function TestView () {
            )}
           {page=='embed' && <SheetWidget url="https://docs.google.com/spreadsheets/d/1RP7wlpGOrrfUbdvBXKYvRygomATov6DTp1OocBEinqI/edit#gid=0"/>}
           {page=='gapi' && (<div>GAPI:<Gapi/></div>)}
-          {page=='exemplar' && <ExemplarEditor student={defaultStudent} course={defaultCourse}/>}
+          {page=='exemplar' && <ExemplarEditor student={defaultStudent} course={defaultCourse}
+                                               onChange={console.log}
+                               />}
 
           <div style={{height:100}}/>
           <hr/>
