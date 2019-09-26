@@ -5,7 +5,7 @@ import Modal from './widgets/Modal.js';
 import makeComponent from './widgets/QuickComponents.js';
 import Card from './widgets/Card.js';
 import Button from './widgets/Button.js';
-import Menu,{SelectableItem} from './widgets/Menu.js';
+import Menu,{SelectableItem,CustomSelectableItem} from './widgets/Menu.js';
 
 const InputWithEnter = React.forwardRef( (props, ref) => {
     return (
@@ -29,4 +29,4 @@ const Container = makeComponent(['container']);
 
 
 
-export {InputWithEnter,Modal,Card,Button,Buttons,Content,Icon,Container,Menu,SelectableItem}
+export {InputWithEnter,Modal,Card,Button,Buttons,Content,Icon,Container,Menu,SelectableItem,CustomSelectableItem}
