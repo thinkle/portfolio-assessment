@@ -16,8 +16,6 @@ function SkillPicker (props) {
     ] // for menu
 
     const [selectedStrand,setSelectedStrand] = useState(); // for sub-menu
-    console.log('SkillPicker has strands:',strands.length,strands)
-    console.log('SkillPicker has skills:',skills.length,skills)
 
     return (
         <div className="skillSelector">
@@ -56,7 +54,6 @@ function SkillPicker (props) {
           {skills.filter((sk)=>sk.strand==selectedStrand).map((sk)=>(
               <li key={sk.skill}>
                 <Button onClick={()=>{
-                    console.log('Selected ',sk);
                     if (props.onSelected) {
                         props.onSelected(sk);
                     }
@@ -84,7 +81,7 @@ function usePortfolioSkillHook (props) {
         var uniqueSkills = {};
         var uniqueStrands = [];
         var assignmentMap = {}
-        if (portfolioData.assignments) {
+        if (portfolioData && portfolioData.assignments) {
             portfolioData.assignments.forEach(
                 (courseToSkill)=>{
                     if (!assignmentMap[courseToSkill.assignmentId]) {
@@ -97,7 +94,7 @@ function usePortfolioSkillHook (props) {
             );
             setAssignments(assignmentMap);
         }
-        portfolioData.skills.forEach(
+        portfolioData && portfolioData.skills && portfolioData.skills.forEach(
             (skill)=>{
                 if (!skill.skill) {return}
                 if (uniqueStrands.indexOf(skill.strand)==-1) {
@@ -116,9 +113,8 @@ function usePortfolioSkillHook (props) {
                 }
             }
         );
-        portfolioData.descriptors.forEach(
+        portfolioData && portfolioData.descriptors && portfolioData.descriptors.forEach(
             (descriptorSet)=>{
-                console.log('set descriptor for ',descriptorSet.item);
                 if (uniqueSkills[descriptorSet.item]) {
                     uniqueSkills[descriptorSet.item].descriptor = descriptorSet.descriptor
                 }
@@ -134,7 +130,12 @@ function usePortfolioSkillHook (props) {
             console.log('Getting portfolio data...');
             var portfolioData = await Api.get_portfolio_desc(props.course);
             console.log('Got portfolio data!');
-            processPortfolioData(portfolioData);
+            if (portfolioData) {
+                processPortfolioData(portfolioData);
+            }
+            console.log(
+                'BLANK PORTFOLIO DATA?',props.course,portfolioData
+            );
             console.log('Done processing portfolioData');
         }
         getPortfolioDesc();
