@@ -80,8 +80,24 @@ function Portfolio (props) {
 
     const {skills, strands, assignments} = usePortfolioSkillHook(props);
     const {busy, portfolio, setPortfolio, savePortfolio, saved} = useStudentPortfolio(props);
+
+    const [filters,setFilters] = useState({});
+    const [dataCount,setDataCount] = useState(1);
+    const [treeData,setTreeData] = useState([]);
+    const [showExemplar,setShowExemplar] = useState(false);
+    const [exemplarEditorProps,setExemplarEditorProps] = useState({});
+
     const coursework = useCoursework(props);
     const studentwork = useStudentWork(props);
+
+    useEffect(
+        ()=>{
+            console.log('build data...');
+            setTreeData(buildTreeDataStructure())
+            setDataCount(dataCount + 1);
+        },
+        [portfolio, skills, strands, coursework, studentwork, filters]
+    );
 
     function buildTreeDataStructure () {
         var tree = [];
@@ -107,21 +123,95 @@ function Portfolio (props) {
                 )
             })
         });
+        tree = filterTreeStructure(tree);
         return tree;
     }
 
-    useEffect(
-        ()=>{
-            console.log('build data...');
-            setTreeData(buildTreeDataStructure())
-            setDataCount(dataCount + 1);
-        },
-        [portfolio, skills, strands, coursework, studentwork]
-    );
-    const [dataCount,setDataCount] = useState(1);
-    const [treeData,setTreeData] = useState([]);
-    const [showExemplar,setShowExemplar] = useState(false);
-    const [exemplarEditorProps,setExemplarEditorProps] = useState({});
+    const filterNames = [
+        ['Has student exemplar','hasWork'],
+        ['Empty','isEmpty'],
+        ['Needs exemplar','needsWork'],
+        ['Is Complete','complete'],
+        ['Needs assessment','needsAssessment'],
+        ['Needs reflection','needsReflection'],
+    ]
+    
+    function filterTreeStructure (tree) {
+        if (!filters || Object.keys(filters).length==0) {
+            return tree;
+        }
+        else {
+            if (filters.hasWork) {
+                keepOnlyWithWork();
+            }
+            if (filters.needsAssessment) {
+                filterBasedOnWork((skill)=>(exemplar)=>{
+                    console.log('Filter on skill',skill);
+                    console.log('Looking at exemplar',exemplar);
+                    const val = (!(exemplar.assessment&&exemplar.assessment.score))
+                    console.log('Got value: ',val)
+                    return val;
+                })
+                keepOnlyWithWork();
+            }
+            if (filters.needsReflection) {
+                filterBasedOnWork(
+                    (skill)=>(exemplar)=>!exemplar.reflection
+                );
+                keepOnlyWithWork();
+            }
+            if (filters.isEmpty) {
+                
+            }
+            if (filters.needsWork) {
+                filterSkill((skill,work)=>{
+                    const exemplarsNeeded = skill.exemplars.length;
+                    const exemplars = work.length;
+                    const result = (exemplarsNeeded > exemplars)
+                    return result;
+                })
+            }
+            if (filters.complete) {
+                filterSkill((skill,work)=>{
+                    const exemplarsNeeded = skill.exemplars.length;
+                    const exemplars = work.length;
+                    const result = (exemplarsNeeded <= exemplars)
+                    return result;
+                })
+            }
+
+        }
+        return tree;
+
+        function keepOnlyWithWork () {
+            for (var strand of tree) {
+                strand.children = strand.children.filter(
+                    (skill)=>skill.children.length > 0
+                    // children of skills ARE exemplars - so none = no exemplars
+                );
+            }
+            tree = tree.filter((strand)=>strand.children.length>0)
+        }
+
+        function filterSkill (skillFilter) {
+            const skillRowFilter = (row)=>skillFilter(row.data,row.children);
+            for (var strand of tree) {
+                strand.children = strand.children.filter(skillRowFilter)
+            }
+            tree = tree.filter((strand)=>strand.children.length>0)
+        }
+
+        function filterBasedOnWork (workFilterMaker) {
+            for (var strand of tree) {
+                for (var skill of strand.children) {
+                    const workFilter = workFilterMaker(skill.data);
+                    const childFilter = (row) => workFilter(row.data);
+                    skill.children = skill.children.filter(childFilter);
+                }
+            }
+        }
+
+    }
 
     function saveExemplar (exemplar) {
         var newPortfolio = [...portfolio];
@@ -146,9 +236,8 @@ function Portfolio (props) {
         <Container>
           <h3>{props.student.profile.name.fullName} Portfolio</h3>
           {busy && <span>Fetching student portfolio data...</span>}
-          <b onClick={()=>{setTreeData(buildTreeDataStructure());setDataCount(dataCount+1)}}>REBUILD</b>
           {!saved && <Button icon={Icon.save} onClick={()=>savePortfolio()}>Save Changes to Google</Button>}
-          {filters()}
+          {filterView()}
           {true && 
            <TreeView
              getShowChildrenState={treeState.getShowChildrenState}
@@ -156,7 +245,7 @@ function Portfolio (props) {
              noDelete={true}
              key={dataCount}
             data={treeData}
-            onDataChange={()=>{console.log('tree data changed');}}
+             /*onDataChange={()=>{console.log('tree data changed');}}*/
             headers={[
                 'Strand','Skill','Points','Exemplar','Assessment'
             ]}
@@ -167,8 +256,8 @@ function Portfolio (props) {
             getRenderers={(params)=>{
                 if (params.level==0) {
                     return [TreeView.HeaderCol('strand',{colSpan:2}),
-                            /*TreeView.SumCol('points'),*/
-                            TreeView.BlankCol(),
+                            StrandPointsTotalCol,
+                            StrandExemplarCountCol,
                             TreeView.BlankCol(),
                             TreeView.BlankCol()]
                 }
@@ -228,7 +317,6 @@ function Portfolio (props) {
     }
 
     function makeExemplarCallback ({data, children, rowId}) {
-        console.log('Making callback with',data,children,rowId);
         return function () {
             console.log('We got a click!');
             console.log('Make a new exemplar!');
@@ -248,12 +336,44 @@ function Portfolio (props) {
 
 
 
-    function filters () {
-        return (<div>Filters will go here</div>);
+    function filterView () {
+        return (<div>
+                  {filterNames.map(
+                      ([name,prop])=>(
+                          <span><input type="checkbox"
+                                 checked={!!filters[prop]}
+                                 onChange={(event)=>setFilters({...filters,[prop]:event.target.checked})}
+                                /> {name}</span>
+                      )
+                  )}
+                </div>);
     }
 
 
     
+}
+
+function StrandExemplarCountCol ({data,children}) {
+    var exemplars = 0;
+    var work = 0;
+    children.forEach(
+        (skill)=>{
+            exemplars += skill.data.exemplars.length
+            work += skill.children.length;
+        }
+    );
+    return <b>{work||0} of {exemplars||0}</b>
+}
+
+function StrandPointsTotalCol ({data,children}) {
+    var tot = 0;
+    children.forEach(
+        (skill)=>{
+            skill.data.exemplars.forEach(
+                (ex)=>tot+=ex.points
+            )
+        });
+    return <b>{tot}</b>
 }
 
 function ExemplarCountCol ({data,children}) {
