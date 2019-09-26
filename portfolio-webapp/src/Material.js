@@ -33,6 +33,7 @@ function Material (props) {
         }
         else if (material.driveFile) {
             var itm = material.driveFile.driveFile
+            if (!itm) {return 'Drive File coming soon?'}
             return (
                 <div>
                   <img src={itm.thumbnailUrl}/>
