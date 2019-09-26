@@ -2,6 +2,7 @@ import { inspect } from 'util'; // or directly
 import Prefs from './Prefs.js';
 import PortfolioDesc from './PortfolioDesc.js';
 import Classroom from './classroom.js';
+import StudentPortfolio from './StudentPortfolio.js';
 
 var gapi = window.gapi;
 var auth2 = gapi.auth2;
@@ -113,8 +114,11 @@ var Api = {
         window.localStorage.setItem(cacheName,JSON.stringify(result))
     },
 
+    
+
 }
 
 Api.Classroom = Classroom
+Api.StudentPortfolio = StudentPortfolio;
 
 export default Api;
