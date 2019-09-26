@@ -11,7 +11,6 @@ function Item (props) {
 
 function Menu (props) {
     const [active,setActive] = useState(false);
-    console.log('Render Menu with %s items',props.items && props.items.length);
     var className = classNames({...props.classNames,
                                 menu : true,
                                 active:active});
@@ -102,13 +101,70 @@ function SelectableItem (props) {
             </div>
           </CSSTransition>
           <CSSTransition classNames='fade-menu' in={!selected} mountOnEnter>
-            <div className='static' ref={(n)=>renderedItems.push(n)}><Menu {...menuProps}/></div>
+            <div className='static' ref={(n)=>renderedItems.push(n)}>
+               <Menu {...menuProps}/>
+            </div>
           </CSSTransition>
         </div>
     )
 }
 
+function CustomSelectableItem (props) {
+
+    const children = React.Children.toArray(props.children)
+    if (children.length==2) {
+        var item = children[0];
+        var menu = children[1];
+    }
+    else {
+        console.log('CustomSelectableItem needs exactly two children, got %s',children);
+        throw 'Need two children, got '+children.length
+    }
+
+    var selected = props.selected;
+    var renderedItems = []
+    const [elWidth, setElWidth] = useState(100)
+    const [elHeight, setElHeight] = useState(40)
+
+
+    useEffect( ()=>{
+        window.setTimeout(()=>{
+        var maxHeight = 0;
+        var maxWidth = 0;
+        renderedItems.forEach(
+            (el)=>{
+                if (el) {
+                    var box = el.getBoundingClientRect();
+                    if (box.width > maxWidth) maxWidth = box.width;
+                    if (box.height > maxHeight) maxHeight = box.height;
+                }
+            });
+        setElWidth(maxWidth+30);
+            setElHeight(maxHeight+5);
+        },200);
+    }, [props.selected]);
+
+    return (
+        <div className='relWrap' style={{height:elHeight,width:elWidth}}>          
+          <CSSTransition classNames='fade-item' in={!(!selected)} mountOnEnter>
+            <div className='static selectedItem' ref={(n)=>renderedItems.push(n)}>
+              {item}
+              <Icon className='close-button' icon={Icon.close} onClick={()=>props.unselect()}/>
+            </div>
+          </CSSTransition>
+          <CSSTransition classNames='fade-menu' in={!selected} mountOnEnter>
+            <div className='static' ref={(n)=>renderedItems.push(n)}>
+              {menu}
+            </div>
+          </CSSTransition>
+        </div>
+
+    );
+    
+}
+
+
 Menu.Item = Item;
 
 export default Menu;
-export {SelectableItem}
+    export {SelectableItem,CustomSelectableItem}
