@@ -6,7 +6,7 @@ import { inspect } from 'util'; // or directly
 import Editor from './RichText.js';
 import {Icon,Modal,Button} from './widgets.js';
 import './TreeView.sass';
-import hash from 'object-hash';
+/*import hash from 'object-hash';*/
 
 // Nevermind -- let's abstract the treeview out into a widget.
 
@@ -175,7 +175,7 @@ function TreeRow (props) {
                          {...props}
                          id={`${props.id}-${count}`}
                          level={nlevel+1}
-                         key={hash(child.data)}
+                       /*key={hash(child.data)}*/
                          data={child}
                          show={true}
                        />
@@ -323,7 +323,7 @@ function TreeView (props) {
         {data.map(
             (row,count)=>(<TreeRow
                             {...props}
-                            key={hash(row.data)}
+                            /* key={hash(row.data)} */
                             id={''+count}
                             template={template}
                             level={0}
@@ -561,7 +561,7 @@ function NapTime (showLevel=0) { // i.e. collapsing children manager
 
     function getShowChildrenState (rowProps) {
         if (childStateMap[rowProps.id]) {
-            console.log('receive cached tree state',childStateMap[rowProps.id],rowProps.id);
+            //console.log('receive cached tree state',childStateMap[rowProps.id],rowProps.id);
             return childStateMap[rowProps.id]
         }
         else {
@@ -575,7 +575,7 @@ function NapTime (showLevel=0) { // i.e. collapsing children manager
     }
 
     function onSetShowChildren (value, id) {
-        console.log('set show children state',id,value);
+        //console.log('set show children state',id,value);
         setChildStateMap({
             ...childStateMap,
             [id]:value
