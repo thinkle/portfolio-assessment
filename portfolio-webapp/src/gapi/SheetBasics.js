@@ -49,11 +49,17 @@ function toCellData (v) {
                     stringValue : v
                 }
             }
-            else {
+            else if (typeof v == 'number') {
                 return {
                     numberValue : v
                 }
-            };
+            }
+            else {
+                console.log('WARNING: adding unknown type to spreadsheet',typeof v, v);
+                return {
+                    stringValue : JSON.stringify(v)
+                }
+            }
         }
     }
 
