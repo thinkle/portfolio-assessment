@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import TreeView from './TreeView.js';
-import {Container,Button,Icon} from './widgets.js';
-import {useStudentPortfolio} from './gapi/hooks.js';
+import {Container,Button,Icon,Modal} from './widgets.js';
+import {useStudentPortfolio,useCoursework,useStudentWork} from './gapi/hooks.js';
+import {getItemById,replaceItemInArray,getProp} from './utils.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
+import ExemplarEditor from './ExemplarEditor.js';
 
 /****
 
@@ -78,6 +80,8 @@ function Portfolio (props) {
 
     const {skills, strands, assignments} = usePortfolioSkillHook(props);
     const {busy, portfolio, setPortfolio, savePortfolio, saved} = useStudentPortfolio(props);
+    const coursework = useCoursework(props);
+    const studentwork = useStudentWork(props);
 
     function buildTreeDataStructure () {
         var tree = [];
@@ -92,15 +96,19 @@ function Portfolio (props) {
                                //},
                         children : portfolio.filter(
                             (exemplar)=>exemplar.skill == skill.skill
-                        )
+                        ).map((exemplar)=>{
+                            exemplar.coursework = getItemById(coursework,exemplar.courseworkId);
+                            exemplar.submission = getItemById(studentwork,exemplar.submissionId);
+                            var node = {data:exemplar}
+                            return node
+                        }
+                             )
                     })
                 )
-            });
+            })
         });
         return tree;
     }
-
-
 
     useEffect(
         ()=>{
@@ -108,58 +116,52 @@ function Portfolio (props) {
             setTreeData(buildTreeDataStructure())
             setDataCount(dataCount + 1);
         },
-        [portfolio, skills, strands]
+        [portfolio, skills, strands, coursework, studentwork]
     );
     const [dataCount,setDataCount] = useState(1);
     const [treeData,setTreeData] = useState([]);
+    const [showExemplar,setShowExemplar] = useState(false);
+    const [exemplarEditorProps,setExemplarEditorProps] = useState({});
+
+    function saveExemplar (exemplar) {
+        var newPortfolio = [...portfolio];
+        // deep copy portfolio...
+        // and insert exemplar into it...
+        if (exemplar.id) {
+            replaceItemInArray(newPortfolio,exemplar,'id')
+        }
+        else {
+            newPortfolio.push(exemplar);
+        }
+        console.log('Built new portfolio structure: ',newPortfolio);
+        setPortfolio(newPortfolio);
+        buildTreeDataStructure()
+        setDataCount(dataCount+1);
+        setShowExemplar(false);
+    }
+
+    var treeState = TreeView.NapTime(1); // state manager for toggled state of tree
 
     return (
         <Container>
           <h3>{props.student.profile.name.fullName} Portfolio</h3>
+          {busy && <span>Fetching student portfolio data...</span>}
+          <b onClick={()=>{setTreeData(buildTreeDataStructure());setDataCount(dataCount+1)}}>REBUILD</b>
+          {!saved && <Button icon={Icon.save} onClick={()=>savePortfolio()}>Save Changes to Google</Button>}
           {filters()}
           {true && 
-          <TreeView
-            noDelete={true}
-            key={dataCount}
+           <TreeView
+             getShowChildrenState={treeState.getShowChildrenState}
+             onSetShowChildren={treeState.onSetShowChildren}
+             noDelete={true}
+             key={dataCount}
             data={treeData}
-            /* data={[ */
-            /*     {data:{strand:'EX'}, */
-            /*      children : [ */
-            /*          {data:{strand:'EX',skill:'Eating'}, */
-            /*           children:[ */
-            /*               {data:{strand:'EX',skill:'Eating', */
-            /*                      classroom:'adsfa90s81234', */
-            /*                      points:100, */
-            /*                      exemplar:testExemplar, */
-            /*                      url:'http://slashdot.org'}}, */
-            /*               {data:{strand:'EX',skill:'Eating', */
-            /*                      classroom:'ddadsfa90s81234', */
-            /*                      points:100, */
-            /*                      exemplar:testExemplar, */
-            /*                      url:'http://slashdot.org'}}, */
-            /*           ] */
-            /*          }, */
-            /*          {data:{strand:'EX',skill:'Drinking'}, */
-            /*           children:[ */
-            /*               {data:{strand:'EX',skill:'Drinking', */
-            /*                      points:100, */
-            /*                      exemplar:testExemplar, */
-            /*                      url:'http://slashdot.org'}}, */
-            /*               {data:{strand:'EX',skill:'Eating', */
-            /*                      points:100, */
-            /*                      exemplar:undefined, */
-            /*                      url:'http://slashdot.org'}}, */
-            /*           ] */
-            /*          } */
-
-            /*      ]} */
-            /* ]} */
             onDataChange={()=>{console.log('tree data changed');}}
             headers={[
                 'Strand','Skill','Points','Exemplar','Assessment'
             ]}
             widths = {[
-                '3em','15em','12em','15em','15em'
+                '6em','15em','12em','15em','15em'
             ]}
             cols={5}
             getRenderers={(params)=>{
@@ -179,22 +181,54 @@ function Portfolio (props) {
                            ]
                 }
                 else {
-                    return [TreeView.TextCol('strand'),
-                            TreeView.TextCol('skill'),
-                            TreeView.NumCol('points'),
-                            TreeView.TextCol('exemplar'),
-                            TreeView.TextCol('assessment'),
-                            TreeView.ButtonCol({content:'See exemplar'}),
+                    return [TreeView.BlankCol(),
+                            TreeView.TextCol('coursework.title'),
+                            TreeView.LinkCol('permalink',{linkText:'Link to work'}),
+                            TreeView.TextCol('assessment.score'),
+                            TreeView.ButtonCol({icon:Icon.edit,content:'Edit Exemplar',generateOnClick:editExemplarCallback})
                            ];
                 }
             }}
           />}
+          <Modal active={showExemplar} onClose={()=>setShowExemplar(false)}>
+            <ExemplarEditor
+              {...props}
+              {...exemplarEditorProps}
+              key={getExemplarKey()}
+              onChange={(exemplar)=>saveExemplar(exemplar)}
+            />
+          </Modal>
+
+          
         </Container>
     )
+    function getExemplarKey () {
+        if (!exemplarEditorProps) {
+            return 0
+        }
+        else {
+            const p = exemplarEditorProps
+            return `${p.id||''}${p.skill}-${getProp(p,'selectedSubmission.id')}-${getProp(p,'reflection.length')}-${getProp(p,'assessment.comment.length')}-${getProp(p,'assessment.score')}-${getProp(p,'permalink')}`
+        }
+    }
 
+    function editExemplarCallback ({data, children}) {
+        return function () {
+            setExemplarEditorProps({
+                skill:data.skill,
+                id : data.id,
+                selectedSubmission : data.submission,
+                selectedCoursework : data.coursework,
+                reflection : data.reflection,
+                assessment : data.assessment,
+                permalink : data.permalink
+            });
+            setShowExemplar(true);
+        }
+    }
 
-    function makeExemplarCallback ({data, children}) {
-        console.log('makeExemplarCallback...');
+    function makeExemplarCallback ({data, children, rowId}) {
+        console.log('Making callback with',data,children,rowId);
         return function () {
             console.log('We got a click!');
             console.log('Make a new exemplar!');
@@ -202,6 +236,12 @@ function Portfolio (props) {
             console.log('Student: ',props.student)
             console.log('Skill:',data.skill);
             console.log('Strand:',data.strand);
+            console.log('Adding after row',rowId);
+            treeState.onSetShowChildren(true,rowId);
+            setExemplarEditorProps({
+                skill:data.skill,
+            });
+            setShowExemplar(true);
         }
         
     }
