@@ -4,14 +4,60 @@
 @import "../node_modules/bulma/sass/elements/_all.sass";
 @import "../node_modules/bulma/sass/form/_all.sass";
 @import "../node_modules/bulma/sass/layout/_all.sass";
+@import "./chooseContrast.sass"
+
+.button.is-outlined
+  background-color: transparent
 
 .treehead .treecell
   font-weight: bold
 
+.table .treehead
+  border-color: black
+  color: white
+
+.treecell,.treehead
+  padding: 3px
+
+/* .rowGroup,.row-children > .nested1,.row-children > .nested2,.row-children > .nested3
+/*   border-right-width: 4px
+/*   border-left-width: 2px
+/*   border-bottom-width: 1px
+/*   border-top-width: 1px
+/*   border-style: solid
+
+.treecell .button 
+  background-color: rgba(255,255,255,0.5);
+  
+.treecell .button:hover
+  background-color: white;
 
 .treerow 
-  display: grid;
-  grid-column-gap: 3px;
+  display: grid
+  grid-column-gap: 3px
+
+$row-types: even odd
+$colors: #659dbd #BC986A
+//$colors: $red $cyan
+
+@each $row-type in $row-types
+  @debug $row-type
+  $i: index($row-types, $row-type)
+  @debug $i
+  $baseColor : nth($colors,$i)
+
+  .table > .rowGroup:nth-child(#{$row-type})
+    background-color : scale-color($baseColor,$lightness: 10%)
+    @include text-contrast(scale-color($baseColor,$lightness: 10%))
+
+  .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd)
+    background-color: scale-color($baseColor,$lightness: 50%)
+    @include text-contrast(scale-color($baseColor,$lightness: 50%))
+  
+  .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even)
+    background-color: scale-color($baseColor,$lightness: 80%)
+    @include text-contrast(scale-color($baseColor,$lightness: 80%))
+
 
 @for $span from 2 through 20
   .colSpan#{$span}
@@ -23,7 +69,8 @@
 $spacer : 0.5em
 
 .rowchildren
-  border-bottom-color: $grey-lighter
+  //border-bottom-color: $grey-lighter
+  border-color: white
   border-bottom-style: solid
   border-width: $spacer
   margin-bottom: 6px
@@ -36,10 +83,10 @@ $spacer : 0.5em
   $parent : $n - 1
   .nested#{$parent} .rowchildren
     border-width: $spacer
-    border-color: darken($grey-lighter,$darkPercent)
+//    border-color: darken($grey-lighter,$darkPercent)
 
   .nested#{$n} .treecell:nth-child(1)
-    border-color: darken($grey-lighter,$darkPercent)
+//    border-color: darken($grey-lighter,$darkPercent)
     border-left-style: solid
     border-width: $spacer * $n
     padding-left: 2px
@@ -93,3 +140,6 @@ $spacer : 0.5em
   top : 30px;
   right : 20px;
   width : 500px;
+
+.is-bold
+  font-weight: 900;
