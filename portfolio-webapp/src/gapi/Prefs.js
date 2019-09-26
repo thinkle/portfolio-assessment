@@ -67,7 +67,7 @@ function Prefs () {
                     )
                     .then(
                         (val)=>{
-                            console.log('PUT worked %s',JSON.stringify(val))
+                            console.log('PUT worked ',val)
                             console.log('Pushed data: %s',file);
                             resolve(val);
                         }
@@ -87,7 +87,7 @@ function Prefs () {
                         (resp)=>{
                             resp.json().then(
                                 (jsonData)=>{
-                                    console.log('getFile %s got JSON response! %s %s',
+                                    console.log('getFile %s got JSON response!',
                                                 id,
                                                 resp,jsonData);
                                     resolve(jsonData);
@@ -117,7 +117,6 @@ function Prefs () {
                     .then(
                         (resp)=>{
                             var searchResult = resp.result
-                            //console.log('Done with search... %s',JSON.stringify(searchResult));
                             if (searchResult.files && searchResult.files.length >= 1) {
                                 if (searchResult.files.length > 1) {
                                     console.log('WARNING: There seem to be extra config files. We will use the first one.');
