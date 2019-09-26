@@ -4,6 +4,7 @@ import {faSave,faExternalLinkAlt,faCheck,faUndo,
         faAngleDown,faAngleUp,faAngleRight,faAngleLeft,
         faClipboardCheck,faChalkboardTeacher,faHiking,faFolderOpen,
         faPenSquare,
+        faPlus,
         faWindowClose} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {classNames} from '../utils.js';
@@ -14,7 +15,7 @@ function Icon (props) {
             ...props.classNames,
             icon:true,
             button:props.onClick,
-            'is-white':props.onClick,
+            /*'is-white':props.onClick,*/
         })}
               onClick={props.onClick}
         >
@@ -39,6 +40,6 @@ Icon.clipboard = faClipboardCheck;
 Icon.folderOpen = faFolderOpen;
 Icon.undo = faUndo;
 Icon.work = faHiking;
-    
+Icon.plus = faPlus;    
 
 export default Icon;
