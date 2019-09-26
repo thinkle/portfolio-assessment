@@ -1,13 +1,12 @@
 import React, {useEffect,useState} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown,faAngleUp,faPenSquare,faWindowClose,faCheck,faPlus,faTrash } from '@fortawesome/free-solid-svg-icons'
-import {classNames} from './utils.js';
+import {classNames,getProp} from './utils.js';
 import {TransitionGroup,CSSTransition} from 'react-transition-group';
 import { inspect } from 'util'; // or directly
 import Editor from './RichText.js';
 import {Icon,Modal,Button} from './widgets.js';
 import './TreeView.sass';
-
+import hash from 'object-hash';
 
 // Nevermind -- let's abstract the treeview out into a widget.
 
@@ -66,7 +65,7 @@ function AddRowRow (props) {
         >
           <div className={"treecell colSpan"+props.colsToSkip}/>
           <div className="control treecell" >
-            <Icon icon={faPlus}
+            <Icon icon={Icon.plus}
                   onClick={addRowCallback}
             />
           </div>
@@ -75,10 +74,17 @@ function AddRowRow (props) {
 
 
 function TreeRow (props) {
-    
+
     var nlevel = props.level
 
-    const [showChildren,setShowChildren] = useState(props.showChildren);
+    const [showChildren,_setShowChildren] = useState(props.getShowChildrenState && props.getShowChildrenState(props));
+
+    function setShowChildren (v) {
+        _setShowChildren(v);
+        if (props.onSetShowChildren) {
+            props.onSetShowChildren(v,props.id);
+        }
+    }
     
     if (!props.show) {
         return null;
@@ -111,7 +117,7 @@ function TreeRow (props) {
                    reverse:showChildren,
                    unreverse:!showChildren
                })}>
-                <Icon icon={faAngleDown}
+                <Icon icon={Icon.down}
                       onClick={
                           ()=>setShowChildren(!showChildren)
                       }
@@ -127,6 +133,8 @@ function TreeRow (props) {
                 try {
                     return renderer(
                         {...props.data,
+                         rowId:props.id,
+                         rowProps:props,
                          onPropChange:(p,v)=>props.onChange(props.id,p,v)
                         }
                     );
@@ -134,16 +142,17 @@ function TreeRow (props) {
                 catch (err) {
                     console.log('RENDERING ERROR with renderer %s',renderer)
                     console.log('RENDERING ERROR %s',err);
-                    return (<span>Error rendering data</span>)
+                    return (<span>Error rendering data: {inspect(err)}</span>)
                 }
             })}
+            {!props.noDelete && 
             <div className="controls treecell" >
-              <Icon icon={faTrash}
+              <Icon icon={Icon.trash}
                     onClick={
                         ()=>props.onDeleteRow(props.id)
                     }
               />
-            </div>
+            </div>}
           </div>
           
 
@@ -163,18 +172,12 @@ function TreeRow (props) {
                {props.data.children.map(
                    (child,count)=>(
                        <TreeRow
+                         {...props}
                          id={`${props.id}-${count}`}
-                         template={props.template}
                          level={nlevel+1}
+                         key={hash(child.data)}
                          data={child}
-                         getRenderers={props.getRenderers}
-                         onChange={props.onChange}
-                         onAddRow={props.onAddRow}
-                         onDeleteRow={props.onDeleteRow}
                          show={true}
-                         maxNesting={props.maxNesting}
-                         getNewRowData={props.getNewRowData}
-                         cols={props.cols}
                        />
 
                    ))}
@@ -240,27 +243,24 @@ function getNodeInfoFromId (id, tree) {
 
 function getNodeFromId (id, tree) {
     return getNodeInfoFromId(id,tree).node;
-    // if (!id) {
-    //     return {
-    //         children:tree
-    //     }
-    // }
-    // var addresses = id.split('-').map((i)=>Number(i))
-    // var node = {children:tree}
-    // console.log(`converted ID ${id} to addresses ${addresses}`);
-    // for (var address of addresses) {
-    //     node = node.children && node.children[address];
-    //     console.log(`Navigate to ${node}`);
-    // }
-    // return node;
 }
 
 function TreeView (props) {
     
     const [data,setData] = useState(props.data);
 
-    var widths = ['60px',...props.widths,'60px']
+    const noDelete = props.noDelete
+    var widths = ['60px',...props.widths]
+    if (!noDelete) {widths.push('60px');}
     var template = widths.join(' ');
+    
+    // useEffect(
+    //     ()=>{
+    //         if (props.data != data) {
+    //             setData(props.data)
+    //         }
+    //     },[props.data]
+    // );
 
     useEffect(
         ()=>{
@@ -286,6 +286,10 @@ function TreeView (props) {
         catch (err) {
             console.log(`Trouble with parent ${inspect(parent)} childIndex ${childIndex}`)
             throw err;
+        }
+        if (parent && props.onSetShowChildren) {
+            console.log('Tell our parent to show us off...');
+            props.onSetShowChildren(true,parent.id)
         }
         setData(newTree);
     }
@@ -313,24 +317,22 @@ function TreeView (props) {
     return (
         <TransitionGroup>
         <table className="table treeView container is-striped">
-          <TreeHead headers={props.headers} template={template}/>
+          <TreeHead key={props.headers.join('')} headers={props.headers} template={template}/>
           
 
         {data.map(
             (row,count)=>(<TreeRow
+                            {...props}
+                            key={hash(row.data)}
                             id={''+count}
                             template={template}
                             level={0}
                             data={row}
-                            getRenderers={props.getRenderers}
                             onChange={onDataChange}
                             onAddRow={insertRow}
                             onDeleteRow={deleteRow}
+                            noDelete={noDelete}
                             show={true}
-                            showChildren={false}
-                            maxNesting={props.maxNesting}
-                            getNewRowData={props.getNewRowData}
-                            cols={props.cols}
                             />)
         )}
         {props.getNewRowData && <AddRowRow
@@ -347,27 +349,42 @@ function TreeView (props) {
     )
 }
 
+TreeView.LinkCol = (field, params = {}) => ({data,onPropChange}) => {
+    return (<div className={'treecell text-col link-col colSpan'+params.colSpan}>
+              <a href={data[field]} target="_blank">{params.getText && params.getText(data) || params.linkText || data[field]}</a>
+            </div>);
+}
+
 TreeView.TextCol = (field,params = {}) => ({data,onPropChange}) => {
+    var value = getProp(data,field)
+    if (!value) {
+        value = ''
+    }
+    else {
+        value = ''+value;
+    }
     return (<div className={'treecell text-col colSpan'+params.colSpan}>              
-              {params.editable && <input className="input" value={data[field]}
-                     onChange={
-                         (event)=>{
-                             onPropChange(field,event.target.value)
-                         }
-                     }
-                                  />
+              {params.editable &&
+               <input className="input" value={value}
+                      onChange={
+                          (event)=>{
+                              onPropChange(field,event.target.value)
+                          }
+                      }
+               />
                ||
-               ''+data[field]}
+               <span>{''+value}</span>
+              }
             </div>
            )
 }
 TreeView.TagCol = (field,params = {}) => ({data,onPropChange}) => {
     return (<div className={"treecell colSpan"+params.colSpan} className='tag-col'>
-              <span className="tag">{data[field]+''}</span>
+              <span className="tag">{getProp(data,field)+''}</span>
             </div>)
 }
 TreeView.DateCol = (field,params = {}) => ({data,onPropChange}) => {
-    var v = data[field];
+    var v = getProp(data,field);
     var inputVal = undefined;
     if (v && v.toLocaleDateString) {
         inputVal = v.toISOString().substring(0,10);
@@ -407,7 +424,7 @@ TreeView.BlankCol = (field,params = {}) => ({data}) => {
 TreeView.HeaderCol = (field,params = {}) => ({data,onPropChange}) => {
     return (<div className={"treecell is-bold colSpan"+params.colSpan}
                  >              
-              {params.editable && <input className="input" value={data[field]}
+              {params.editable && <input className="input" value={getProp(data,field)}
                      onChange={
                          (event)=>{
                              onPropChange(field,event.target.value)
@@ -416,7 +433,7 @@ TreeView.HeaderCol = (field,params = {}) => ({data,onPropChange}) => {
                                   />
 
                ||
-               data[field]
+               getProp(data,field)
               }
             </div>)
 }
@@ -424,8 +441,8 @@ TreeView.HeaderCol = (field,params = {}) => ({data,onPropChange}) => {
 TreeView.SumCol = (field,params = {}) => ({data,children}) => {
     var tot = 0;
     function crawl (node) {
-        if (node.data[field]) {
-            tot += node.data[field]
+        if (getProp(node,`data.${field}`)) {
+            tot += getProp(node,`data.${field}`)
         }
         if (node.children) {
             node.children.forEach(crawl);
@@ -441,39 +458,57 @@ TreeView.NumCol = (field,params = {}) => ({data,onPropChange}) => {
              {
                  params.editable &&
                      <input className="input"
-                            value={data[field]}
+                            value={getProp(data,field)}
                             type='number'
                             onChange={(event)=>{onPropChange(field,Number(event.target.value))}}
                      />
                  ||
-                 Number(data[field])
+                 Number(getProp(data,field))
              }
            </div>
 }
 
-TreeView.RichTextCol = (field,params) => ({data,onPropChange}) => {
+TreeView.ButtonCol = (params = {}) => ({data, rowId, onPropChange}) => {
+    var onClickCallback
+    if (params.generateOnClick) {
+        onClickCallback = params.generateOnClick({data,onPropChange,rowId})
+    }
+    else {
+        onClickCallback = params.onClick
+    }
+    
+    return (<div className={'treecell colSpan'+params.colSpan}>
+              <Button classNames={{}}
+                  /*{'is-inverted':true,'is-outlined':true,'is-white':true}*/
+                      onClick={onClickCallback} {...params}>
+               {params.content}
+             </Button>
+            </div>)
+}
+
+TreeView.RichTextCol = (field,params = {}) => ({data,onPropChange}) => {
     const [showEditor,setShowEditor] = useState(false);
     return(
         <div className={"treecell colSpan"+(params&&params.colSpan)}>
           <div>
-            <span>{snippet(data[field])}</span>
+            <span>{snippet(getProp(data,field))}</span>
             <Icon
               onClick={()=>setShowEditor(!showEditor)}
-              icon={faPenSquare}
+              icon={Icon.edit}
             />
             <Modal active={showEditor} onClose={()=>setShowEditor(false)}
                    title={params.makeHeader && params.makeHeader(data)}
             >
               <div>
               {showEditor &&
-                <Editor editorHtml={data[field]}
+                <Editor editorHtml={getProp(data,field)}
                      onChange={(v)=>{
                          onPropChange(field,v)
                      }}
                 />
               }
                </div>
-              <Button icon={faCheck} onClick={()=>setShowEditor(false)}>
+              <Button icon={Icon.check} onClick={()=>setShowEditor(false)}>
                 Close
               </Button>
             </Modal>
@@ -483,6 +518,7 @@ TreeView.RichTextCol = (field,params) => ({data,onPropChange}) => {
     );
 
     function snippet (htmlVal) {
+        if (!htmlVal) {htmlVal=''}
         // Very lame snippet.
         htmlVal = htmlVal.replace(
                 /<[^>]*>/g,' '
@@ -493,7 +529,7 @@ TreeView.RichTextCol = (field,params) => ({data,onPropChange}) => {
     function popupEditor () {
         return (
             <div className="textEditorCell spring-tree-enter-done">
-                <Editor editorHtml={data[field]}
+                <Editor editorHtml={getProp(data,field)}
                      onChange={(v)=>{
                          onPropChange(field,v)
                      }}
@@ -519,5 +555,37 @@ TreeView.CascadeHook = (props) => (data,node,prop,val) => {
     
 }
 
+function NapTime (showLevel=0) { // i.e. collapsing children manager
+
+    const [childStateMap,setChildStateMap] = useState({});
+
+    function getShowChildrenState (rowProps) {
+        if (childStateMap[rowProps.id]) {
+            console.log('receive cached tree state',childStateMap[rowProps.id],rowProps.id);
+            return childStateMap[rowProps.id]
+        }
+        else {
+            if (rowProps.level < showLevel) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+
+    function onSetShowChildren (value, id) {
+        console.log('set show children state',id,value);
+        setChildStateMap({
+            ...childStateMap,
+            [id]:value
+        });
+    }
+
+    return {getShowChildrenState,
+           onSetShowChildren}
+}
+
+TreeView.NapTime = NapTime;
 
 export default TreeView
