@@ -34,7 +34,7 @@ function useStudentPortfolio ({course, student, includeAssessments}) {
     const [busy,setBusy] = useState(false);
     const [origPortfolio,setOrigPortfolio] = useState([]);
     const [portfolio,_setPortfolio] = useState([]); // we don't return the "pure" setPortfolio because we wrap it
-    const [saved,setSaved] = useState([]); // updated by comparing portfolio and original...
+    const [saved,setSaved] = useState(true); // updated by comparing portfolio and original...
 
     const sp = Api.StudentPortfolio(course,student);
 
@@ -65,7 +65,10 @@ function useStudentPortfolio ({course, student, includeAssessments}) {
                     console.log('useStudentPortfolio: Error fetching assessments',err);
                 }
                 try {
-                    setPortfolio(Api.StudentPortfolio.parsePortfolio(newPortfolioData,assessments))
+                    var portf = Api.StudentPortfolio.parsePortfolio(newPortfolioData,assessments)
+                    setOrigPortfolio(portf);
+                    _setPortfolio(portf);
+                    setSaved(true)
                 }
                 catch (err) {
                     console.log('useStudentPortfolio: Error parsing portfolio',newPortfolioData,assessments);
@@ -93,6 +96,8 @@ function useStudentPortfolio ({course, student, includeAssessments}) {
             throw err;
         }
         setBusy(false);
+        setSaved(true);
+        setOrigPortfolio(portfolio);
         return result;
     }
 
@@ -102,6 +107,7 @@ function useStudentPortfolio ({course, student, includeAssessments}) {
             setSaved(true)
         }
         else {
+            console.log('not the same: saved=false');
             setSaved(false);
         }
     }
