@@ -255,7 +255,7 @@ function PortfolioBuilder (props) {
 
     useEffect(
         ()=>{
-            console.log('skll or descriptor changed! just once!');
+            //console.log('skll or descriptor changed! just once!');
             setTreeData(pm.fromFlatList(
                 skills,
                 descriptors
