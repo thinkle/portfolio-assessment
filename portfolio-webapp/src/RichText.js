@@ -64,7 +64,7 @@ class Editor extends React.Component {
     
     render () {
         return (
-                <div className='noheader'> {/* Hack to remove stupid headers */}
+                <div className='noheader' {...this.props}> {/* Hack to remove stupid headers */}
                 <ReactQuill 
             theme="snow"
             onChange={this.handleChange}
