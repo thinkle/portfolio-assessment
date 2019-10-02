@@ -12,6 +12,29 @@ function Modal (props) {
         body = props.children
     }
     return (
+        <div className={classNames({modal:true,'is-active':props.active})}>
+          <div className='modal-background'/>
+          <div className='modal-content container is-opaque'>
+            {props.title && <h2 className='title'>{props.title}</h2>}
+            {body}
+            {footer}
+          </div>
+          <button className='modal-close is-large' aria-label='close' onClick={props.onClose}/>
+        </div>
+    );
+}
+
+function ModalCard (props) {
+    var body, footer;
+    var arrayChildren = React.Children.toArray(props.children);
+    if (arrayChildren.length == 2 ) {
+        body = arrayChildren[0];
+        footer = arrayChildren[1];
+    }
+    else {
+        body = props.children
+    }
+    return (
             <div className={classNames(
                 {modal:true,
                  'is-active':props.active}
@@ -32,5 +55,7 @@ function Modal (props) {
             </div>
     );
 }
+
+Modal.ModalCard = ModalCard
 
 export default Modal;
