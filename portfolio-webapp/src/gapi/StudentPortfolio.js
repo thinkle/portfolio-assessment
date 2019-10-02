@@ -12,7 +12,17 @@ function StudentPortfolio (course, student) {
         console.log('Pushing portfolio data',portfolio);
         var portfolioResult = await set_portfolio(portfolio);
         console.log('Pushing assessments data',assessments);
-        var assessmentResult = await set_assessments(assessments);
+        try {
+            var assessmentResult = await set_assessments(assessments);
+        }
+        catch (err) {
+            if (err.result && err.result.status=='PERMISSON_DENIED') {
+                console.log('No permission to write assessments - are we in student mode?');
+            }
+            else {
+                throw err;
+            }
+        }
         console.log('success! returning results.');
         return [portfolioResult,assessmentResult];
     }
@@ -23,7 +33,7 @@ function StudentPortfolio (course, student) {
             title:'exemplars'
         }]
 
-        var sheetId = await dm.getSheetId(course.id,PORTPROP,student.id);
+        var sheetId = await dm.getSheetId(course.id,PORTPROP,student.userId);
         if (sheetId) {
             return SheetManager(sheetId).updateData(data);
         }
@@ -31,7 +41,8 @@ function StudentPortfolio (course, student) {
             return dm.createStudentSheet(
                 course, student, PORTPROP,
                 `Portfolio Exemplars: ${course.name} ${student.profile.name.fullName}`,
-                data
+                data,
+                true,
             );
         }
     }
@@ -41,38 +52,40 @@ function StudentPortfolio (course, student) {
             rowData:Sheets.jsonToRowData(assessments),
             title:'assessments'
         }]
-        var sheetId = await dm.getSheetId(course.id,GRADEPROP,student.id);
+        var sheetId = await dm.getSheetId(course.id,GRADEPROP,student.userId);
         if (sheetId) {
             return SheetManager(sheetId).updateData(data);
         }
         else {
             return dm.createStudentSheet(
                 course,student,GRADEPROP,
-                `Portfolio Assessments: ${course.name} ${student.profile.fullName}`,
-                data
+                `Portfolio Assessments: ${course.name} ${student.profile.name.fullName}`,
+                data,
             );
         }
     }
 
     async function get_portfolio () {
-        var id = await dm.getSheetId(course.id,PORTPROP,student.id);
+        var id = await dm.getSheetId(course.id,PORTPROP,student.userId);
         if (id) {
+            console.log('StudentPortfolio: exemplar data in file with ID: %s',id);
             var sheets = await SheetManager(id).getSheetsDataJson();
             return sheets.exemplars;
         }
         else {
-            throw `No portfolio found for ${course.id}, ${PORTPROP},${student.id}`
+            throw `No portfolio found for ${course.id}, ${PORTPROP},${student.userId}`
         }
     }
 
     async function get_assessments () {
-        var id = await dm.getSheetId(course.id,GRADEPROP,student.id);
+        var id = await dm.getSheetId(course.id,GRADEPROP,student.userId);
         if (id) {
+            console.log('StudentPortfolio: assessment data in file with ID: %s',id);
             var sheets = await SheetManager(id).getSheetsDataJson();
             return sheets.assessments;
         }
         else {
-            throw `No portfolio found for ${course.id}, ${GRADEPROP},${student.id}`
+            throw `No portfolio found for ${course.id}, ${GRADEPROP},${student.userId}`
         }
     }
 
@@ -142,7 +155,8 @@ function splitPortfolioAndAssessmentData (fullPortfolio) {
                 courseworkId: exemplar.courseworkId, // || exemplar.submission.courseWorkId,
                 submissionId : exemplar.submissionId, //|| exemplar.coursework.id,
                 permalink : exemplar.permalink,
-                reflection : exemplar.reflection
+                reflection : exemplar.reflection,
+                revisionCount : exemplar.revisionCount,
             }
             if (!exemplarCopy.id) {
                 exemplarCopy.id = topId + 1;
