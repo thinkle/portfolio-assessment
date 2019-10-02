@@ -1,6 +1,9 @@
 import React,{useEffect,useState} from 'react';
 //import apiInfo from './secrets.js'; // comment out before committing
 var apiInfo // comment to work local
+const localMode = false; // comment to work local
+
+//const localMode = true; // comment out before committing
 
 /* Note: to use this, you need to include the following <script> tag in your index.html
 
@@ -145,18 +148,20 @@ function Gapi (props) {
 
     
     useEffect( ()=>{
-        //handleClientLoad(); // comment out before committing
-        fetch('https://portfolio-assessment.netlify.com/.netlify/functions/apiInfo/')
-            .then((resp)=>{
-                resp.json()
-                    .then((data)=>{
-                        console.log('Got our API Info!');
-                        apiInfo = data;
-                        console.log('handleClientLoad()!');
-                        handleClientLoad();
-                    });
-            })
-            .catch((err)=>console.log('oops?'));
+        if (localMode) {handleClientLoad();}
+        else {
+            fetch('https://portfolio-assessment.netlify.com/.netlify/functions/apiInfo/')
+                .then((resp)=>{
+                    resp.json()
+                        .then((data)=>{
+                            console.log('Got our API Info!');
+                            apiInfo = data;
+                            console.log('handleClientLoad()!');
+                            handleClientLoad();
+                        });
+                })
+                .catch((err)=>console.log('oops?'));
+        }
     },[]);
 
 
