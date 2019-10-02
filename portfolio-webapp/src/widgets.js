@@ -7,7 +7,7 @@ import Card from './widgets/Card.js';
 import Button from './widgets/Button.js';
 import Menu,{SelectableItem,CustomSelectableItem} from './widgets/Menu.js';
 import Navbar from './widgets/Navbar.js';
-import Tabs from './widgets/tabs.js';
+import Tabs from './widgets/Tabs.js';
 const InputWithEnter = React.forwardRef( (props, ref) => {
     return (
         <input onKeyDown={
