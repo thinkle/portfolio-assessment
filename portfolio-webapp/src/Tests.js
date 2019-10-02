@@ -17,7 +17,7 @@ import AssignmentMapper from './AssignmentMapper.js';
 import Portfolio from './Portfolio.js';
 import {Button,Buttons,SelectableItem,Box,h,Container} from './widgets.js';
 import Menu from './widgets/Menu.js';
-import Tabs from './widgets/tabs.js';
+import Tabs from './widgets/Tabs.js';
 
 function TestView () {
     const [page,setPage] = useState('gapi')
