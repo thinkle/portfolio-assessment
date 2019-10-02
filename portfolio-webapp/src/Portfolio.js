@@ -213,16 +213,19 @@ function Portfolio (props) {
 
     }
 
-    function saveExemplar (exemplar) {
+    function saveExemplars (exemplars) {
         var newPortfolio = [...portfolio];
-        // deep copy portfolio...
-        // and insert exemplar into it...
-        if (exemplar.id) {
-            replaceItemInArray(newPortfolio,exemplar,'id')
-        }
-        else {
-            newPortfolio.push(exemplar);
-        }
+        exemplars.forEach(
+            (exemplar)=>{
+                // deep copy portfolio...
+                // and insert exemplar into it...
+                if (exemplar.id) {
+                    replaceItemInArray(newPortfolio,exemplar,'id')
+                }
+                else {
+                    newPortfolio.push(exemplar);
+                }
+            });
         console.log('Built new portfolio structure: ',newPortfolio);
         setPortfolio(newPortfolio);
         buildTreeDataStructure()
@@ -270,7 +273,7 @@ function Portfolio (props) {
                            ]
                 }
                 else {
-                    return [TreeView.BlankCol(),
+                    return [StatusCol,
                             TreeView.TextCol('coursework.title'),
                             TreeView.LinkCol('permalink',{linkText:'Link to work'}),
                             TreeView.TextCol('assessment.score'),
@@ -283,8 +286,12 @@ function Portfolio (props) {
             <ExemplarEditor
               {...props}
               {...exemplarEditorProps}
+              strands={strands}
+              skills={skills}
+              assignments={assignments}
               key={getExemplarKey()}
-              onChange={(exemplar)=>saveExemplar(exemplar)}
+              onChange={(exemplars)=>saveExemplars(exemplars)}
+              mode={props.teacherMode&&'teacher'||'student'}
             />
           </Modal>
 
@@ -296,21 +303,31 @@ function Portfolio (props) {
             return 0
         }
         else {
-            const p = exemplarEditorProps
-            return `${p.id||''}${p.skill}-${getProp(p,'selectedSubmission.id')}-${getProp(p,'reflection.length')}-${getProp(p,'assessment.comment.length')}-${getProp(p,'assessment.score')}-${getProp(p,'permalink')}`
+            const pp = exemplarEditorProps
+            if (pp.selectedSkills) {
+                return pp.selectedSkills.map(
+                (p)=>`${p.id||''}${p.skill}-${getProp(p,'selectedSubmission.id')}-${getProp(p,'reflection.length')}-${getProp(p,'assessment.comment.length')}-${getProp(p,'assessment.score')}-${getProp(p,'permalink')}`
+            ).join('.')
+            }
+            else {
+                return Object.values(pp).join('.');
+            }
         }
     }
 
     function editExemplarCallback ({data, children}) {
         return function () {
             setExemplarEditorProps({
-                skill:data.skill,
-                id : data.id,
                 selectedSubmission : data.submission,
                 selectedCoursework : data.coursework,
-                reflection : data.reflection,
-                assessment : data.assessment,
-                permalink : data.permalink
+                selectedSkills : [{
+                    skill:data.skill,
+                    id : data.id,
+                    reflection : data.reflection,
+                    assessment : data.assessment,
+                    permalink : data.permalink,
+                    revisionCount : data.revisionCount,
+                }],
             });
             setShowExemplar(true);
         }
@@ -327,7 +344,7 @@ function Portfolio (props) {
             console.log('Adding after row',rowId);
             treeState.onSetShowChildren(true,rowId);
             setExemplarEditorProps({
-                skill:data.skill,
+                selectedSkills : [{skill:data.skill}]
             });
             setShowExemplar(true);
         }
@@ -390,5 +407,18 @@ function PointsTotalCol ({data}) {
     }
 }
 
+function StatusCol ({data}) {
+    var revCount = data.revisionCount || 0;
+    var assCount = data.assessment && data.assessment.count || 0;    
+    if (assCount >= revCount) {
+        return <span><Icon icon={Icon.teacher}/><span className='tag'>{assCount}</span></span>
+    }
+    else if (revCount == 0) {
+        return <span><Icon icon={Icon.bang}/><span className='tag'>Not in</span></span>
+    }
+    else {
+        return <span><Icon icon={Icon.check}/><span className='tag'>{revCount}</span></span>
+    }
+}
 
 export default Portfolio;
