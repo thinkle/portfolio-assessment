@@ -1,3 +1,4 @@
+import {Icon} from './widgets.js';
 import React,{useState} from 'react';
 
 function SheetWidget (props) {
@@ -8,12 +9,14 @@ function SheetWidget (props) {
     var w = props.width || 1200;
 
     return (
-        <div>
-          <a href={props.url} target="_blank">New window?</a>
+        <div style={{position:'relative'}}>
+          <a style={{position:'absolute',right:'2px',top:'2px'}} href={props.url} target="_blank">
+            <Icon icon={Icon.external}/>
+          </a>
           {showEmbed
            &&
            <div>
-             <a href="#" onClick={()=>setShowEmbed(false)}>Hide</a>
+             {/* <a href="#" onClick={()=>setShowEmbed(false)}>Hide</a> */}
              <br/><iframe style={{height:h+'px', width:w+'px'}} height={h} width={w} src={props.url}/>
            </div>
            ||
