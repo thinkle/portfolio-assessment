@@ -1,0 +1,117 @@
+.ExemplarEditor  {
+    display: grid;
+    grid-template-areas: "header header"
+                         "workTitle exemplarInfo"
+                         "skills skills"
+                         "iframe iframe"
+    ;
+    grid-template-columns: 1fr 2fr;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+.ExemplarEditor.sidebarMode {
+    grid-template-areas: "header     header      header "
+                         "workTitle  exemplarInfo exemplarInfo"
+                         "iframe     iframe       skills"
+    ;
+    grid-template-columns: 2fr 1fr 350px;
+}
+
+// .ExemplarEditor > div {
+//   border: 2px solid red;
+// }
+  
+.ExemplarEditor .exemplarInfo {
+    grid-area: exemplarInfo;
+}
+.ExemplarEditor .workTitle {
+    grid-area: workTitle;
+}
+.ExemplarEditor .skills {
+    grid-area: skills;
+}
+.ExemplarEditor .embeddedWork {
+    display: none;
+    grid-area: iframe;
+}
+.ExemplarEditor.sidebarMode .embeddedWork {
+    display: block;
+}
+
+.sidebarMode .skillEditor {
+    display: block;
+}
+
+.skillEditor {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    grid-template-areas: "title control"
+                         "detail detail"
+                         "reflection description"
+                         "assessment description"
+    ;
+}
+
+$grey : #dfdfdf;
+
+.skillEditor .skillTitle {
+    grid-area: title;
+    background-color: $grey;
+    padding-top: 3px;
+}
+
+.skillEditor .skillTitle,.skillEditor .skillDetail,.skillEditor .skillControl {
+    background-color: $grey;
+}
+.skillEditor .skillTitle,.skillEditor .skillControl {
+    padding-top: 4px;
+}
+
+.skillEditor .skillDetail {
+    padding-bottom: 4px;
+}
+
+.skillEditor .skillDetail {
+    grid-area: detail;
+
+}
+
+.skillEditor .skillControl {
+    grid-area: control;
+    background-color: $grey
+}
+
+// .skillEditor > div {
+//     border: 3px solid blue;
+// }
+
+.skillEditor .skillDescripton {
+    grid-area: description;
+}
+.skillEditor .reflection {
+    grid-area: reflection;
+}
+.skillEditor .assessment {
+    grid-area: assessment;
+}
+.side-by-side {
+    white-space: nowrap;
+}
+
+.side-by-side > *  {
+    display: inline-block;
+}
+.reflection.empty .title {
+    font-size: 70%;
+}
+.reflection.empty {
+    color: #333;
+}
+
+.linkPicker {
+    display: inline-block;
+}
+.linkPicker * {
+    display: inline-block;
+    margin-right: 3px;
+}
