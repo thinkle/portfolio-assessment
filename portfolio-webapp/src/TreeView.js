@@ -203,7 +203,6 @@ function TreeRow (props) {
 }
 
 function cloneTree (tree) {
-    console.log('Clone tree %s',tree);
     const newTree = []
     for (let node of tree) {
         const obj = {
@@ -229,11 +228,9 @@ function getNodeInfoFromId (id, tree) {
     }
     var addresses = id.split('-').map((i)=>Number(i))
     var node = {children:tree}; var parent = undefined;
-    console.log(`converted ID ${id} to addresses ${addresses}`);
     for (var address of addresses) {
         parent = node;
         node = node.children && node.children[address];
-        console.log(`Navigate to ${node}`);
     }
     return {
         node, parent, addresses,
@@ -264,7 +261,7 @@ function TreeView (props) {
 
     useEffect(
         ()=>{
-            console.log('Data changed!');
+            //console.log('Data changed!');
             props.onDataChange && props.onDataChange(data);
         },
         [data]);
