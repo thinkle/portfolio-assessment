@@ -61,21 +61,21 @@ function SelectableItem (props) {
 
     useEffect( ()=>{
         window.setTimeout(()=>{
-        var maxHeight = 0;
-        var maxWidth = 0;
-        renderedItems.forEach(
-            (el)=>{
-                if (el) {
-                    var box = el.getBoundingClientRect();
-                    if (box.width > maxWidth) maxWidth = box.width;
-                    if (box.height > maxHeight) maxHeight = box.height;
-                }
-            });
-        setElWidth(maxWidth+30);
+            var maxHeight = 0;
+            var maxWidth = 0;
+            renderedItems.forEach(
+                (el)=>{
+                    if (el) {
+                        var box = el.getBoundingClientRect();
+                        if (box.width > maxWidth) maxWidth = box.width;
+                        if (box.height > maxHeight) maxHeight = box.height;
+                    }
+                });
+            setElWidth(maxWidth+30);
             setElHeight(maxHeight+5);
         },200);
-    }, [selected]);
-
+    }, [selected, props]);
+    
     var renderItem = props.renderItem;
     if (!renderItem) {
         renderItem = (itm)=>itm;
