@@ -48,7 +48,7 @@ Step 2: Teacher set-up
    -> BACKEND WORK!
 
    next up -- get the backend ready for primetime...
-   -> Google Doc Generator functions (to create our "databases") (x)
+   -> Google Sheet Generator functions (to create our "databases") (x)
    -> Create and test file formats for...
       -> Portfolio (x)
       -> Assessments (x)
@@ -90,14 +90,64 @@ Step 2: Teacher set-up
         Remote/netlify we pull the data in from a lambda function
 
 -> Assignments list...
-   -> Associate google classroom assignment with skills.
-   
+   -> Associate google classroom assignment with skills. (x)
+   - DATA MODEL:
+
+     Teacher owns...
+     
+       Portfolio Desc
+       - Skill table (x)
+       - Descriptor table (x)
+       - Skill->Classroom assignment table (many-to-many) (x)
+
+       Assessments table
+       - Skill - Student - Exemplar - Assessment (x)
+
+     Student and teacher have r/w access to...
+       Portfolio
+       - Exemplar table
+         -  Skill -> Exemplar -> Reflection (x)
+
+     Student has ro access / teacher owns...
+     - Skill -> Exemplar -> Assessment (x)
+
 
 Step 3: Student set-up
-- Allow student to link an assignment to a skill / multiple skills.
-- Allow teacher to link a student assignment to a skill / multiple skills.
+- Allow student to link an assignment to a skill / multiple skills. (x)
+- Allow teacher to link a student assignment to a skill / multiple skills. (x)
 
 
 UI Improvements:
-- Set up basic animation framework
-- Animate basic UI elements
+- Set up basic animation framework (x)
+- Animate basic UI elements (x)
+
+Next Steps:
+- Separate teacher- and student- views on "Exemplar Editor" (x)
+- Add new state model for tracking handed-in vs. returned status of work. (x)
+  -> Maybe just a counter? (x)
+     -> Student can mark "Revised"
+     -> Teacher can mark "Assessed"
+     -> Assessment generates an email
+     -> We generate an "assessed count" = to the current "revision" count. (x)
+
+- Come up with a system for student accounts to access course metadata
+  and read-only assessments via document manager. (document
+  properties?) (x)
+
+
+TO DO...
+- Test student access to shared file via property data
+   -> test.student@ (x)
+   -> https://docs.google.com/spreadsheets/d/1DFGgiQ-5ujJhEXd1-1G0VOV6YAy9KJO9n0mhfEKNsLU/edit#gid=1528350749
+   -> First confirm we have correct properties on it via my account (x)
+   -> Then try searching it up via student account (x)
+- Set up sheet managers to use properties to find sheets so students can discover portfolio info (success!) (x)
+
+...
+- Get working export of google docs / sharing feedback w/ students
+- Get smoother assessment mode for dealing with multiple students
+- Try caching(?) data.
+
+
+- ???
+- PROFIT!
