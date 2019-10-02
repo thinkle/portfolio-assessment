@@ -12,7 +12,7 @@ const Classroom = {
         return Classroom.fetchAll(cr().courses.list,params,'courses');
     },
 
-    get_coursework ({course}) {
+    get_coursework ({course, teacherMode}) {
         const params = {
             courseId:course.id,
             pageSize:50,
@@ -24,13 +24,16 @@ const Classroom = {
         );
     },
 
-    get_student_work ({course, coursework, student}) {
+    get_student_work ({course, coursework, student, teacherMode}) {
         const params = {
             courseId:course.id,
             courseWorkId:coursework&&coursework.id||'-',
         }
-        if (student) {
+        if (teacherMode && student) {
             params.userId = student.userId||'me';
+        }
+        else {
+            params.userId = 'me';
         }
         return Classroom.fetchAll(cr().courses.courseWork.studentSubmissions.list,
                         params,'studentSubmissions');
