@@ -145,7 +145,7 @@ function Gapi (props) {
 
     
     useEffect( ()=>{
-        handleClientLoad(); // comment out before committing
+        //handleClientLoad(); // comment out before committing
         fetch('https://portfolio-assessment.netlify.com/.netlify/functions/apiInfo/')
             .then((resp)=>{
                 resp.json()
