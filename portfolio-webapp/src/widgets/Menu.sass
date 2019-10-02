@@ -1,0 +1,111 @@
+.menu-content-holder
+  position: relative;
+  
+.menu-content
+  max-width: 250px
+  border: 1px solid #cfcfcf;
+  position: absolute
+  top: 0px
+  left: 0px
+  z-index: 100
+  background-color: white;
+  min-width: 5em
+
+.unreverse 
+  transform : rotateZ(360deg)
+  transition : transform 300ms
+  display: inline-block
+  
+.reverse 
+  transform : rotateZ(180deg)
+  transition : transform 300ms
+  display: inline-block
+
+.dropdown
+  color: blue
+
+.dropdown-enter
+  transform-origin: top
+  transform: scaleY(0)
+  /*transform: translateY(-1)*/
+
+.dropdown-enter-done
+  transform-origin: top
+  transform: scaleY(1)
+  /*transform: translateY(0)*/
+  opacity: 1
+  transition: transform 500ms
+  
+
+.dropdown-exit-done
+  transform: scaleY(0)
+  transition: transform 300ms
+  transform-origin: top
+
+.menu-content.dropdown-enter,.menu-content.dropdown-enter-done,.menu-content.dropdown-exit-done
+  display: block
+  
+.dropdown-appear /* initial display */
+  display: none
+
+.hidden
+  visibility: hidden
+
+.revealed
+  opacity: 1
+  transition: opacity 300ms
+
+.selectedItem
+  opacity: 1
+
+
+.fade-item-enter
+  opacity: 0
+  transform: translateY(150px)
+
+.fade-item-enter-done
+  opacity: 1
+  transform: translateY(0)
+  transition: opacity 500ms, transform 500ms
+  pointer-events: auto
+
+.fade-item-exit
+  transform: translateX(0)translateY(0)
+  opacity: 1
+
+.fade-item-exit-done
+  opacity: 0
+  transform: translateX(200px)translateY(-5px)
+  transition: opacity 500ms, transform 500ms
+  width: 0
+  pointer-events: none
+
+.fade-menu-exit
+  opacity: 1
+  transform: translateY(0)
+  
+.fade-menu-exit-done
+  pointer-events: none
+  transform: translateY(-50px)
+  opacity: 0
+  transition: opacity 500ms, transform 500ms
+
+.relWrap
+  position: relative
+
+.navbar-item .relWrap
+  align-self: start
+
+.static
+  position: absolute
+  left: 0
+  top: 0
+
+.static .close-button
+  position: absolute;
+  right: -18px
+  top: -3px
+  z-index: 10;
+
+.close-button
+  cursor: pointer;
