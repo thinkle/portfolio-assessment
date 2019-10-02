@@ -228,13 +228,14 @@ var Api = {
             fetchJsonp(url)
                 .then((response)=>response.json())
                 .then((json)=>{
-                    console.log('Got data from %s: %s',id,JSON.stringify(json));
+                    console.log('Got data from %s:',id,json);
                     if (json.result) {
                         resolve(json.result)
                     }
                     else {
                         reject({
                             url : url,
+                            response:json,
                             error:`Response has no result: ${JSON.stringify(json)}`
                         })
                     }
@@ -280,8 +281,8 @@ var Api = {
                       some:'data',
                   })
               })
-            .then((r)=>console.log('Got result: %s',JSON.stringify(r)))
-            .catch((e)=>console.log('Error? %s %s',e,JSON.stringify(e)))
+            .then((r)=>console.log('Got result: ',r))
+            .catch((e)=>console.log('Error? ',e,e));
     },
 
 
