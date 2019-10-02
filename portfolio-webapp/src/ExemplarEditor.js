@@ -1,7 +1,6 @@
 import React,{useState,useEffect} from 'react';
 import {useCoursework,useStudentWork,useStudentPortfolio} from './gapi/hooks.js';
 import {Box,CustomSelectableItem,SelectableItem,Container,Icon,Button,Navbar,h} from './widgets.js';
-import ThreePanel from './widgets/threePanelLayout.js';
 import {SkillPicker,usePortfolioSkillHook} from './AssignmentMapper.js';
 import {arrayProp,classNames,getById,getProp} from './utils.js';
 import Material from './Material.js';
