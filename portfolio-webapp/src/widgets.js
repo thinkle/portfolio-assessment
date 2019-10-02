@@ -6,7 +6,8 @@ import makeComponent from './widgets/QuickComponents.js';
 import Card from './widgets/Card.js';
 import Button from './widgets/Button.js';
 import Menu,{SelectableItem,CustomSelectableItem} from './widgets/Menu.js';
-
+import Navbar from './widgets/Navbar.js';
+import Tabs from './widgets/tabs.js';
 const InputWithEnter = React.forwardRef( (props, ref) => {
     return (
         <input onKeyDown={
@@ -22,11 +23,15 @@ const InputWithEnter = React.forwardRef( (props, ref) => {
 
 
 
-
+const Box = makeComponent(['box']);
 const Buttons = makeComponent(['buttons']);
 const Content = makeComponent(['content']);
 const Container = makeComponent(['container']);
 
+const h = {};
+for (let i=1; i<=6; i++) {
+    h['h'+i] = makeComponent(['title','is-'+i])
+    h['sh'+i] = makeComponent(['subtitle','is-'+i])
+}
 
-
-export {InputWithEnter,Modal,Card,Button,Buttons,Content,Icon,Container,Menu,SelectableItem,CustomSelectableItem}
+export {InputWithEnter,Modal,Card,Button,Buttons,Content,Icon,Container,Menu,SelectableItem,CustomSelectableItem,Navbar,h,Box,Tabs}
