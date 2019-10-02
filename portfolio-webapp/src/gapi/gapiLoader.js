@@ -77,11 +77,13 @@ console.log("APIs look like: %s",JSON.stringify(GOOGLESCOPES));
 
 const SCOPES = [GOOGLESCOPES.classroom.courses.readonly];
 SCOPES.push(GOOGLESCOPES.classroom.coursework.students.readonly);
+SCOPES.push(GOOGLESCOPES.classroom.coursework.me.all);
 SCOPES.push(GOOGLESCOPES.classroom.rosters.readonly);
 SCOPES.push(GOOGLESCOPES.drive.file.all);
 SCOPES.push(GOOGLESCOPES.spreadsheets.all);
 SCOPES.push(GOOGLESCOPES.drive.appdata.all)
 SCOPES.push(GOOGLESCOPES.drive.readonly);
+SCOPES.push('https://www.googleapis.com/auth/classroom.profile.emails'); // get emails with profiles!
 
 const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/classroom/v1/rest",
                         "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
@@ -143,7 +145,7 @@ function Gapi (props) {
 
     
     useEffect( ()=>{
-        //handleClientLoad(); // comment out before committing
+        handleClientLoad(); // comment out before committing
         fetch('https://portfolio-assessment.netlify.com/.netlify/functions/apiInfo/')
             .then((resp)=>{
                 resp.json()
