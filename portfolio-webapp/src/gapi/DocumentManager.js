@@ -18,17 +18,52 @@ function propname (courseId, prop, student) {
     }
 }
 
+
+function FileUpdater (fileId) {
+    
+    var request = {fileId:fileId}
+    
+    return {
+        addToFolder (folder) {
+            request.addParents = folder;
+            return this;
+        },
+        addAppProp (prop, val) {
+            if (!request.appProperties) {
+                request.appProperties = {}
+            }
+            request.appProperties[prop] = val
+            return this;
+        },
+        addCourse (courseId) {
+            this.addAppProp('courseId',courseId);
+            return this;
+        },
+        addStudent (studentId) {
+            this.addAppProp('studentId',studentId);
+            return this;
+        },
+        execute () {
+            return gdrive.files.update(request)
+        }
+    }
+}
+
+
 function DocumentManager () {
     getGapi();
     const rootFolderTitle = 'Portfolio Assessment Documents';
 
-    function createFolder (title, parent) {
+    function createFolder (title, parent, appProperties) {
         var fileMetadata = {
             name : title,
             mimeType : 'application/vnd.google-apps.folder'
         }
         if (parent) {
             fileMetadata.parents = [parent];
+        }
+        if (appProperties) {
+            fileMetadata.appProperties = appProperties;
         }
         return gdrive.files.create({
             resource : fileMetadata,
@@ -38,6 +73,42 @@ function DocumentManager () {
 
     
     return {
+
+        async addMetadata () {
+            //var id = await Api.getProp('root-folder-id');
+            const completed = []
+            var prefs = await Api.getPrefs().getProps();
+            for (var key in prefs) {
+                var fileId = prefs[key]
+                let appProperties = {prop:key}
+                if (key.indexOf('portfolio-desc') > -1) {
+                    var names = key.split('-');
+                    if (names.length==4) {
+                        if (names[2]=='export') {
+                            appProperties.role = 'portfolio-desc-export'
+                        }
+                        appProperties.courseId = names[3] // portfolio-desc-export-123124
+                    }
+                    else {
+                        appProperties.role = 'portfolio-desc'
+                        appProperties.courseId = names[2] // portfolio-desc-123124
+                    }
+                }
+                if (typeof fileId == 'string' && 
+                    fileId.length > 10 &&
+                    appProperties.prop.indexOf('-')>-1) {
+                    console.log('Try updating metadata!',fileId,appProperties)
+                    await gdrive.files.update({fileId : fileId,
+                                               appProperties : appProperties});
+                }
+                else {
+                    console.log("Skip %s:%s, doesn't look like a file",key,fileId);
+                }
+                completed.push({fileId : fileId,
+                                appProperties : appProperties});
+            }
+            return completed;
+        },
 
         async getRootFolderId () {
             var id = await Api.getProp('root-folder-id');
@@ -57,7 +128,6 @@ function DocumentManager () {
             var root = await this.getRootFolderId();
             var fileResp = await createFolder(
                 course.name+' Portfolio Assessment Docs',
-                root
             )
             
             Api.setProp(course.id+'-folder',fileResp.result.id);
@@ -75,15 +145,6 @@ function DocumentManager () {
             }
         },
 
-        addToFolder (id, folder) {
-            return gdrive.files.update(
-                {
-                    fileId : id,
-                    addParents : folder,
-                }
-            );
-        },
-
         async createStudentSheet (course, student, prop, title, sheets, studentWrite) {
             var spreadsheetObj = Sheets.getSpreadsheetBody({title,sheetsData:sheets});
             console.log('Creating student sheet with spreadsheetObj',spreadsheetObj);
@@ -91,8 +152,13 @@ function DocumentManager () {
             var response = await gsheets.spreadsheets.create(spreadsheetObj);
             console.log('Created resulted in!',response);
             var ssheet = response.result;
-            await Api.setProp(propname(course.id,prop,student.id),ssheet.spreadsheetId);
-            await this.addToCourseFolder(ssheet.spreadsheetId, course);
+            await Api.setProp(propname(course.id,prop,student.userId),ssheet.spreadsheetId);
+            var courseFolder = await this.getCourseFolder(course);
+            await FileUpdater(ssheet.spreadsheetId)
+                .addToFolder(courseFolder)
+                .addCourse(course.id) // ID
+                .addStudent(student.userId)
+                .execute()
 
             const permissionsParams = {
                 fileId : ssheet.spreadsheetId,
@@ -107,79 +173,61 @@ function DocumentManager () {
             return ssheet;
         },
         
-        async addToCourseFolder (id, course) {
-            var folder = await this.getCourseFolder(course);
-            console.log('Got course folder: %s',folder);
-            var result = await this.addToFolder(id,folder);
-            return result
+        async createSheet (title, sheetsData) {
+            var spreadsheetObj = Sheets.getSpreadsheetBody({title,sheetsData})
+            console.log('Spreadsheet object: %s',spreadsheetObj);
+            console.log(JSON.stringify(spreadsheetObj));
+            var response = await gsheets.spreadsheets.create(
+                spreadsheetObj
+            )
+            console.log('Complete! %s',JSON.stringify(response.result));
+            var rootId = await this.getRootFolderId()
+            await FileUpdater(response.result.id)
+                .addToFolder(rootId)
+                .execute()
+            return response.result;
         },
 
-        createSheet (title, sheetsData) {
-            console.log('createSheet(%s)',JSON.stringify(sheetsData));
-            return new Promise((resolve,reject)=>{
-                var spreadsheetObj = Sheets.getSpreadsheetBody({title,sheetsData})
-                console.log('Spreadsheet object: %s',spreadsheetObj);
-                console.log(JSON.stringify(spreadsheetObj));
-                gsheets.spreadsheets.create(
+        async createSheetForProp (course, prop,title, sheets) {
+            var spreadsheetObj = Sheets.getSpreadsheetBody({title,sheetsData:sheets});
+            var response = await gsheets.spreadsheets.create(
                     spreadsheetObj
-                ).then(
-                    (response)=>{
-                        console.log('Complete! %s',JSON.stringify(response.result));
-                        this.getRootFolderId()
-                            .then(
-                                (rootId)=>this.addToFolder(response.result.id,rootId)
-                                    .then(resolve(response.result))
-                            )
-                            .catch(reject);
-                    })
-                    .catch((err)=>{
-                        console.log('Error creating spreadsheet: %s',err);
-                        reject(err)
-                    })
-            }); // end promise
+            )
+            console.log('Created sheet! %s',JSON.stringify(response.result));
+            console.log('ID=%s',response.result.id);
+            await Api.setProp(propname(course.id,prop),response.result.spreadsheetId)
+            var courseFolder = await this.getCourseFolder(course);
+            FileUpdater(response.result.spreadsheetId)
+                .addToFolder(courseFolder)
+                .addCourse(course.id)
+                .execute()
+            return response.result;
         },
 
-        createSheetForProp (course, prop,title, sheets) {
-            return new Promise((resolve,reject)=>{
-                var spreadsheetObj = Sheets.getSpreadsheetBody({title,sheetsData:sheets});
-                gsheets.spreadsheets.create(
-                    spreadsheetObj
-                )
-                    .then(
-                        (response)=>{
-                            console.log('Created sheet! %s',JSON.stringify(response.result));
-                            console.log('ID=%s',response.result.id);
-                            Api.setProp(propname(course.id,prop),response.result.spreadsheetId)
-                                .then(()=>{
-                                    this.addToCourseFolder(response.result.spreadsheetId,course)
-                                        .then(resolve(response.result))
-                                        .catch((err)=>{
-                                            console.log('Error adding to folder :(');
-                                            throw err;
-                                            reject(err);
-                                        });
-                                })
-                                .catch((err)=>{
-                                    console.log('Unable to store prop %s with result %s',propname(course.id,prop),response.result);
-                                    reject(err)
-                                });
-                        }
-                    )
-                    .catch((err)=>{
-                        console.log('Error creating spreadsheet');
-                        console.log('Data was: ')
-                        console.log('%s %s %s',course.id,prop,title);
-                        console.log('sheets: %s',JSON.stringify(sheets))
-                        console.log('spreadsheetObj: %s',JSON.stringify(spreadsheetObj));
-                        reject(err)
-                    });
-            }); // end Promise
-        },
-
-        getSheetId (courseId, prop, studentId) {
-            //hello
+        async getSheetId (courseId, prop, studentId) {
             const fullprop = propname(courseId,prop,studentId)
-            return Api.getProp(fullprop) // is a promise
+            var id = await Api.getProp(fullprop) // is a promise
+            console.log('getSheetId: We had property',fullprop,'=>',id);
+            if (!id) {
+                console.log('Search drive for file...');
+                var response = await gapi.client.drive.files.list(
+                    {spaces:'drive',
+                     q:`appProperties has {key="prop" and value="${fullprop}"}`
+                    }
+                );
+                if (response.result.files.length==1) {
+                    console.log('Found a result: ',response.result.files[0])
+                    Api.setProp(fullprop,response.result.files[0].id);
+                    return response.result.files[0].id
+                }
+                else if (response.result.files.length > 0) {
+                    console.log(`WARNING: ${response.result.files.length} results found for file for prop ${fullprop}:`,response.result.files);
+                    return response.result.files[0].id;
+                }
+            }
+            else {
+                return id;
+            }
         },
 
         getSheetUrl (courseId, prop, studentId) {
