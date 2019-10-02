@@ -28,9 +28,8 @@ function MainView (props) {
         <div className="container">
           <nav className="navbar">
             <div className="navbar-brand">
-            <div className="navbar-item">{Brand.name}</div>
+              <div className="navbar-item">{Brand.name}</div>
             </div>
-            <div className="navbar-item is-secondary">Logged in as {Api.user}</div>
             <div className="navbar-item navbar-end tag">
               {userType=='teacher' && 'Teacher Mode' || 
                userType=='student' && 'Student Mode'}
