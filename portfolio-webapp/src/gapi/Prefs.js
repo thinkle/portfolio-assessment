@@ -24,7 +24,10 @@ function Prefs () {
             return new Promise ((resolve,reject)=>{
                 // ht: https://gist.github.com/tanaikech/bd53b366aedef70e35a35f449c51eced
                 var metadata = {
-                        name : PREF_FILENAME,
+                    name : PREF_FILENAME,
+                    appProperties : {
+                        role : 'propertiesFile',
+                    }
                     //parents : ['appDataFolder'],
                 }
                 var file = new Blob([JSON.stringify( {
@@ -112,7 +115,8 @@ function Prefs () {
                     {
                         //spaces : 'appDataFolder',
                         spaces : 'drive',
-                        q : `name='${PREF_FILENAME}'`
+                        //q : `name='${PREF_FILENAME}'`
+                        q : `appProperties has {key="role" and value="propertiesFile"}`
                     })
                     .then(
                         (resp)=>{
