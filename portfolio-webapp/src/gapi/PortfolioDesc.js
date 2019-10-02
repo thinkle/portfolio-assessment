@@ -19,7 +19,7 @@ function PortfolioDesc (course) {
                             .catch(reject);
                     }
                     else {
-                        console.log('Do we create one?');
+                        console.log('No ID :( Do we create one?');
                         resolve();
                     }
                 })
