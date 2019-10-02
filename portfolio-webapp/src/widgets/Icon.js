@@ -5,6 +5,7 @@ import {faSave,faExternalLinkAlt,faCheck,faUndo,
         faClipboardCheck,faChalkboardTeacher,faHiking,faFolderOpen,
         faPenSquare,
         faPlus,
+        faExclamation,
         faWindowClose} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {classNames} from '../utils.js';
@@ -40,6 +41,7 @@ Icon.clipboard = faClipboardCheck;
 Icon.folderOpen = faFolderOpen;
 Icon.undo = faUndo;
 Icon.work = faHiking;
-Icon.plus = faPlus;    
+Icon.plus = faPlus;
+Icon.bang = faExclamation;
 
 export default Icon;
