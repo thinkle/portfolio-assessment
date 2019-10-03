@@ -1,6 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import Brand from './brand.js';
 import './App.sass';
+import {Container,Navbar} from './widgets.js';
 import TestView from './Tests.js';
 import TeacherView from './TeacherView.js';
 import Api from './gapi/gapi.js';
@@ -25,19 +26,19 @@ function MainView (props) {
 
     return (
         
-        <div className="container">
-          <nav className="navbar">
-            <div className="navbar-brand">
-              <div className="navbar-item">{Brand.name}</div>
-            </div>
-            <div className="navbar-item navbar-end tag">
-              {userType=='teacher' && 'Teacher Mode' || 
-               userType=='student' && 'Student Mode'}
-              {userType!=undefined &&
-               <a className="button delete is-small is-dark" onClick={()=>setUserType(undefined)}></a>
-              }
-            </div>
-          </nav>
+        <Container>
+            <Navbar>
+              <Navbar.QuickBrand>{Brand.name}</Navbar.QuickBrand>
+              <Navbar.End>
+                <Navbar.Item>
+                  {userType=='teacher' && 'Teacher Mode' || 
+                   userType=='student' && 'Student Mode'}
+                  {userType!=undefined &&
+                   <a className="button delete is-small is-dark" onClick={()=>setUserType(undefined)}></a>
+                  }
+                </Navbar.Item>
+              </Navbar.End>
+            </Navbar>
           {!userType && (
               <div className="card">
                 <div className="card-header">Are you a teacher or a student?</div>
@@ -52,28 +53,26 @@ function MainView (props) {
           {userType=='student' && 'Student View... coming soon'}
           {userType=='teacher' && <TeacherView/>}
 
-        </div>
+        </Container>
     );
 }
 
 function App() {
     //const [page,setPage] = useState('register')
-    const [page,setPage] = useState('test')
+    const [page,setPage] = useState('login')
     const [user,setUser] = useState()
 
     function apiReady () {
         Api.getUser().then(
             (user)=>{
                 setUser(user);
-                //setPage('main')
+                setPage('main')
             }
         );
     }
     
     return (
         <div className="App">
-          
-          
           <Gapi onReady={apiReady} onLoggedOut={()=>console.log('logged out?')}/>
           <div className="wrapper">
             {page=='login' && <h1>Log in, would you?</h1>}
