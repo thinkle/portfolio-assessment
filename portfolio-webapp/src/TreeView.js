@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {classNames,getProp} from './utils.js';
 import {TransitionGroup,CSSTransition} from 'react-transition-group';
 import { inspect } from 'util'; // or directly
+import {sanitize} from './utils.js';
 import Editor from './RichText.js';
 import {Icon,Modal,Button} from './widgets.js';
 import './TreeView.sass';
@@ -22,7 +23,7 @@ function TreeHead (props) {
             }
           ><div className='treecell'></div>
         {props.headers.map((h)=>(
-            <div className='treecell'>{h}</div>
+            <div key={h} className='treecell'>{h}</div>
         ))}
           </div>
         </div>
@@ -475,7 +476,6 @@ TreeView.PopupCol = (field,params = {snippetMode:true}) => ({data}) => { // read
     const [showText,setShowText] = useState(false);
 
     var value = getProp(data,field);
-    console.log('PopupCol got val: %s',value);
     
     return (<div className={classNames({
         treePopover : showText,
@@ -510,7 +510,7 @@ TreeView.PopupCol = (field,params = {snippetMode:true}) => ({data}) => { // read
 
     function renderPopup () {
         return <div>
-          <div className="description" dangerouslySetInnerHTML={{__html:value}}/>
+                 <div className="description" dangerouslySetInnerHTML={sanitize(value)}/>
           <Icon className='close-popup' icon={Icon.close} aria-label='close' onClick={()=>setShowText(false)}/>
         </div>
     }
