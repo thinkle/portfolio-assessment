@@ -18,9 +18,9 @@ function SkillPicker (props) {
     const [selectedStrand,setSelectedStrand] = useState(); // for sub-menu
 
     return (
-        <div className="skillSelector" style={{'min-width':175,'max-width':300}}>
+        <div className="skillSelector">
           {props.customMenu &&
-           <div className="topLevelMenu">
+           <div className="toplevelMenu">
              <Menu
                {...props.customMenu}
                onSelected={(skill)=>props.onSelected(skill)}
