@@ -214,6 +214,7 @@ function Portfolio (props) {
     }
 
     function saveExemplars (exemplars) {
+        console.log('Portfolio.saveExemplars(...)',exemplars);
         var newPortfolio = [...portfolio];
         exemplars.forEach(
             (exemplar)=>{
@@ -247,14 +248,14 @@ function Portfolio (props) {
              onSetShowChildren={treeState.onSetShowChildren}
              noDelete={true}
              key={dataCount}
-            data={treeData}
-             /*onDataChange={()=>{console.log('tree data changed');}}*/
-            headers={[
-                'Strand','Skill','Points','Exemplar','Assessment'
-            ]}
-            widths = {[
-                '6em','15em','12em','15em','15em'
-            ]}
+             data={treeData}
+           /*onDataChange={()=>{console.log('tree data changed');}}*/
+             headers={[
+                 'Strand','Skill','Points','Exemplars','Due','Assessment'
+             ]}
+             widths = {[
+                 '6em','15em','12em','15em','8em','15em'
+             ]}
             cols={5}
             getRenderers={(params)=>{
                 if (params.level==0) {
@@ -262,21 +263,24 @@ function Portfolio (props) {
                             StrandPointsTotalCol,
                             StrandExemplarCountCol,
                             TreeView.BlankCol(),
+                            TreeView.BlankCol(),
                             TreeView.BlankCol()]
                 }
                 else if (params.level==1) {
                     return [TreeView.TextCol('strand'),
-                            TreeView.TextCol('skill'),
+                            TreeView.PopupCol('descriptor',{labelField:'skill',snippetMode:false}),
                             PointsTotalCol,
                             ExemplarCountCol,
+                            DueDateCol,
                             TreeView.ButtonCol({icon:Icon.plus,content:'Add exemplar',generateOnClick:makeExemplarCallback}),
                            ]
                 }
                 else {
                     return [StatusCol,
-                            TreeView.TextCol('coursework.title'),
-                            TreeView.LinkCol('permalink',{linkText:'Link to work'}),
-                            TreeView.TextCol('assessment.score'),
+                            TreeView.LinkCol('permalink',{linkField:'coursework.title'}),
+                            TreeView.PopupCol('reflection',{label:'Reflection',tagMode:true,snippetMode:true}),
+                            TreeView.PopupCol('assessment.comment',{labelField:'assessment.score',tagMode:true,snippetMode:true}),
+                            TreeView.BlankCol(),
                             TreeView.ButtonCol({icon:Icon.edit,content:'Edit Exemplar',generateOnClick:editExemplarCallback})
                            ];
                 }
@@ -396,6 +400,19 @@ function StrandPointsTotalCol ({data,children}) {
 function ExemplarCountCol ({data,children}) {
     return data.exemplars && <span>{children&&children.length||0} of {data.exemplars.length}</span>
 }
+function DueDateCol ({data,children}) {
+    return data.exemplars &&
+        <span>
+          {data.exemplars
+           .map(
+               (child)=>child.dueDate && child.dueDate.toLocaleDateString([],{day:'numeric',month:'short'})||''
+           )
+           .filter((item,idx,array)=>array.indexOf(item)===idx) // keep unique
+           .map((date)=><span><span>{date.replace(' ','\u00A0')}</span> </span>) // put in a span
+          }
+        </span>
+}
+
 function PointsTotalCol ({data}) {
     if (data.exemplars) {
         var tot = 0;
