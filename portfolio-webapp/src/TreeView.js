@@ -348,7 +348,12 @@ function TreeView (props) {
 
 TreeView.LinkCol = (field, params = {}) => ({data,onPropChange}) => {
     return (<div className={'treecell text-col link-col colSpan'+params.colSpan}>
-              <a href={data[field]} target="_blank">{params.getText && params.getText(data) || params.linkText || data[field]}</a>
+              <a href={getProp(data,field)} target="_blank">
+                {params.getText && params.getText(data)
+                 || getProp(data,params.linkField)
+                 || params.linkText
+                 || data[field]}
+              </a>
             </div>);
 }
 
@@ -465,6 +470,53 @@ TreeView.NumCol = (field,params = {}) => ({data,onPropChange}) => {
            </div>
 }
 
+TreeView.PopupCol = (field,params = {snippetMode:true}) => ({data}) => { // read only
+    
+    const [showText,setShowText] = useState(false);
+
+    var value = getProp(data,field);
+    console.log('PopupCol got val: %s',value);
+    
+    return (<div className={classNames({
+        treePopover : showText,
+        treePoppable : !showText && value,
+        
+    })}>
+              {renderLabel()}
+              {value &&
+               (showText && 
+                renderPopup()
+                ||
+                (params.snippetMode && value && <a onClick={setShowText}>{snippet(value)}</a>)
+               )
+              }
+              {!value && '-'}
+            </div>)
+
+    function renderLabel () {
+        return (params.labelField ||  params.label) &&
+        <span
+          className={
+              classNames({
+                  tag : params.tagMode,
+                  'is-tiny':params.tagMode,
+                  'is-bold':showText,
+              })}
+          onClick={()=>setShowText(!showText)}
+        >
+          {params.labelField && getProp(data,params.labelField) || params.label}
+        </span>
+    }
+
+    function renderPopup () {
+        return <div>
+          <div className="description" dangerouslySetInnerHTML={{__html:value}}/>
+          <Icon className='close-popup' icon={Icon.close} aria-label='close' onClick={()=>setShowText(false)}/>
+        </div>
+    }
+    
+}
+
 TreeView.ButtonCol = (params = {}) => ({data, rowId, onPropChange}) => {
     var onClickCallback
     if (params.generateOnClick) {
@@ -514,14 +566,6 @@ TreeView.RichTextCol = (field,params = {}) => ({data,onPropChange}) => {
         </div>
     );
 
-    function snippet (htmlVal) {
-        if (!htmlVal) {htmlVal=''}
-        // Very lame snippet.
-        htmlVal = htmlVal.replace(
-                /<[^>]*>/g,' '
-        );
-        return htmlVal.substr(0,20)+'...'
-    }
 
     function popupEditor () {
         return (
@@ -582,6 +626,16 @@ function NapTime (showLevel=0) { // i.e. collapsing children manager
     return {getShowChildrenState,
            onSetShowChildren}
 }
+
+function snippet (htmlVal) {
+    if (!htmlVal) {htmlVal=''}
+    // Very lame snippet.
+    htmlVal = htmlVal.replace(
+            /<[^>]*>/g,' '
+    );
+    return htmlVal.substr(0,20)+'...'
+}
+
 
 TreeView.NapTime = NapTime;
 
