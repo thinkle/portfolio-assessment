@@ -95,6 +95,9 @@ Allow a . separated list of properties in a string.
 Also, return undefined if any parent is undefined. 
 */
 function getProp (obj, prop) {
+    if (typeof prop != 'string') {
+        throw `getProp needs prop to be a string but got ${prop}`
+    }
     const props = prop.split('.');
     for (var p of props) {
         if (obj===undefined) { return obj }
