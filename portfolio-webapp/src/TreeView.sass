@@ -12,11 +12,15 @@
 .treehead .treecell
   font-weight: bold
 
+.treehead .treerow 
+  background-color : #333;
+
+
 .table .treehead
   border-color: black
   color: white
 
-.treecell,.treehead
+.treecell
   padding: 3px
 
 /* .rowGroup,.row-children > .nested1,.row-children > .nested2,.row-children > .nested3
@@ -46,15 +50,15 @@ $colors: #659dbd #BC986A
   @debug $i
   $baseColor : nth($colors,$i)
 
-  .table > .rowGroup:nth-child(#{$row-type})
+  .table > .rowGroup:nth-child(#{$row-type}),.table > .rowGroup:nth-child(#{$row-type}) .treePopover div
     background-color : scale-color($baseColor,$lightness: 10%)
     @include text-contrast(scale-color($baseColor,$lightness: 10%))
 
-  .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd)
+  .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd),.table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd) .treePopover div
     background-color: scale-color($baseColor,$lightness: 50%)
     @include text-contrast(scale-color($baseColor,$lightness: 50%))
   
-  .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even)
+  .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even),.table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even) .treePopover div
     background-color: scale-color($baseColor,$lightness: 80%)
     @include text-contrast(scale-color($baseColor,$lightness: 80%))
 
@@ -143,3 +147,29 @@ $spacer : 0.5em
 
 .is-bold
   font-weight: 900;
+
+// popover...
+.treePopover
+  position: relative
+
+.treePopover > div
+  position: absolute
+  width: calc(100% + 60px)
+  padding: 15px 15px 5px 5px
+  border-radius: 0px 0px 10px 10px
+  box-shadow: 3px 3px rgba(128,128,128,0.5)
+  min-height: 70px
+  max-height: 600px
+  overflow-y: auto
+  z-index: 50
+
+
+.treePopover .close-popup
+  position: absolute
+  top: 3px
+  right: 3px
+  
+  
+.treePoppable:hover
+  cursor: pointer
+  color: $blue
