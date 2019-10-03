@@ -55,8 +55,8 @@ function Menu (props) {
 
 function SelectableItem (props) {
     const [selected,setSelected] = useState(props.initialValue)
-    const [elWidth, setElWidth] = useState(100)
-    const [elHeight, setElHeight] = useState(40)
+    const [elWidth, setElWidth] = useState(400)
+    const [elHeight, setElHeight] = useState(50)
     var renderedItems = []
 
     useEffect( ()=>{
@@ -92,20 +92,35 @@ function SelectableItem (props) {
     
 
     return (
-
-        <div className='relWrap' style={{height:elHeight,width:elWidth}}>          
-          <CSSTransition classNames='fade-item' in={!(!selected)} mountOnEnter>
-            <div className='static selectedItem' ref={(n)=>renderedItems.push(n)}>
+        <React.Fragment>
+          {/* For calculating height/width only */}
+          <div style={{position:'absolute',visibility:'hidden',left:100,top:100,border:'3px solid red'}}>
+            <div className='selectedItem' ref={(n)=>renderedItems.push(n)}>
               {selected && renderItem(selected)}
               <Icon className='close-button' icon={Icon.close} onClick={()=>select()}/>
             </div>
-          </CSSTransition>
-          <CSSTransition classNames='fade-menu' in={!selected} mountOnEnter>
-            <div className='static' ref={(n)=>renderedItems.push(n)}>
-               <Menu {...menuProps}/>
+            <div className='' ref={(n)=>renderedItems.push(n)}>
+              <Menu {...menuProps}/>
             </div>
-          </CSSTransition>
-        </div>
+          </div>
+          {/* End section for calculating height/width only */}
+          
+          <div 
+               className='relWrap' 
+               style={{height:elHeight,width:elWidth}}>           
+            <CSSTransition classNames='fade-item' in={!(!selected)} mountOnEnter>
+              <div className='static selectedItem'>
+                {selected && renderItem(selected)}
+                <Icon className='close-button' icon={Icon.close} onClick={()=>select()}/>
+              </div>
+            </CSSTransition>
+            <CSSTransition classNames='fade-menu' in={!selected} mountOnEnter>
+              <div className='static'>
+                <Menu {...menuProps}/>
+              </div>
+            </CSSTransition>
+          </div>
+        </React.Fragment>
     )
 }
 
@@ -145,19 +160,32 @@ function CustomSelectableItem (props) {
     }, [props.selected]);
 
     return (
-        <div className='relWrap' style={{height:elHeight,width:elWidth}}>          
-          <CSSTransition classNames='fade-item' in={!(!selected)} mountOnEnter>
-            <div className='static selectedItem' ref={(n)=>renderedItems.push(n)}>
+        <React.Fragment>
+          {/* For calculating width/height only */}
+          <div style={{position:'absolute',visibility:'hidden',left:100,top:100,border:'3px solid red'}}>
+            <div className='selectedItem' ref={(n)=>renderedItems.push(n)}>
               {item}
               <Icon className='close-button' icon={Icon.close} onClick={()=>props.unselect()}/>
             </div>
-          </CSSTransition>
-          <CSSTransition classNames='fade-menu' in={!selected} mountOnEnter>
-            <div className='static' ref={(n)=>renderedItems.push(n)}>
+            <div ref={(n)=>renderedItems.push(n)}>
               {menu}
             </div>
-          </CSSTransition>
-        </div>
+          </div>
+          {/* End div for calculating width/height */}
+          <div className='relWrap' style={{height:elHeight,width:elWidth}}>          
+            <CSSTransition classNames='fade-item' in={!(!selected)} mountOnEnter>
+              <div className='static selectedItem'>
+                {item}
+                <Icon className='close-button' icon={Icon.close} onClick={()=>props.unselect()}/>
+              </div>
+            </CSSTransition>
+            <CSSTransition classNames='fade-menu' in={!selected} mountOnEnter>
+              <div className='static'>
+                {menu}
+              </div>
+            </CSSTransition>
+          </div>
+        </React.Fragment>
 
     );
     
