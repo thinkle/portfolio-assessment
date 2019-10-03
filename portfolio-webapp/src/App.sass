@@ -39,15 +39,21 @@ a:hover .tooltip
   opacity: 0
 
 .show
-  display: block;
+  display: block
   opacity: 1
-  transition: opacity 300ms;
+  transition: opacity 300ms
 
 .description ul
-  padding-left: 2em;
+  padding-left: 16px
+
+.description ul li
+  position: relative
+  margin-bottom: 5px
   
 .description ul li:before
-  content: "\2610";
+  content: "\2610"
+  position: absolute
+  left: -16px
   
 .is-opaque
-  background-color: white;
+  background-color: white
