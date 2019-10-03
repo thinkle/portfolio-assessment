@@ -139,4 +139,10 @@ function getById (array, idvalue, idprop='id') {
     }
 }
 
-export  {classNames, arrayProp, objProp, getItemById, getProp, replaceItemInArray,getById}
+function sanitize (content) { // FIXME: Replace with dompurify
+    content = content.replace(/<script[^>]>/g,'<div style="display:none" class="sanitizedScript">')
+    content = content.replace(/<\/script>/g,'</div>')
+    return {__html:content}
+}
+
+export  {classNames, arrayProp, objProp, getItemById, getProp, replaceItemInArray,getById, sanitize}
