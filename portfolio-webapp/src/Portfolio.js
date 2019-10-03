@@ -73,13 +73,44 @@ var testExemplar = {
 }
 
 function Portfolio (props) {
+    const skillHookProps = usePortfolioSkillHook(props);
+    const studentPortfolioProps = useStudentPortfolio(props);
+    console.log('We have shp props:',skillHookProps)
+    console.log('We have spp props:',studentPortfolioProps)
+    console.log('We have vanilla props:',props)
+    return <PortfolioComponent {...props}
+                      {...skillHookProps}
+                      {...studentPortfolioProps}
+           />
+}
+
+function LazyPortfolioComponent (props) {
+    const studentPortfolioProps = useStudentPortfolio({...props,dontFetch:true});
+    console.log('We have spp props:',studentPortfolioProps)
+    console.log('We have vanilla props:',props)
+
+    useEffect( ()=>{
+        console.log('LazyPortfolio -- should we load?');
+        if (props.fetchNow) {
+            console.log('Now we fetch!!!');
+            studentPortfolioProps.fetch();
+        }
+    },
+               [props.fetchNow]);
+
+    return (props.fetchNow && <PortfolioComponent {...props}
+                               {...studentPortfolioProps}
+                              /> || <div>{props.student && props.student.userId}</div>);
+}
+
+function PortfolioComponent (props) {
 
     // needs props:
     // course =
     // student =
 
-    const {skills, strands, assignments} = usePortfolioSkillHook(props);
-    const {busy, portfolio, setPortfolio, savePortfolio, saved} = useStudentPortfolio(props);
+    const {skills, strands, assignments,
+           busy, portfolio, setPortfolio, savePortfolio, saved} = props;
 
     const [filters,setFilters] = useState({});
     const [dataCount,setDataCount] = useState(1);
@@ -321,18 +352,41 @@ function Portfolio (props) {
 
     function editExemplarCallback ({data, children}) {
         return function () {
-            setExemplarEditorProps({
+            var props = {
                 selectedSubmission : data.submission,
                 selectedCoursework : data.coursework,
-                selectedSkills : [{
+                selectedSkills : [skillFromData(data)],
+            };
+
+            function skillFromData (data) {
+                return {
                     skill:data.skill,
                     id : data.id,
                     reflection : data.reflection,
                     assessment : data.assessment,
                     permalink : data.permalink,
                     revisionCount : data.revisionCount,
-                }],
-            });
+                }
+            }
+
+            // Grab any other skills associated with this submission...
+            treeData.forEach(
+                (strand) => {
+                    strand.children.forEach(
+                        (skill) => {
+                            skill.children.forEach((exemplar)=>{
+                                if (exemplar.data.submission == data.submission && exemplar.data != data) {
+                                    console.log('Got a match: adding another skill!');
+                                    props.selectedSkills.push(skillFromData(exemplar.data));
+                                }
+                            })
+                        }
+                    );
+                }
+            );
+
+            
+            setExemplarEditorProps(props);
             setShowExemplar(true);
         }
     }
@@ -438,4 +492,7 @@ function StatusCol ({data}) {
     }
 }
 
+Portfolio.Bare = PortfolioComponent;
+Portfolio.Lazy = LazyPortfolioComponent;
 export default Portfolio;
+
