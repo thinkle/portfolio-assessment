@@ -30,9 +30,9 @@ function TeacherView (props) {
     return (
         <div className='container has-navbar-fixed-top'>
           <Navbar className='is-fixed-top'>
-            <Navbar.Brand>
+            <Navbar.QuickBrand>
               {Brand.name}: Teacher Mode
-            </Navbar.Brand>
+            </Navbar.QuickBrand>
             <Navbar.Item>
               User: {JSON.stringify(user)}
             </Navbar.Item>
@@ -69,9 +69,9 @@ function TeacherView (props) {
         return (
             <Tabs>
               <span>
-                Show Google Classroom Assignments
+                Assess Student Portfolios
               </span>
-              <CourseworkList onSelected={(cw)=>console.log(cw)} menu={true} user={user} course={course}/>
+              <TeacherPortfolioView course={course}/>
               <span>
                 Build Skill Portfolio
               </span>
@@ -80,10 +80,6 @@ function TeacherView (props) {
                 Map Skills to Assignments
               </span>
               <AssignmentMapper course={course}/>
-              <span>
-                Assess Student Portfolios
-              </span>
-              <TeacherPortfolioView course={course}/>
             </Tabs>
         );
 
