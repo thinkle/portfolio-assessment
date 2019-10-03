@@ -23,7 +23,7 @@ function TeacherPortfolioView (props) {
     return (
         <Container>
           <Navbar>
-            <Navbar.Brand>Portfolio (Teacher View)</Navbar.Brand>
+            <Navbar.QuickBrand>Portfolio (Teacher View)</Navbar.QuickBrand>
             <Navbar.Item>
               <StudentPicker students={students} onSelected={setSelectedStudent}/>
             </Navbar.Item>
