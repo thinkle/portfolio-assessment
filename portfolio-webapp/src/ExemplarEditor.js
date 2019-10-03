@@ -6,7 +6,7 @@ import {arrayProp,classNames,getById,getProp} from './utils.js';
 import Material from './Material.js';
 import SheetWidget from './SheetWidget.js';
 import Editor from './RichText.js';
-import {classnames} from './utils.js';
+import {classnames, sanitize} from './utils.js';
 import './ExemplarEditor.scss';
 
 
@@ -102,7 +102,9 @@ function ExemplarEditor (props) {
     );
 
     function saveAll (updateCounts) {
-        var exemplarsToSave = selectedSkills.map(
+        var exemplarsToSave = selectedSkills
+            .filter((sk)=>sk) // filter out "empty" skills that we deleted
+            .map(
             (sk)=>{
                 var copy = {...sk,
                             submissionId : selectedSubmission && selectedSubmission.id,
@@ -138,8 +140,16 @@ function ExemplarEditor (props) {
     }
 
     function updateSkill (exemplar, n) {
+        console.log('updateSkill',exemplar,n);
         var skillCopy = selectedSkills.slice();
         skillCopy[n] = exemplar;
+        setSelectedSkills(skillCopy);
+    }
+
+    function removeSkill (n) {
+        console.log('removeSkill',n);
+        var skillCopy = selectedSkills.slice();
+        skillCopy[n] = undefined;
         setSelectedSkills(skillCopy);
     }
 
@@ -191,7 +201,8 @@ function ExemplarEditor (props) {
         return (<React.Fragment>
                   <h.h2>Skills</h.h2>
                   {selectedSkills.map(
-                      (skill,n)=><ExemplarSkillEditor
+                      // Skills can be empty if they've been deleted ?
+                      (skill,n)=>skill && <ExemplarSkillEditor
                                    {...props}
                                    {...skill}
                                    skills={skills}
@@ -202,6 +213,9 @@ function ExemplarEditor (props) {
                                    studentWork={studentWork}
                                    onChange={
                                        (exemplar)=>updateSkill(exemplar,n)
+                                   }
+                                   onRemove={
+                                       ()=>removeSkill(n)
                                    }
                                    /* onSetSkill={(newSkill)=>{ */
                                    /*     console.log(`skill ${n} selected: ${skill}=>${newSkill}`); */
@@ -368,7 +382,7 @@ function ExemplarSkillEditor (props) {
                 save();
             }
         },
-        [score,assessment,reflection,revisionCount,assessmentCount,selectedSubmission]
+        [score,assessment,reflection,revisionCount,assessmentCount,selectedSubmission,selectedSkill]
     );
 
     if (!props.onChange) {
@@ -494,6 +508,9 @@ function ExemplarSkillEditor (props) {
                  }
                </Navbar.Item>
               }
+              <Navbar.End>
+                {props.onRemove && <Button onClick={props.onRemove} icon={Icon.delete}>Remove Skill</Button>}
+              </Navbar.End>
             </Navbar>
             </div>
           {skillInfoBox()}
@@ -513,7 +530,7 @@ function ExemplarSkillEditor (props) {
                       {selectedSkill.exemplars.map((ex,i)=><span>{ex.dueDate && ex.dueDate.toLocaleDateString()}{i<(selectedSkill.exemplars.length-1)&&','}</span>)}
                     </div>
                   </div>
-                  <div className='skillDescripton description' dangerouslySetInnerHTML={{__html:selectedSkill.descriptor}}/>
+                  <div className='skillDescripton description' dangerouslySetInnerHTML={sanitize(selectedSkill.descriptor)}/>
                 </React.Fragment>
         )
     }
@@ -531,7 +548,7 @@ function ExemplarSkillEditor (props) {
                       onChange={setReflection}
                       placeholder={`Type your reflection on ${selectedSkill.skill||'?'} here...`}
               /> ||
-              (reflection && <div dangerouslySetInnerHTML={{__html:reflection}}/> || <div>No reflection</div>)
+              (reflection && <div className='description' dangerouslySetInnerHTML={sanitize(reflection)}/> || <div>No reflection</div>)
              }
             </div>
             }
@@ -551,7 +568,7 @@ function ExemplarSkillEditor (props) {
                <div>
                  <strong>Grade: {score||'Not yet graded'}</strong>
                  <p className='comment'
-                    dangerouslySetInnerHTML={{__html:assessment||'No teacher feedback yet'}}
+                    dangerouslySetInnerHTML={sanitize(assessment||'No teacher feedback yet')}
                  />
                </div>
               }
