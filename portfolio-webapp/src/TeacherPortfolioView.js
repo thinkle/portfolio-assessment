@@ -1,7 +1,9 @@
-import React,{useState,useEffect} from 'react';
+import React,{useState,useEffect,useRef} from 'react';
 import Portfolio from './Portfolio.js';
-import {useStudents,useCoursework,useStudentWork,useStudentPortfolio} from './gapi/hooks.js';
+import {useStudents,useStudentWork,useStudentPortfolio} from './gapi/hooks.js';
+import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import {Container,Menu,SelectableItem,h,Navbar} from './widgets.js';
+import {getProp} from './utils.js';
 
 function StudentPicker (props) {
 
@@ -16,9 +18,11 @@ function StudentPicker (props) {
 }
 
 
+
 function TeacherPortfolioView (props) {
     const students = useStudents(props)
     const [selectedStudent,setSelectedStudent] = useState();
+    const skillHookProps = usePortfolioSkillHook(props);
     
     return (
         <Container>
@@ -28,14 +32,26 @@ function TeacherPortfolioView (props) {
               <StudentPicker students={students} onSelected={setSelectedStudent}/>
             </Navbar.Item>
           </Navbar>
-          {selectedStudent &&
-           <Portfolio {...props} student={selectedStudent} teacherMode={true}/>
-          }
+          {students.map(
+              (student)=>(
+                  <div style={{
+                      display:selectedStudent==student && 'block' || 'none'
+                  }}
+                       key={student.userId}
+                  >
+                  <Portfolio.Lazy
+                    {...props}
+                    {...skillHookProps}
+                    student={student}
+                    teacherMode={true}
+                    fetchNow={student==selectedStudent}                    
+                  />
+                  </div>
+              ))}
         </Container>
     )
 
-    
-    
 }
+
 
 export default TeacherPortfolioView
