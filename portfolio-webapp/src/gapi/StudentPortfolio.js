@@ -160,6 +160,7 @@ function splitPortfolioAndAssessmentData (fullPortfolio) {
             }
             if (!exemplarCopy.id) {
                 exemplarCopy.id = topId + 1;
+                topId += 1;
                 console.log("adding ID to exemplar",exemplarCopy)
             }
             if (exemplar.assessment) {
