@@ -29,11 +29,11 @@ const Classroom = {
             courseId:course.id,
             courseWorkId:coursework&&coursework.id||'-',
         }
-        if (teacherMode && student) {
-            params.userId = student.userId||'me';
-        }
-        else {
+        if (!teacherMode) {
             params.userId = 'me';
+        }
+        else if (student) {
+            params.userId = student.userId
         }
         return Classroom.fetchAll(cr().courses.courseWork.studentSubmissions.list,
                         params,'studentSubmissions');
