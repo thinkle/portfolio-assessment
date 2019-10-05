@@ -9,7 +9,7 @@ const Divider = makeComponent(['navbar-divider'],'hr');
 const Dropdown = makeComponent(['navbar-dropdown'],'div');
 const Start = makeComponent(['navbar-start'],'div');
 const End = makeComponent(['navbar-end'],'div');
-
+const Center = makeComponent(['navbar-center','navbar-start'],'div');
 function QuickBrand (props) {
     return <Brand {...props}>
              <Item>{props.children}</Item>
@@ -24,4 +24,5 @@ Navbar.Dropdown = Dropdown;
 Navbar.Divider = Divider;
 Navbar.Start = Start;
 Navbar.End = End;
+Navbar.Center = Center;
 export default Navbar

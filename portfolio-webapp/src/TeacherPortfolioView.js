@@ -1,6 +1,6 @@
 import React,{useState,useEffect,useRef} from 'react';
 import Portfolio from './Portfolio.js';
-import {useStudents,useStudentWork,useStudentPortfolio} from './gapi/hooks.js';
+import {useStudents,useStudentWork,useCoursework,useStudentPortfolio} from './gapi/hooks.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import {Container,Menu,SelectableItem,h,Navbar} from './widgets.js';
 import {getProp} from './utils.js';
@@ -23,6 +23,9 @@ function TeacherPortfolioView (props) {
     const students = useStudents(props)
     const [selectedStudent,setSelectedStudent] = useState();
     const skillHookProps = usePortfolioSkillHook(props);
+    const allStudentWork = useStudentWork({...props,teacherMode:true});
+    const coursework = useCoursework(props);
+    
     
     return (
         <Container>
@@ -44,6 +47,8 @@ function TeacherPortfolioView (props) {
                     {...skillHookProps}
                     student={student}
                     teacherMode={true}
+                    coursework={coursework}
+                    studentwork={allStudentWork.filter((item)=>item.userId = student.userId)}
                     fetchNow={student==selectedStudent}                    
                   />
                   </div>

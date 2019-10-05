@@ -1,5 +1,7 @@
 function objProp (obj, setObj) {
     return {
+        map : obj,
+        setMap : setObj,
         updateKey (k,v) {
             setObj({...obj,[k]:v});
         },
@@ -38,9 +40,15 @@ function objProp (obj, setObj) {
             setObj(copy);
         },
         removeFromArrayVal (k, itm) {
-            var copy = {...obj}
-            copy[k] = [...copy[k]]
+            var copy = {...obj};
+            copy[k] = [...copy[k]];
             copy[k].splice(copy[k].indexOf(itm),1);
+            setObj(copy);
+        },
+        updateArrayItemById (k, v, idprop='id', pushIfNoMatch=false) {
+            var copy = {...obj};
+            copy[k] = [...copy[k]];
+            replaceItemInArray(copy[k],v,idprop,pushIfNoMatch)
             setObj(copy);
         }
     }
@@ -57,6 +65,11 @@ function arrayProp (arr, setArr) {
             console.log('push to array: ',itm,arr);
             var copy = arr.slice();
             copy.push(itm);
+            setArr(copy);
+        },
+        updateById (val, idprop='id', pushIfNoMatch=false) {
+            var copy = arr.slice();
+            replaceItemInArray(copy,val,idprop,pushIfNoMatch);
             setArr(copy);
         }
     }

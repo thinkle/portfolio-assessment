@@ -35,8 +35,11 @@
   /*transform: translateY(0)*/
   opacity: 1
   transition: transform 500ms
-  
 
+.is-dropdown .dropdown-exit-done
+  opacity: 0
+  transition: opacity 300ms
+  
 .dropdown-exit-done
   transform: scaleY(0)
   transition: transform 300ms
@@ -101,6 +104,10 @@
   left: 0
   top: 0
 
+.selectedItem
+  width: calc(100% - 1rem)
+  text-align: center
+
 .static .close-button
   position: absolute;
   right: -18px
@@ -109,3 +116,6 @@
 
 .close-button
   cursor: pointer;
+
+.button .reverse,.button .unreverse
+  margin-right: .6rem;

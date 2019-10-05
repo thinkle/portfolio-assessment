@@ -9,11 +9,19 @@ function Item (props) {
     return <span>{props.children}</span>
 }
 
+function Dropdown (props) {
+    return <Menu {...props} dropdown={true}/>
+}
+
 function Menu (props) {
     const [active,setActive] = useState(false);
     var className = classNames({...props.classNames,
                                 menu : true,
+                                'is-dropdown' : props.dropdown,
                                 active:active});
+    if (props.className) {
+        className = props.className + ' ' + className;
+    }
 
 
     useEffect(()=>{
@@ -40,7 +48,9 @@ function Menu (props) {
             onClick={()=>setActive(!active)}
           >
             <span className={active&&'reverse'||'unreverse'}><Icon icon={Icon.down}/></span>
-            <span>{props.title||'Menu'}</span>
+            {props.dropdown && props.initialValue &&
+             renderItem(props.initialValue) ||
+             <span>{props.title||'Menu'}</span>}
           </Button>
           <div className="menu-content-holder">
             <CSSTransition timout={3500} classNames='dropdown' in={active} mountOnEnter>
@@ -97,7 +107,6 @@ function SelectableItem (props) {
           <div style={{position:'absolute',visibility:'hidden',left:100,top:100,border:'3px solid red'}}>
             <div className='selectedItem' ref={(n)=>renderedItems.push(n)}>
               {selected && renderItem(selected)}
-              <Icon className='close-button' icon={Icon.close} onClick={()=>select()}/>
             </div>
             <div className='' ref={(n)=>renderedItems.push(n)}>
               <Menu {...menuProps}/>
@@ -165,7 +174,6 @@ function CustomSelectableItem (props) {
           <div style={{position:'absolute',visibility:'hidden',left:100,top:100,border:'3px solid red'}}>
             <div className='selectedItem' ref={(n)=>renderedItems.push(n)}>
               {item}
-              <Icon className='close-button' icon={Icon.close} onClick={()=>props.unselect()}/>
             </div>
             <div ref={(n)=>renderedItems.push(n)}>
               {menu}
@@ -195,4 +203,4 @@ function CustomSelectableItem (props) {
 Menu.Item = Item;
 
 export default Menu;
-    export {SelectableItem,CustomSelectableItem}
+export {SelectableItem,CustomSelectableItem,Dropdown}

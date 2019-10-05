@@ -26,19 +26,14 @@ function MainView (props) {
 
     return (
         
-        <Container>
-            <Navbar>
-              <Navbar.QuickBrand>{Brand.name}</Navbar.QuickBrand>
-              <Navbar.End>
-                <Navbar.Item>
+        <div className="fullHeight">
+          <div className="modeBox">
                   {userType=='teacher' && 'Teacher Mode' || 
                    userType=='student' && 'Student Mode'}
                   {userType!=undefined &&
                    <a className="button delete is-small is-dark" onClick={()=>setUserType(undefined)}></a>
                   }
-                </Navbar.Item>
-              </Navbar.End>
-            </Navbar>
+          </div>
           {!userType && (
               <div className="card">
                 <div className="card-header">Are you a teacher or a student?</div>
@@ -53,13 +48,13 @@ function MainView (props) {
           {userType=='student' && 'Student View... coming soon'}
           {userType=='teacher' && <TeacherView/>}
 
-        </Container>
+        </div>
     );
 }
 
 function App() {
     //const [page,setPage] = useState('register')
-    const [page,setPage] = useState('login')
+    const [page,setPage] = useState('test')
     const [user,setUser] = useState()
 
     function apiReady () {
@@ -72,14 +67,12 @@ function App() {
     }
     
     return (
-        <div className="App">
-          <Gapi onReady={apiReady} onLoggedOut={()=>console.log('logged out?')}/>
-          <div className="wrapper">
-            {page=='login' && <h1>Log in, would you?</h1>}
-            {page=='test'&&<TestView/>}
-            {page=='main' && <MainView user={user}/>}
-          </div>
-          <div className="footer">
+        <div className="App viewport3">
+          <div><Gapi onReady={apiReady} onLoggedOut={()=>console.log('logged out?')}/></div>
+          {page=='login' && <h1>Log in, would you?</h1>}
+          {page=='test'&&<TestView/>}
+          {page=='main' && <MainView user={user}/>}
+          <div className="bottom">
             <div className="buttons">
               <button className="button" onClick={()=>setPage('test')}>Run Tests</button>
               <button className="button" onClick={()=>setPage('main')}>Main View</button>

@@ -31,11 +31,12 @@ function Tabs (props) {
     }
 
     return (
-        <div className="tab-container">
+        /*<div className="tab-container">*/
+        <React.Fragment>
           <TabsTop {...props}>
             <ul>
               {tabs.map((tab,i)=>
-                        <TopTab className={i==activeTab && 'is-active'} onClick={()=>setActiveTab(i)}>
+                        <TopTab key={i} className={i==activeTab ? 'is-active' : undefined} onClick={()=>setActiveTab(i)}>
                           {tab}
                         </TopTab>
                        )}
@@ -44,7 +45,7 @@ function Tabs (props) {
           <div className="tab-content">
             {activeTab != -1 && contents[activeTab]}
           </div>
-        </div>
+        </React.Fragment>
     );
     
 }

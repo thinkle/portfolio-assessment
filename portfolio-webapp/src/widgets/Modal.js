@@ -1,5 +1,6 @@
 import React, {useEffect,useState} from 'react';
 import {classNames} from '../utils.js';
+import './Modal.sass';
 
 function Modal (props) {
     var body, footer;
@@ -11,10 +12,17 @@ function Modal (props) {
     else {
         body = props.children
     }
+    var className = classNames({...props.classNames,
+                                'modal-content':true,
+                                'is-opaque':true}
+                              );
+    if (props.className) {
+        className += ' '+props.className;
+    }
     return (
         <div className={classNames({modal:true,'is-active':props.active})}>
           <div className='modal-background'/>
-          <div className='modal-content container is-opaque'>
+          <div className={className}>
             {props.title && <h2 className='title'>{props.title}</h2>}
             {body}
             {footer}

@@ -2,6 +2,7 @@ import DocumentManager from './DocumentManager';
 import Sheets from './SheetBasics.js';
 import SheetManager from './SheetManager.js';
 
+const NONE = 1;
 function StudentPortfolio (course, student) {
     const PORTPROP = 'student-portfolio'
     const GRADEPROP = 'portfolio-assessment'
@@ -73,7 +74,10 @@ function StudentPortfolio (course, student) {
             return sheets.exemplars;
         }
         else {
-            throw `No portfolio found for ${course.id}, ${PORTPROP},${student.userId}`
+            throw {
+                error : NONE,
+                message:`No portfolio found for ${course.id}, ${PORTPROP},${student.userId}`
+            }
         }
     }
 
@@ -85,7 +89,10 @@ function StudentPortfolio (course, student) {
             return sheets.assessments;
         }
         else {
-            throw `No portfolio found for ${course.id}, ${GRADEPROP},${student.userId}`
+            throw {
+                error : NONE,
+                message:`No portfolio found for ${course.id}, ${GRADEPROP},${student.userId}`
+            }
         }
     }
 
@@ -177,5 +184,5 @@ function splitPortfolioAndAssessmentData (fullPortfolio) {
 
 StudentPortfolio.parsePortfolio = parsePortfolio; // convenience
 StudentPortfolio.splitPortfolioAndAssessmentData = parsePortfolio; // convenience
-
+StudentPortfolio.NO_PORTFOLIO_ERROR = NONE
 export default StudentPortfolio;

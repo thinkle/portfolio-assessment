@@ -3,6 +3,7 @@ import ClassList from './ClassList.js';
 import CourseworkList from './CourseworkList.js';
 import PortfolioBuilder from './PortfolioBuilder.js';
 import TeacherPortfolioView from './TeacherPortfolioView.js';
+import TeacherAssignmentView from './TeacherAssignmentView.js';
 import AssignmentMapper from './AssignmentMapper.js';
 import Api from './gapi/gapi.js';
 import Brand from './brand.js';
@@ -28,8 +29,14 @@ function TeacherView (props) {
         },[]);
 
     return (
-        <div className='container has-navbar-fixed-top'>
-          <Navbar className='is-fixed-top'>
+        <div className='viewport2 bottom'>
+           <div className='body'>
+             {user &&
+              mainPage()
+              || <div>No user??? Please Log In</div>
+             }
+           </div>
+          <Navbar>
             <Navbar.QuickBrand>
               {Brand.name}: Teacher Mode
             </Navbar.QuickBrand>
@@ -42,12 +49,6 @@ function TeacherView (props) {
             </Navbar.Item>
             {page!==COURSECHOOSER &&  <a className="navbar-item" onClick={()=>setPage(COURSECHOOSER)}>Switch course</a>}
           </Navbar>
-           <div className='body'>
-             {user &&
-              mainPage()
-              || <div>No user??? Please Log In</div>
-             }
-           </div>
         </div>
     )
 
@@ -61,26 +62,32 @@ function TeacherView (props) {
             }}
           />)
                                  ||
-                                 menuOrPage()}
+                                 tabs()}
                 </React.Fragment>);
     }
 
-    function menuOrPage () {
+    function tabs () {
         return (
-            <Tabs>
-              <span>
-                Assess Student Portfolios
-              </span>
-              <TeacherPortfolioView course={course}/>
-              <span>
-                Build Skill Portfolio
-              </span>
-              <PortfolioBuilder course={course}/>
-              <span>
-                Map Skills to Assignments
-              </span>
-              <AssignmentMapper course={course}/>
-            </Tabs>
+            <div className="viewport2">
+              <Tabs className="is-centered">
+                <span>
+                  Assess Student Portfolios
+                </span>
+                <TeacherPortfolioView course={course}/>
+                <span>
+                  Assess Assignments
+                </span>
+                <TeacherAssignmentView course={course}/>
+                <span>
+                  Build Skill Portfolio
+                </span>
+                <PortfolioBuilder course={course}/>
+                <span>
+                  Map Skills to Assignments
+                </span>
+                <AssignmentMapper course={course}/>
+              </Tabs>
+            </div>
         );
 
     }

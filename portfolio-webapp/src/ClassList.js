@@ -4,42 +4,37 @@ import Api from './gapi/gapi.js';
 import {classNames} from './utils.js';
 import {Modal} from './widgets.js';
 import googleLogo from "./images/32x32.png";
+import {useCoursesApi} from './gapi/hooks.js';
 
 function ClassList (props) {
-    const [fetching, setFetching] = useState(true);
-    const coursesCacheName = 'teacher-courses-'+props.user;
-    const [courses, setCourses] = useState(
-        Api.getLocalCachedProp(coursesCacheName)
-            ||
-            []
-    );
-    const [errors, setErrors] = useState(false);
+    const CourseFetcher = useCoursesApi({teacher:props.user});
+
     const [customCourses,setCustomCourses] = useState(
         Api.getLocalCachedProp('custom-courses-'+props.user)||[]
     );
     
     const [showCustomModal,setShowCustomModal] = useState(false);
     var customCourseWidget;
-    useEffect(()=>{
-        Api.Classroom.get_teacher_classes({teacher:props.user})
-            .then(function (result) {
-                setCourses(result);
-                Api.cacheResult(
-                    coursesCacheName,                    
-                    result
-                );
-                setFetching(false);
-            })
-            .catch(function (ex) {
-                console.log('parsing failed',ex)
-                setErrors(JSON.stringify(ex))
-                setFetching(false);
-            });
-        Api.getProp('custom-courses-'+props.user)
-            .then((result)=>setCustomCourses(result));
-    },
-              [props.user] // array of properties whose change triggers effect to rerun
-             );
+    // useEffect(()=>{
+    //     Api.Classroom.get_teacher_classes({teacher:props.user})
+    //         .then(function (result) {
+    //             setCourses(result);
+    //             Api.cacheResult(
+    //                 coursesCacheName,                    
+    //                 result
+    //             );
+    //             setFetching(false);
+    //         })
+    //         .catch(function (ex) {
+    //             console.log('parsing failed',ex)
+    //             setErrors(JSON.stringify(ex))
+    //             setFetching(false);
+    //         });
+    //     Api.getProp('custom-courses-'+props.user)
+    //         .then((result)=>setCustomCourses(result));
+    // },
+    //           [props.user] // array of properties whose change triggers effect to rerun
+    //          );
         
     return (
         <div>
@@ -48,8 +43,8 @@ function ClassList (props) {
               <h3 className="card-header-title">{props.cardHeader || 'Choose Course'}</h3>
             </div>
             <div className="card-content">
-              {errors && <div><p>ERRORS!</p><pre>{errors}</pre></div>}
-              {(fetching && 
+              {CourseFetcher.error && <div><p>ERROR!</p><pre>{CourseFetcher.error}</pre></div>}
+              {(CourseFetcher.fetching && 
                 <div>
                   <progress max="100" className="progress"/>
                   <span>Fetching data from google apps...</span>
@@ -57,7 +52,7 @@ function ClassList (props) {
                 || ''
                )}
               <div className="">
-                {courses &&
+                {CourseFetcher.value &&
                  
                  <div className="section">
                    <h3 className="level level-left">
@@ -68,7 +63,7 @@ function ClassList (props) {
                    </h3>
                    <div className="level">
                      {
-                         courses.map((c)=>(
+                         CourseFetcher.value.map((c)=>(
                              <a key={c.id} className='button is-medium level-item space-right classroom-green-button'
                                 onClick={()=>props.onCourseSelected(c)}>
                                {c.name}

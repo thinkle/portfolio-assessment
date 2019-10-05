@@ -18,6 +18,7 @@ import Portfolio from './Portfolio.js';
 import {Button,Buttons,SelectableItem,Box,h,Container} from './widgets.js';
 import Menu from './widgets/Menu.js';
 import Tabs from './widgets/Tabs.js';
+import TeacherAssignmentView from './TeacherAssignmentView.js';
 
 function TestView () {
     const [page,setPage] = useState('gapi')
@@ -33,6 +34,7 @@ function TestView () {
     const [testUrl,setTestUrl] = useState('');
     const [testData,setTestData] = useState('');
     const [testUrls,setTestUrls] = useState([]);
+    const [testState,setTestState] = useState(3);
     const [showButtons,setShowButtons] = useState(true);
     const [studentMode,setStudentMode] = useState(false);
     
@@ -106,8 +108,16 @@ function TestView () {
 
     return (
         <div>
-          <Box>
-            <h.h2>Test API</h.h2>
+          <h.h2>Tests</h.h2>
+          {widgets()}
+          {buttons()}
+          {data()}
+        </div>
+
+    );
+
+    function buttons () {
+        return <Box>
             {!showButtons && <Button onClick={()=>setShowButtons(true)}>(show test buttons)</Button>}
             <div style={{
                 display : showButtons || 'none',
@@ -149,20 +159,16 @@ function TestView () {
                 {/*         }); */}
                 {/* }}>Clobber props!</Button> */}
               </Box>
-              <Box>
-                <h.h3>UI</h.h3>
-                <Button onClick={()=>setPage('exemplar')}>Test EXEMPLAR EDITOR</Button>
-                <Button onClick={()=>setPage('portf')}>Show Portf</Button>
-                <Button onClick={()=>setPage('assm')}>Show Assignment Mapper</Button>
-                <Button onClick={()=>setPage('courses')}>List Classes</Button>
-                <Button onClick={()=>setPage('builder')}>Build Portfolio</Button>
-                {/* <Button onClick={()=>setPage('embed')}>Test Embed</Button> */}
-                {/* <Button onClick={()=>setPage('portfolio')}>Show Portfolio</Button> */}
-              </Box>
-              <Box>
-                <h.h3>Widgets</h.h3>
-                <Button onClick={()=>setPage('editor')}>Test Editor</Button>
-              </Box>
+              {/* <Box> */}
+              {/*   <h.h3>UI</h.h3> */}
+              {/*   <Button onClick={()=>setPage('exemplar')}>Test EXEMPLAR EDITOR</Button> */}
+              {/*   <Button onClick={()=>setPage('portf')}>Show Portf</Button> */}
+              {/*   <Button onClick={()=>setPage('assm')}>Show Assignment Mapper</Button> */}
+              {/*   <Button onClick={()=>setPage('courses')}>List Classes</Button> */}
+              {/*   <Button onClick={()=>setPage('builder')}>Build Portfolio</Button> */}
+              {/*   {/\* <Button onClick={()=>setPage('embed')}>Test Embed</Button> *\/} */}
+              {/*   {/\* <Button onClick={()=>setPage('portfolio')}>Show Portfolio</Button> *\/} */}
+              {/* </Box> */}
               <Box>
                 <h.h3>Drive/Docs</h.h3>
                 <Button onClick={
@@ -314,6 +320,12 @@ function TestView () {
             <Button onClick={()=>{setTestUrl('http://www.google.com');setTestData({test:'me',hello:'world'})}}>Test TestData & URL</Button>
         </div>
         </Box>
+    }
+
+    function data() { 
+        return <div><h.h3>Test Data and Stuff...</h.h3>
+            {testData && <pre>TEST DATA:
+                           {JSON.stringify(testData)}</pre>}
 
           <div>
             {testUrl && <a target="_blank" href={testUrl} target='blank'>Test URL was created!</a>}
@@ -321,84 +333,101 @@ function TestView () {
              testUrls.map(
                  (urlData)=><span>|<a target="_blank"  href={urlData.url}>{urlData.name}</a>|</span>
              )}
-            {testData && <pre>TEST DATA:
-                           {JSON.stringify(testData)}</pre>}
           </div>
-          {page=='portf' &&
-           <div>
-             <Button onClick={()=>setStudentMode(false)}>Teacher Mode</Button>
-             <Button onClick={()=>setStudentMode(true)}>Student Mode</Button>
-             {studentMode && <h.h2>Student View</h.h2> || <h.h2>Teacher View</h.h2>}
-             <Portfolio course={defaultCourse} student={defaultStudent}
-                        teacherMode={!studentMode}
-             />
+            {prop && <p>{JSON.stringify(prop)} {prop.name}</p>}
+            SETTING: {testId}
+          </div>
+    }
 
-           </div>
-          }
-          {page=='assm' && <AssignmentMapper course={defaultCourse}/>}
-          <div>{page=='courses' && <ClassList onCourseSelected={(c)=>console.log('Selected course %s',JSON.stringify(c))} user='thinkle@innovationcharter.org'></ClassList>}</div>
-          <div>{page=='portfolio' && <SkillsList></SkillsList>}</div>
-          {prop && <p>{JSON.stringify(prop)} {prop.name}</p>}
-          SETTING: {testId}
-          
-          {page=='builder' && <PortfolioBuilder course={defaultCourse}/>}
-          {page=='editor' &&
-           (
-               <div>
-                 <h3>Rich Text Editor Test!</h3>
-                 <Editor onChange={(html)=>console.log('HTML UPDATED: %s',html)} editorHtml={`<ul>
+    function widgets () {
+        return (
+          <Tabs>
+
+            <span>Widgets!</span>
+            <div>
+              <div style={{height:100}}/>
+              <hr/>
+              <div>
+                <h.h2>Dropdown menu!</h.h2>
+                <Menu dropdown={true} items={[1,2,3,4,5,6]} itemRenderer={Menu.Item} initialValue={testState} onSelected={setTestState}/>
+              </div>
+              <div>
+                <SelectableItem title="Test me"
+                                items={[1,2,3,4,5,6,7]}
+                                itemRenderer={Menu.Item}
+                                onSelected={console.log}
+                >
+                  
+                </SelectableItem>
+                <Box>
+                  <h.h3>Tabs!</h.h3>
+                  <Tabs>
+                    <span>Hello</span>
+                    <div>Hello World</div>
+                    <span>Goodbye</span>
+                    <div>See you around!</div>
+                  </Tabs>
+                </Box>
+              </div>
+            </div>
+
+            <span>Teacher Assessment View</span>
+            <TeacherAssignmentView course={defaultCourse}/>
+
+            <span>Portfolio</span>
+            <div>
+              <Button onClick={()=>setStudentMode(false)}>Teacher Mode</Button>
+              <Button onClick={()=>setStudentMode(true)}>Student Mode</Button>
+              {studentMode && <h.h2>Student View</h.h2> || <h.h2>Teacher View</h.h2>}
+              <Portfolio course={defaultCourse} student={defaultStudent}
+                         teacherMode={!studentMode}
+              />
+              
+            </div>
+
+            <span>Assignment Mapper</span>
+            <AssignmentMapper course={defaultCourse}/>
+
+            <span>Course List</span>
+            <ClassList onCourseSelected={(c)=>console.log('Selected course %s',JSON.stringify(c))} user='thinkle@innovationcharter.org'></ClassList>
+
+            {/* <span>Skills List</span> */}
+            {/* <SkillsList></SkillsList> */}
+            
+            <span>Builder</span>
+            <PortfolioBuilder course={defaultCourse}/>
+            <span>Rich Text</span>
+            <div>
+              <h3>Rich Text Editor Test!</h3>
+              <Editor onChange={(html)=>console.log('HTML UPDATED: %s',html)} editorHtml={`<ul>
 <li>Type your</li>
 <li>List of</li>
 <li>indicators here.</li>
 </ul>`}/>
-               </div>
-           )}
-          {page=='embed' && <SheetWidget url="https://docs.google.com/spreadsheets/d/1RP7wlpGOrrfUbdvBXKYvRygomATov6DTp1OocBEinqI/edit#gid=0"/>}
-          {page=='gapi' && (<div>GAPI:<Gapi/></div>)}
-          {page=='exemplar' &&
-           <div>
-             <h2>Student Version</h2>
-             <ExemplarEditor
-               student={defaultStudent}
-               course={defaultCourse}
-               onChange={console.log}
-               mode='student'
-             />
+            </div>
+
+            <span>Embedded</span>
+            <SheetWidget url="https://docs.google.com/spreadsheets/d/1RP7wlpGOrrfUbdvBXKYvRygomATov6DTp1OocBEinqI/edit#gid=0"/>
+            <span>Exemplar Editor</span>
+            <div>
+              <h2>Student Version</h2>
+              <ExemplarEditor
+                student={defaultStudent}
+                course={defaultCourse}
+                onChange={console.log}
+                mode='student'
+              />
              <h2>Teacher Version</h2>
-             <ExemplarEditor
-               student={defaultStudent}
-               course={defaultCourse}
-               onChange={console.log} mode='teacher'
-             />
-           </div>
-          }
+              <ExemplarEditor
+                student={defaultStudent}
+                course={defaultCourse}
+                onChange={console.log} mode='teacher'
+              />
+            </div>
 
-          <div style={{height:100}}/>
-          <hr/>
-
-          <div>
-            <SelectableItem title="Test me"
-                  items={[1,2,3,4,5,6,7]}
-                  itemRenderer={Menu.Item}
-                  onSelected={console.log}
-            >
-              
-            </SelectableItem>
-          </div>
-
-          <Box>
-            <h.h3>Tabs!</h.h3>
-            <Tabs>
-              <span>Hello</span>
-              <div>Hello World</div>
-              <span>Goodbye</span>
-              <div>See you around!</div>
-            </Tabs>
-          </Box>
-
-          
-        </div>
-    );
+          </Tabs>
+        );
+    }
 }
 
 

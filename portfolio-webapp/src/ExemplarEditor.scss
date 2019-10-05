@@ -1,20 +1,26 @@
 .ExemplarEditor  {
     display: grid;
-    grid-template-areas: "header header"
-                         "workTitle exemplarInfo"
-                         "skills skills"
-                         "iframe iframe"
+    grid-template-areas: "header"
+                         "exemplarInfo"
+                         "skills"
+                         "iframe"
     ;
-    grid-template-columns: 1fr 2fr;
     padding-left: 5px;
     padding-right: 5px;
+    margin: auto;
+    max-width: 1200px;
 }
 .ExemplarEditor.sidebarMode {
-    grid-template-areas: "header     header      header "
-                         "workTitle  exemplarInfo exemplarInfo"
-                         "iframe     iframe       skills"
+    grid-template-areas: "header     header "
+                         "exemplarInfo exemplarInfo"
+                         "iframe       skills"
     ;
-    grid-template-columns: 2fr 1fr 350px;
+    grid-template-columns: minmax(40vw,70vw) auto;
+    grid-template-rows: auto auto 850px;
+    max-width: 100%;
+}
+.ExemplarEditor.sidebarMode .skills {
+    overflow-y: scroll;
 }
 
 // .ExemplarEditor > div {
@@ -41,15 +47,25 @@
 .sidebarMode .skillEditor {
     display: block;
 }
+.sidebarMode .skillEditor .box {
+    margin-bottom: 1.5rem;
+}
 
 .skillEditor {
     display: grid;
     grid-template-columns: 3fr 2fr;
-    grid-template-areas: "title control"
-                         "detail detail"
+    grid-column-gap: 1.5rem;
+    grid-row-gap: 1.5rem;
+    grid-template-areas: "title title"
                          "reflection description"
                          "assessment description"
     ;
+}
+.skillEditor .box {
+    margin: 0; // We take care of it with column/row gaps instead
+}
+.skillEditor .quill .ql-container {
+    min-height: 200px;
 }
 
 $grey : #dfdfdf;
@@ -58,6 +74,10 @@ $grey : #dfdfdf;
     grid-area: title;
     background-color: $grey;
     padding-top: 3px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-items: stretch;
 }
 
 .skillEditor .skillTitle,.skillEditor .skillDetail,.skillEditor .skillControl {
@@ -77,7 +97,7 @@ $grey : #dfdfdf;
 }
 
 .skillEditor .skillControl {
-    grid-area: control;
+    flex: 1;
     background-color: $grey
 }
 .skillControl .navbar {
@@ -90,6 +110,7 @@ $grey : #dfdfdf;
 
 .skillEditor .skillDescripton {
     grid-area: description;
+    align-self: stretch;
 }
 .skillEditor .reflection {
     grid-area: reflection;
@@ -104,17 +125,41 @@ $grey : #dfdfdf;
 .side-by-side > *  {
     display: inline-block;
 }
-.reflection.empty .title {
+.reflection.empty {
     font-size: 70%;
 }
 .reflection.empty {
-    color: #333;
+    color: #777;
 }
 
-.linkPicker {
+.linkPicker label > * {
     display: inline-block;
 }
-.linkPicker * {
-    display: inline-block;
-    margin-right: 3px;
+
+.linkPicker input {
+    opacity: 0;
 }
+
+.linkPicker label > div:before {
+    content: "☐";
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.linkPicker label > div:before:hover {
+    font-size: 2.5rem;
+    animate: font-size 300ms;
+}
+
+.linkPicker label > div.selected:before {
+    content: "☑";
+}
+
+.skillTitle .title  {
+    margin-bottom: 0px;
+}
+.ExemplarEditor .title {
+    margin-bottom: 0.5rem;
+}
+                   
+    

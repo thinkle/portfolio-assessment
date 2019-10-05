@@ -1,4 +1,5 @@
 import {Icon} from './widgets.js';
+import {makeIframable} from './linkMagic.js';
 import React,{useState} from 'react';
 
 function SheetWidget (props) {
@@ -17,7 +18,7 @@ function SheetWidget (props) {
            &&
            <div>
              {/* <a href="#" onClick={()=>setShowEmbed(false)}>Hide</a> */}
-             <br/><iframe style={{height:h+'px', width:w+'px'}} height={h} width={w} src={props.url}/>
+             <br/><iframe style={{height:h+'px', width:w+'px'}} height={h} width={w} src={makeIframable(props.url)}/>
            </div>
            ||
            <a href="#" onClick={()=>setShowEmbed(true)}>Show</a>

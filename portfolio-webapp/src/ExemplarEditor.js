@@ -7,6 +7,7 @@ import Material from './Material.js';
 import SheetWidget from './SheetWidget.js';
 import Editor from './RichText.js';
 import {classnames, sanitize} from './utils.js';
+import MagicLink from './linkMagic.js';
 import './ExemplarEditor.scss';
 
 
@@ -45,6 +46,7 @@ function GradeBox (props) {
 
 function StandAloneExemplarEditor (props) {
     const {strands,skills,assignments} = usePortfolioSkillHook(props);
+    const coursework = useCoursework({course:props.course,coursework:props.coursework});
     return <ExemplarEditor
              strands={strands}
              skills={skills}
@@ -56,9 +58,9 @@ function StandAloneExemplarEditor (props) {
 /* This level lets us choose the work and handle multiple skills */
 function ExemplarEditor (props) {
 
-    const {strands,skills,assignments} = props; // lifted up to Portfolio
+    const {strands,skills,assignments,coursework} = props; // lifted up to Portfolio
 
-    const coursework = useCoursework({course:props.course,coursework:props.coursework});
+
     // data we choose
     const [selectedSubmission,setSelectedSubmission] = useState(props.selectedSubmission)
     const [customSubmissionMode,setCustomSubmissionMode] = useState(false);
@@ -113,11 +115,17 @@ function ExemplarEditor (props) {
                            }
                 if (updateCounts) {
                     if (props.mode=='teacher') {
+                        if (!copy.assessment) {
+                            copy.assessment = {}
+                        }
                         copy.assessment.count = copy.revisionCount||1;
                     }
                     if (props.mode=='student') {
                         if (copy.assessment) {
                             copy.revisionCount = copy.assessment.count + 1 || 1;
+                        }
+                        else {
+                            copy.revisionCount = 1
                         }
                     }
                 }
@@ -170,26 +178,6 @@ function ExemplarEditor (props) {
           <div className="skills">
             {skillAssessmentBoxes()}
           </div>
-          <div className="workTitle">
-            <h.h5>{theTitle()}
-                 <a href={permalink} target="_blank"><Icon icon={Icon.external}/></a>
-            </h.h5>
-            {permalink && (sidebarMode && 
-             <Button
-               onClick={()=>setSidebarMode(false)}
-               className="is-small"
-               icon={Icon.up}
-             >
-               Hide Embedded View
-             </Button>
-             ||
-             <Button
-               onClick={()=>setSidebarMode(true)}
-               className="is-small"
-               icon={Icon.down}
-             >Show</Button>
-                          )}
-          </div>
           <div className="embeddedWork">
             <SheetWidget url={permalink}/>
           </div>
@@ -199,7 +187,7 @@ function ExemplarEditor (props) {
     
     function skillAssessmentBoxes () {
         return (<React.Fragment>
-                  <h.h2>Skills</h.h2>
+                  <h.h4>Skills</h.h4>
                   {selectedSkills.map(
                       // Skills can be empty if they've been deleted ?
                       (skill,n)=>skill && <ExemplarSkillEditor
@@ -232,6 +220,47 @@ function ExemplarEditor (props) {
                )
     }
 
+    function makeSubmissionChooser () {
+        if (studentWork && studentWork.length) {
+            return (
+                <React.Fragment>
+                  <Navbar.Item>
+                    {customSubmissionMode &&
+                     <label>Custom Link: <input className="input" type="text" value={permalink} onChange={(event)=>setPermalink(event.target.value)}/></label>                   ||
+                     <SelectableItem
+                       initialValue={selectedSubmission}            
+                       items={studentWork}
+                       title="Choose Classroom Assignment"
+                       renderItem={
+                           (itm)=><span>
+                                    {itm.courseWorkId &&
+                                     courseworkById[itm.courseWorkId]
+                                     && courseworkById[itm.courseWorkId].title} {assignmentStateToIcon(itm.state)}
+                                  </span>}
+                       onSelected={setSelectedSubmission}
+                     />}
+                    <MagicLink href={permalink} target="_blank"><Icon icon={Icon.external}/></MagicLink>
+                  </Navbar.Item>
+                  <Navbar.Item>
+                    {!selectedSubmission &&
+                     (customSubmissionMode &&
+                      <Button  onClick={()=>setCustomSubmissionMode(false)}>
+                        Use Google Classroom Assignment
+                      </Button>
+                      ||
+                      <Button onClick={()=>setCustomSubmissionMode(true)}>Enter Custom Selection</Button>)
+                    }
+                  </Navbar.Item>
+                </React.Fragment>
+            );
+        }
+        else {
+            // If there is no student work, we are controlled and handed a submission, so we
+            // just display it such as it is.
+            return <Navbar.Item>{theTitle()}<MagicLink href={permalink} target="_blank"><Icon icon={Icon.external}/></MagicLink></Navbar.Item>;
+        }
+    }
+
     function makeNavbar () {
         return (
             <Navbar className="navbar2">
@@ -241,34 +270,32 @@ function ExemplarEditor (props) {
                   {props.mode=='teacher' && 'Teacher Mode'}
                   {/* selectedSubmission && selectedSubmission.courseWorkId */}
                   {/* selectedSkill && selectedSkill.skill */}
-                </Navbar.QuickBrand>
+                </Navbar.QuickBrand>                
                 <Navbar.Item>
-                  {customSubmissionMode &&
-                   <label>Custom Link: <input className="input" type="text" value={permalink} onChange={(event)=>setPermalink(event.target.value)}/></label>                   ||
-                  <SelectableItem
-                    initialValue={selectedSubmission}            
-                    items={studentWork}
-                    title="Choose Classroom Assignment"
-                    renderItem={
-                        (itm)=><span>
-                                 {itm.courseWorkId &&
-                                  courseworkById[itm.courseWorkId]
-                                  && courseworkById[itm.courseWorkId].title} {assignmentStateToIcon(itm.state)}
-                               </span>}
-                    onSelected={setSelectedSubmission}
-                   />}
-                </Navbar.Item>
-                <Navbar.Item>
-                  {!selectedSubmission &&
-                   (customSubmissionMode &&
-                    <Button  onClick={()=>setCustomSubmissionMode(false)}>
-                      Use Google Classroom Assignment
+                {permalink
+                 &&
+                 (sidebarMode && 
+                    <Button
+                      onClick={()=>setSidebarMode(false)}
+                      icon={Icon.up}
+                    >
+                      <span className="is-small">Hide Embedded View</span>
                     </Button>
                     ||
-                    <Button onClick={()=>setCustomSubmissionMode(true)}>Enter Custom Selection</Button>)
-                  }
-                </Navbar.Item>
+                    <Button
+                      onClick={()=>setSidebarMode(true)}
+                      className="is-small"
+                      icon={Icon.down}
+                    >
+                      <span className="is-small">Show work</span>
+                    </Button>
+                 )}
+                </Navbar.Item>               
               </Navbar.Start>
+              {/* https://github.com/jgthms/bulma/issues/1604 */}
+              <Navbar.Center>
+                {makeSubmissionChooser()}
+              </Navbar.Center>
               <Navbar.End>
                 <Navbar.Item >
                   <Button onClick={saveDraft}>Save Draft</Button>
@@ -298,14 +325,17 @@ function ExemplarEditor (props) {
     function exemplarInfoBox () {
         return (selectedSubmission
             &&
-            <React.Fragment>
-              {selectedSubmission.alternateLink && <a href={selectedSubmission.alternateLink} target="_BLANK">Classroom Link</a>}
+                <Box>
+                  <h.h5>Assignment Details</h.h5>
+                  
+                  {selectedSubmission.alternateLink && <div><a href={selectedSubmission.alternateLink} target="_BLANK">Open Classroom Assignment<Icon icon={Icon.external}/></a></div>}
               {selectedSubmission && selectedSubmission.assignmentSubmission && selectedSubmission.assignmentSubmission.attachments
                &&
-              <div className="linkPicker">Link to work (choose only one link):
-                {selectedSubmission.assignmentSubmission.attachments.map(
+               <div className="box linkPicker">
+                 <h.h6>Attachments:</h.h6>
+                 <ul>{selectedSubmission.assignmentSubmission.attachments.map(
                     (attachment)=>(
-                        <label>
+                     <li>   <label>
                           <input type="checkbox" checked={Material.getLink(attachment)==permalink}
                                  onChange={
                                         (event)=>{
@@ -324,12 +354,13 @@ function ExemplarEditor (props) {
                           })}>
                             <Material material={attachment}/>
                           </div>
-                        </label>
+                        </label></li>
                     )
-                )}
+                 )}
+                 </ul>
               </div>}
-              <label>Link: <input className="input" type="text" value={permalink} onChange={(event)=>setPermalink(event.target.value)}/></label>
-            </React.Fragment>
+                  <div><label>Enter Link: <input className="input" type="text" value={permalink} onChange={(event)=>setPermalink(event.target.value)}/></label></div>
+            </Box>
                );
     }
 }
@@ -456,20 +487,24 @@ function ExemplarSkillEditor (props) {
     }
 
     return (
-        <Box className="skillEditor">
-            <div className="skillTitle">
+        <Box className={classNames({
+            skillEditor:true,
+            teacher:props.mode=='teacher',
+            student:props.mode=='student',
+        })}>
+          <div className="skillTitle">
                 <CustomSelectableItem
                   unselect={()=>setSelectedSkill()}
                   selected={selectedSkill}
                 >
                   <div className="side-by-side">
-                    <h.h4>
+                    <h.h5>
                       {selectedSkill && selectedSkill.skill}
-                    </h.h4>
+                    </h.h5>
                     <span className='tag'>{selectedSkill && selectedSkill.strand}</span>
                   </div>
                   <div className="side-by-side">
-                    <h.h4>Skill:</h.h4>
+                    <h.h5>Skill:</h.h5>
                     <SkillPicker
                       key={selectedSubmission && selectedSubmission.courseWorkId}
                       customMenu={getCustomSkillPickerMenu()}
@@ -478,9 +513,12 @@ function ExemplarSkillEditor (props) {
                       onSelected={setSelectedSkill}/>
                   </div>
                 </CustomSelectableItem>
+            <div className="skillDetail">
+              <div className="is-small">{selectedSkill.exemplars.length} {selectedSkill.exemplars.length==1 && 'exemplar' || 'exemplars'}, due&nbsp;
+                {selectedSkill.exemplars.map((ex,i)=><span>{ex.dueDate && ex.dueDate.toLocaleDateString()}{i<(selectedSkill.exemplars.length-1)&&','}</span>)}
+              </div>
             </div>
-          <div className="skillControl">
-            <Navbar className="navbar3">
+            <Navbar className="navbar3 skillControl">
               {props.mode=='student' &&
                <Navbar.Item>
                  {assessmentCount < revisionCount &&
@@ -509,10 +547,12 @@ function ExemplarSkillEditor (props) {
                </Navbar.Item>
               }
               <Navbar.End>
-                {props.onRemove && <Button onClick={props.onRemove} icon={Icon.delete}>Remove Skill</Button>}
+                <Navbar.Item>
+                  {props.onRemove && <Button onClick={props.onRemove} icon={Icon.delete}>Remove Skill</Button>}
+                </Navbar.Item>
               </Navbar.End>
             </Navbar>
-            </div>
+          </div>
           {skillInfoBox()}
           {makeMarkupBox()}
         </Box>
@@ -523,14 +563,9 @@ function ExemplarSkillEditor (props) {
             selectedSkill && 
                 <React.Fragment>
                   {/* <div className="skillTitle"> */}
-                  {/*   <h.h5>{selectedSkill.skill} <span className='tag'>{selectedSkill.strand}</span></h.h5> */}
+                  {/*   <h.h6>{selectedSkill.skill} <span className='tag'>{selectedSkill.strand}</span></h.h6> */}
                   {/* </div> */}
-                  <div className="skillDetail">
-                    <div className="is-small">{selectedSkill.exemplars.length} {selectedSkill.exemplars.length==1 && 'exemplar' || 'exemplars'}, due&nbsp;
-                      {selectedSkill.exemplars.map((ex,i)=><span>{ex.dueDate && ex.dueDate.toLocaleDateString()}{i<(selectedSkill.exemplars.length-1)&&','}</span>)}
-                    </div>
-                  </div>
-                  <div className='skillDescripton description' dangerouslySetInnerHTML={sanitize(selectedSkill.descriptor)}/>
+                  <div className='box skillDescripton description' dangerouslySetInnerHTML={sanitize(selectedSkill.descriptor)}/>
                 </React.Fragment>
         )
     }
@@ -540,21 +575,22 @@ function ExemplarSkillEditor (props) {
             {selectedSkill && 
              <div className={classNames({
                  reflection:true,
+                 box:true,
                  empty:!reflection
              })}>
-              <h.h5>Reflection:</h.h5>
+              <h.h6>Reflection:</h.h6>
              {props.mode=='student' && 
               <Editor editorHtml={reflection}
                       onChange={setReflection}
                       placeholder={`Type your reflection on ${selectedSkill.skill||'?'} here...`}
               /> ||
-              (reflection && <div className='description' dangerouslySetInnerHTML={sanitize(reflection)}/> || <div>No reflection</div>)
+              (reflection && <div className='description' dangerouslySetInnerHTML={sanitize(reflection)}/> || <div className="is-small">No reflection</div>)
              }
             </div>
             }
             {selectedSkill &&
-            <div className="assessment">
-              <h.h5>Assessment:</h.h5>
+            <div className="box assessment">
+              <h.h6>Assessment:</h.h6>
               {props.mode=='teacher' &&
                <div>
                  <label className="is-bold">Grade: <GradeBox onChange={setScore} value={score}/></label>

@@ -57,3 +57,67 @@ a:hover .tooltip
   
 .is-opaque
   background-color: white
+
+.student-name-picker
+  min-width: 20rem
+  
+.student-name-picker > a
+  width: 100%
+
+$toolbar-height: 55px
+
+.viewport3,.viewport2
+  display: flex
+  flex-direction: column
+  height: 100%
+  min-height: 100%
+
+.viewport2 > .tabs,.viewport3 > .tabs
+  margin-bottom: 0
+  
+.viewport3 > div:nth-child(1),.viewport2 > div:nth-child(1)
+  height: $toolbar-height
+//  flex: 0
+  
+.viewport3 > div:nth-child(2),.viewport2 > div:nth-child(2)
+  flex: 1
+  overflow-y: auto
+
+.viewport2.bottom > div:nth-child(1)
+  flex: 1
+  overflow-y: auto
+  
+.viewport2.bottom > div:nth-child(2)
+  height: $toolbar-height
+  overflow: initial
+  flex: 0
+
+.viewport3 > div:nth-child(2),.viewport2 > div:nth-child(2)
+  overflow-y: auto;
+  flex: 1;
+
+
+//heights
+
+html,body,#root,.fullHeight
+  height: 100%
+  padding: 0
+  margin: 0
+
+/* .viewport2,.viewport3
+/*   height: 99vh
+
+/* .viewport2 .viewport3,.viewport2 .viewport2
+/*   height: calc(99vh - $toolbar-height)
+
+/* .viewport3 .viewport2,.viewport3 .viewport3
+/*   height: calc(99vh - 120px)
+
+/* .viewport3 .viewport2 .viewport2,.viewport3 .viewport2 .viewport3,.viewport2 .viewport3 .viewport2,.viewport2 .viewport3 .viewport3
+/*   height: calc(99vh - 120px - $toolbar-height)
+
+.modeBox
+  position: absolute
+  right: 5px;
+  bottom: 5px;
+  

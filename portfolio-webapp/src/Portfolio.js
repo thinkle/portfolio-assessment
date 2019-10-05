@@ -75,24 +75,22 @@ var testExemplar = {
 function Portfolio (props) {
     const skillHookProps = usePortfolioSkillHook(props);
     const studentPortfolioProps = useStudentPortfolio(props);
-    console.log('We have shp props:',skillHookProps)
-    console.log('We have spp props:',studentPortfolioProps)
-    console.log('We have vanilla props:',props)
+    const coursework = useCoursework(props);
+    const studentwork = useStudentWork(props);
     return <PortfolioComponent {...props}
-                      {...skillHookProps}
-                      {...studentPortfolioProps}
+                               {...skillHookProps}
+                               {...studentPortfolioProps}
+                               coursework={coursework}
+                               studentwork={studentwork}
            />
 }
 
 function LazyPortfolioComponent (props) {
     const studentPortfolioProps = useStudentPortfolio({...props,dontFetch:true});
-    console.log('We have spp props:',studentPortfolioProps)
-    console.log('We have vanilla props:',props)
 
     useEffect( ()=>{
-        console.log('LazyPortfolio -- should we load?');
         if (props.fetchNow) {
-            console.log('Now we fetch!!!');
+            console.log('LazyPortfolioComponent... Now we fetch!!!');
             studentPortfolioProps.fetch();
         }
     },
@@ -110,16 +108,15 @@ function PortfolioComponent (props) {
     // student =
 
     const {skills, strands, assignments,
-           busy, portfolio, setPortfolio, savePortfolio, saved} = props;
+           busy, portfolio, setPortfolio, savePortfolio, saved, updateExemplars,
+           coursework, studentwork
+          } = props; // state lifted...
 
     const [filters,setFilters] = useState({});
     const [dataCount,setDataCount] = useState(1);
     const [treeData,setTreeData] = useState([]);
     const [showExemplar,setShowExemplar] = useState(false);
     const [exemplarEditorProps,setExemplarEditorProps] = useState({});
-
-    const coursework = useCoursework(props);
-    const studentwork = useStudentWork(props);
 
     useEffect(
         ()=>{
@@ -246,20 +243,7 @@ function PortfolioComponent (props) {
 
     function saveExemplars (exemplars) {
         console.log('Portfolio.saveExemplars(...)',exemplars);
-        var newPortfolio = [...portfolio];
-        exemplars.forEach(
-            (exemplar)=>{
-                // deep copy portfolio...
-                // and insert exemplar into it...
-                if (exemplar.id) {
-                    replaceItemInArray(newPortfolio,exemplar,'id')
-                }
-                else {
-                    newPortfolio.push(exemplar);
-                }
-            });
-        console.log('Built new portfolio structure: ',newPortfolio);
-        setPortfolio(newPortfolio);
+        updateExemplars(exemplars)
         buildTreeDataStructure()
         setDataCount(dataCount+1);
         setShowExemplar(false);
@@ -317,13 +301,14 @@ function PortfolioComponent (props) {
                 }
             }}
           />}
-          <Modal active={showExemplar} onClose={()=>setShowExemplar(false)}>
+          <Modal className='full' active={showExemplar} onClose={()=>setShowExemplar(false)}>
             <ExemplarEditor
               {...props}
               {...exemplarEditorProps}
               strands={strands}
               skills={skills}
               assignments={assignments}
+              coursework={coursework}
               key={getExemplarKey()}
               onChange={(exemplars)=>saveExemplars(exemplars)}
               mode={props.teacherMode&&'teacher'||'student'}
