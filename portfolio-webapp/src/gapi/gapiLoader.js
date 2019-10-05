@@ -1,9 +1,13 @@
 import React,{useEffect,useState} from 'react';
+import {Navbar,Button} from '../widgets.js';
+// LOCAL MODE 
 //import apiInfo from './secrets.js'; // comment out before committing
+//const localMode = true; // comment out before committing
+//// REMOTE MODE
 var apiInfo // comment to work local
 const localMode = false; // comment to work local
 
-//const localMode = true; // comment out before committing
+
 
 /* Note: to use this, you need to include the following <script> tag in your index.html
 
@@ -171,22 +175,29 @@ function Gapi (props) {
     }
 
     return (
-        <div>
-          <button onClick={initClient}>Init Client again?</button>
-          {apiInfo=={} && 'No API info yet'}
-            {authorized &&
-             (<div>
-                <h3>Signed in</h3>
-                <button className='button' onClick={handleSignoutClick}>Sign Out</button>
-              </div>
-             )
-             ||
-             (<div>
-                <h3>Not signed in</h3>
-                <button className='button' onClick={handleAuthClick}>Sign In</button>
-
-              </div>)}
-        </div>
+            <Navbar>
+            <Navbar.Start>
+              <Navbar.Item>
+                {apiInfo=={} && 'No API info yet'
+                 || <span>
+                      Signed {authorized && 'in' || 'out'}
+                    </span>
+                }
+              </Navbar.Item>
+              <Navbar.Item>
+                {authorized &&
+                 <Button onClick={handleSignoutClick}>Sign Out</Button>
+                 ||
+                 <Button className='button' onClick={handleAuthClick}>Sign In</Button>
+                }
+              </Navbar.Item>
+            </Navbar.Start>
+              <Navbar.End>
+                <Navbar.Item>
+                  <Button onClick={initClient}>Init Client again?</Button>
+                </Navbar.Item>
+              </Navbar.End>
+            </Navbar>
     )
 
 }
