@@ -304,13 +304,18 @@ function useStudentPortfolio ({course, student, includeAssessments, dontFetch}) 
 }
 
 function updatePortfolioWithExemplars (portfolio, exemplars) {
-    var newPortfolio = [...portfolio];
+    if (portfolio) {
+        var newPortfolio = [...portfolio];
+    }
+    else {
+        var newPortfolio = [];
+    }
     exemplars.forEach(
             (exemplar)=>{
                 // deep copy portfolio...
                 // and insert exemplar into it...
                 if (exemplar.id) {
-                    replaceItemInArray(newPortfolio,exemplar,'id')
+                    replaceItemInArray(newPortfolio,exemplar,'id',true)
                 }
                 else {
                     newPortfolio.push(exemplar);
