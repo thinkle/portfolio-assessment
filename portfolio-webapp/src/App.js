@@ -1,16 +1,41 @@
 import React,{useState,useEffect} from 'react';
 import Brand from './brand.js';
 import './App.sass';
-import {Container,Navbar} from './widgets.js';
+import {Container,Navbar,Card,Progress,h} from './widgets.js';
 import TestView from './Tests.js';
 import TeacherView from './TeacherView.js';
 import Api from './gapi/gapi.js';
 import Gapi from './gapi/gapiLoader.js';
+import history from './history.js';
 
 function MainView (props) {
     const userTypeProp = 'user-type='+props.user
+    const [user,setUser] = useState('');
     const [userType,setUserType] = useState(Api.getLocalCachedProp(userTypeProp));
+
+    function doSetUserType (type) {
+        setUserType(type);
+        if (type=='teacher') {
+            history.push('/teacher/');
+        }
+        else if (type=='student') {
+            history.push('/student/');
+        }
+    }
+    
+    useEffect(
+        ()=>{
+            console.log('Get user...');
+            Api.getUser().then(
+                (result)=>{
+                    console.log('Api.getUser ==> %s',result);
+                    setUser(result);
+                    console.log('Done setting user');
+                })
+        },[]);
+
     var settingFromGoogle = false;
+
     useEffect(()=>{
         console.log('grab setting');
         Api.getProp(userTypeProp).then((val)=>{
@@ -45,39 +70,48 @@ function MainView (props) {
                 </div>
               </div>
           )}
-          {userType=='student' && 'Student View... coming soon'}
-          {userType=='teacher' && <TeacherView/>}
+          {!user && 'No user? Please log in ^^^'}
+          {userType=='student' && user && 'Student View... coming soon'}
+          {userType=='teacher' && user && <TeacherView user={user} {...props}/>}
 
         </div>
     );
 }
 
-function App() {
+function App(props) {
     //const [page,setPage] = useState('register')
     const [page,setPage] = useState('test')
-    const [user,setUser] = useState()
-
-    function apiReady () {
+    const [apiReady,setApiReady] = useState();
+    function onApiLoaded () {
         Api.getUser().then(
-            (user)=>{
-                setUser(user);
-                setPage('main')
+            ()=>{
+                setApiReady(true)
             }
         );
     }
     
     return (
-        <div className="App viewport3">
-          <div><Gapi onReady={apiReady} onLoggedOut={()=>console.log('logged out?')}/></div>
-          {page=='login' && <h1>Log in, would you?</h1>}
-          {page=='test'&&<TestView/>}
-          {page=='main' && <MainView user={user}/>}
-          <div className="bottom">
-            <div className="buttons">
-              <button className="button" onClick={()=>setPage('test')}>Run Tests</button>
-              <button className="button" onClick={()=>setPage('main')}>Main View</button>
-            </div>
-          </div>
+        <div className="App viewport3 shrinky">
+          <div><Gapi onReady={onApiLoaded} onLoggedOut={()=>console.log('logged out?')}/></div>
+          {props.mode=='test'&& apiReady && <TestView {...props}/>}
+          {props.mode!='test'&& apiReady && <MainView  {...props}/>}
+          {!apiReady && 
+           <Container>
+             <Card>
+               <h.h2>{Brand.name}</h.h2>
+               <div>
+                 <div>Loading Google API...one second please.</div>
+                 <div><Progress/></div>
+               </div>
+             </Card>
+           </Container>
+          }
+          {/* <div className="bottom"> */}
+          {/*   <div className="buttons"> */}
+          {/*     <button className="button" onClick={()=>setPage('test')}>Run Tests</button> */}
+          {/*     <button className="button" onClick={()=>setPage('main')}>Main View</button> */}
+          {/*   </div> */}
+          {/* </div> */}
         </div>
     );
 }
