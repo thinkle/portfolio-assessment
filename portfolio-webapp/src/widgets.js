@@ -27,6 +27,8 @@ const Box = makeComponent(['box']);
 const Buttons = makeComponent(['buttons']);
 const Content = makeComponent(['content']);
 const Container = makeComponent(['container']);
+const Progress = makeComponent(['progress'],'progress')
+
 
 const h = {};
 for (let i=1; i<=6; i++) {
@@ -34,4 +36,4 @@ for (let i=1; i<=6; i++) {
     h['sh'+i] = makeComponent(['subtitle','is-'+i])
 }
 
-export {InputWithEnter,Modal,Card,Button,Buttons,Content,Icon,Container,Menu,SelectableItem,CustomSelectableItem,Navbar,h,Box,Tabs}
+export {InputWithEnter,Modal,Card,Button,Buttons,Content,Icon,Container,Menu,SelectableItem,CustomSelectableItem,Navbar,h,Box,Tabs,Progress}
