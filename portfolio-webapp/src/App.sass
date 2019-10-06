@@ -65,6 +65,7 @@ a:hover .tooltip
   width: 100%
 
 $toolbar-height: 55px
+$hidden-toolbar-height: 5px
 
 .viewport3,.viewport2
   display: flex
@@ -75,10 +76,6 @@ $toolbar-height: 55px
 .viewport2 > .tabs,.viewport3 > .tabs
   margin-bottom: 0
   
-.viewport3 > div:nth-child(1),.viewport2 > div:nth-child(1)
-  height: $toolbar-height
-//  flex: 0
-  
 .viewport3 > div:nth-child(2),.viewport2 > div:nth-child(2)
   flex: 1
   overflow-y: auto
@@ -87,10 +84,41 @@ $toolbar-height: 55px
   flex: 1
   overflow-y: auto
   
+.viewport3 > div:nth-child(1),.viewport2 > div:nth-child(1),.viewport3 > div:nth-child(3)
+  height: $toolbar-height
+  
+.viewport3.shrinky > div:nth-child(1),.viewport2.shrinky > div:nth-child(1),.viewport3.shrinky > div:nth-child(3)
+  height: $hidden-toolbar-height
+  border: 2px solid $grey
+  border-width: 2px 0px 2px 0px;
+  padding: 3px 0px 3px 0px;
+  background-color: darken($grey,20%);
+  overflow: hidden
+  
+.viewport3.shrinky > div:nth-child(1):hover,.viewport2.shrinky > div:nth-child(1):hover,.viewport3.shrinky > div:nth-child(3):hover
+  height: $toolbar-height
+  background-color: white;
+  border: 2px solid lighten($grey,20%)
+  transition: background-color 300ms,height 300ms,border-color 300ms;
+
 .viewport2.bottom > div:nth-child(2)
   height: $toolbar-height
-  overflow: initial
   flex: 0
+
+.viewport2.bottom.shrinky > div:nth-child(2)
+  height: $hidden-toolbar-height
+  border: 2px solid $grey;
+  border-width: 2px 0px 2px 0px;
+  padding: 3px 0px 3px 0px;
+  background-color: #efefef
+  flex: 0
+
+.viewport2.bottom.shrinky > div:nth-child(2):hover
+  height: $toolbar-height
+  position: fixed;
+  bottom: 0px;
+  background-color: white;
+  transition: background-color 300ms,height 300ms,border-color 300ms;
 
 .viewport3 > div:nth-child(2),.viewport2 > div:nth-child(2)
   overflow-y: auto;
