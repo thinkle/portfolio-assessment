@@ -7,7 +7,7 @@ import googleLogo from "./images/32x32.png";
 import {useCoursesApi} from './gapi/hooks.js';
 
 function ClassList (props) {
-    const CourseFetcher = useCoursesApi({teacher:props.user});
+    const CourseFetcher = props.CoursesApi
 
     const [customCourses,setCustomCourses] = useState(
         Api.getLocalCachedProp('custom-courses-'+props.user)||[]
@@ -53,7 +53,6 @@ function ClassList (props) {
                )}
               <div className="">
                 {CourseFetcher.value &&
-                 
                  <div className="section">
                    <h3 className="level level-left">
                      <span className="icon">
