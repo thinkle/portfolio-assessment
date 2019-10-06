@@ -1,10 +1,11 @@
 import React,{useState,useEffect,useRef} from 'react';
 import {useStudents,useStudentWork,useCoursework,useStudentPortfolioManager} from './gapi/hooks.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
-import {getProp,classNames} from './utils.js';
+import {getProp,classNames,getById} from './utils.js';
 import {Container,Navbar,Button,Icon} from './widgets.js';
 import {SelectableItem,Menu,Dropdown} from './widgets/Menu.js';
 import ExemplarEditor from './ExemplarEditor.js';
+import history from './history.js';
 
 // To do: make some kind of manager class for keeping track of all the portfolio documents and interactions
 // back to google with those on top of this which keeps track of all the google classroom data etc.
@@ -22,6 +23,25 @@ function TeacherAssignmentView (props) {
     const [exemplarEditorProps,setEEProps] = useState({});
     const [exemplarRenderCount,setERC] = useState(1);
 
+    const [initialStateReady,setInitialStateReady] = useState(false);
+    
+    useEffect( ()=>{
+        // Manage props from URL...
+        if (!initialStateReady) {
+            if (coursework && coursework.length && students && students.length) {
+                console.log('Ready to set coursework and student!')
+                if (props.studentId) {
+                    setSelectedStudent(getById(students,props.studentId,'userId'));
+                }
+                if (props.courseworkId) {
+                    doChangeCoursework(getById(coursework,props.courseworkId));
+                }
+                setInitialStateReady(true);
+            }
+        }
+        
+    },[coursework, students]);
+
     useEffect( ()=>{
         if (selectedStudent) {
             console.log('tav: update currentPortfolio');
@@ -29,6 +49,24 @@ function TeacherAssignmentView (props) {
         }
     },[selectedStudent]
              );
+
+    function updateUrl ({student,coursework}) {
+        if ((student||selectedStudent) && (coursework||selectedCoursework)) {
+            history.push(`/teacher/${props.course.id}/assignment/${coursework&&coursework.id||selectedCoursework.id}/${student&&student.userId||selectedStudent.userId}/`);
+        }
+        else if (selectedCoursework||coursework) {
+            history.push(`/teacher/${props.course.id}/assignment/${coursework&&coursework.id||selectedCoursework.id}/`);
+        }
+    }
+
+    function doChangeStudent (student) {
+        setSelectedStudent(student);
+        updateUrl({student});
+    }
+    function doChangeCoursework (coursework) {
+        setSelectedCoursework(coursework);
+        updateUrl({coursework});
+    }
 
 
     function getExemplarKey () {
@@ -66,7 +104,7 @@ function TeacherAssignmentView (props) {
         };
         if (selectedCoursework && skillHookProps.assignments && skillHookProps.assignments[selectedCoursework.id]) {
             console.log('TAV: Assignment has skills mapped, let\'s check on them...');
-            var skillsToAdd = skillHookProps.assignments[selectedCoursework.id];
+            var skillsToAdd = skillHookProps.assignments[selectedCoursework.id].slice();
             // Remove ones the student already has...
             eepProps.selectedSkills.forEach(
                 (skill)=>{
@@ -90,7 +128,7 @@ function TeacherAssignmentView (props) {
             n = -1;
         }
         if (students.length) {
-            setSelectedStudent(students[n+1]);
+            doChangeStudent(students[n+1]);
         }
     }
 
@@ -100,7 +138,7 @@ function TeacherAssignmentView (props) {
             n = students.length - 1
         }
         if (n >= 0 ) {
-            setSelectedStudent(students[n-1]);
+            doChangeStudent(students[n-1]);
         }
     }
 
@@ -118,6 +156,7 @@ function TeacherAssignmentView (props) {
                 title="Choose Assignment"
                 renderItem={(itm)=><span>{itm.title}</span>}
                 onSelected={setSelectedCoursework}
+                key={`${getProp(selectedCoursework,'id')}-${getProp(coursework,'length')}`}
               />
             </Navbar.Item>
             <Navbar.Item>
@@ -133,7 +172,7 @@ function TeacherAssignmentView (props) {
                 items={students}
                 title="Choose student"
                 renderItem={(itm)=><span>{getProp(itm,'profile.name.fullName')}</span>}
-                onSelected={setSelectedStudent}
+                onSelected={doChangeStudent}
               />
             </Navbar.Item>
             <Navbar.Item>
