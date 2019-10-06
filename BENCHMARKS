@@ -144,10 +144,28 @@ TO DO...
 - Set up sheet managers to use properties to find sheets so students can discover portfolio info (success!) (x)
 
 ...
-- Get working export of google docs / sharing feedback w/ students
-- Get smoother assessment mode for dealing with multiple students
-- Try caching(?) data.
+- Make it possible to delete skills from exemplar editor (x)
+- Make portfolio grab other (related) skills and include themwhen we click "edit exemplar"... (x)
+- Make popup view for tree view data... (x)
+- Clean up UI / tab ugliness... [x]
+- Get smoother assessment mode for dealing with multiple students [x]
 
+- Try caching(?) data to reduce number of API calls (in progress) (x)
+- Add router so we can jump to a page more easily  (x)
+- Save sidebar state of exemplar editor in assignment view [ ]
+- extend caching system for google docs/sheets fetching so we don't fetch new data if there is no new data 
+
+
+- Get working export of google docs / sharing feedback w/ students
+- Limit which fields we get from API to speed up API access (https://developers.google.com/classroom/guides/performance#partial)
+
+- Centralize color variables and decisions / pick a palette for project
+
+- Sanitize HTML we "dangerously set" (halfway done)
+
+
+PUT OFF
+- Post grades to google classroom? (NOT DOABLE UNLESS WE CREATE THE ASSIGNMENT)
 
 - ???
 - PROFIT!
