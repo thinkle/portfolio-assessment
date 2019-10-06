@@ -4,7 +4,7 @@ import {getProp} from '../utils.js';
 
 function makeCachingApiHook ({getter, makeCacheName, defaultVal, dontFetch, alwaysRefetch, refetchAfter}) {
 
-    return function (params) {
+    return function (params, onValueChange) {
         const cacheName = makeCacheName(params)
         const [state,setState] = useState(defaultVal);
         const [fetching,setFetching] = useState(false);
@@ -85,6 +85,13 @@ function makeCachingApiHook ({getter, makeCacheName, defaultVal, dontFetch, alwa
                 }
             },
             [doFetchNow]
+        );
+
+        useEffect(
+            ()=>{
+                onValueChange &&
+                    onValueChange(state)
+            },[state]
         );
 
 
