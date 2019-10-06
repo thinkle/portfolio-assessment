@@ -6,86 +6,154 @@ import TeacherPortfolioView from './TeacherPortfolioView.js';
 import TeacherAssignmentView from './TeacherAssignmentView.js';
 import AssignmentMapper from './AssignmentMapper.js';
 import Api from './gapi/gapi.js';
+import {useCoursesApi} from './gapi/hooks.js';
 import Brand from './brand.js';
 import {Container,Menu,Navbar,Tabs} from './widgets.js';
+import history from './history.js';
 
-const COURSECHOOSER = 0;
-const MENU = 1;
 function TeacherView (props) {
 
-    const [page,setPage] = useState(COURSECHOOSER);
     const [course,setCourse] = useState();
-    const [user,setUser] = useState('');
 
-    useEffect(
-        ()=>{
-            console.log('Get user...');
-            Api.getUser().then(
-                (result)=>{
-                    console.log('Api.getUser ==> %s',result);
-                    setUser(result);
-                    console.log('Done setting user');
-                })
-        },[]);
+    function setCourseFromId () {
+        console.log('Set course from ID...',CoursesApi.value,props.courseId);
+        if (props.courseId) {
+            var myCourses = CoursesApi.value.filter((c)=>c.id==props.courseId)
+            if (myCourses.length==1) {
+                setCourse(myCourses[0]);
+            }
+            else {
+                console.log('Error: course not found? or multiple found?')
+                console.log('Had ID',props.courseId)
+                console.log('Found',myCourses)
+                console.log('Courses were:',CoursesApi.value);
+            }
+        }
+    }
+
+    const CoursesApi = useCoursesApi({teacher:props.user},
+                                      setCourseFromId
+                                     );
+
+    const tabList = [
+        {routeName:'assignment',
+         label:'Assess By Assignments',
+         element:<TeacherAssignmentView course={course} {...props}/>
+        },
+        {routeName:'portfolio',
+         label:'Assess Portfolios',
+         element:<TeacherPortfolioView course={course} {...props}
+                                      onSelected={()=>updateRoute('portfolio')}
+                 />},
+        {routeName:'build',
+         label:'Build Skill Portfolio',
+         element:<PortfolioBuilder course={course} {...props}
+                                  onSelected={()=>updateRoute('build')}
+                 />,
+        },
+        {routeName:'map',
+         label:'Map Skills to Assignments',
+         element:<AssignmentMapper course={course} {...props}
+                                   onSelected={()=>updateRoute('map')}/>
+        },
+    ]
+    var initialTabIndex=undefined;
+    if (props.task) {
+        for (var i=0; i<tabList.length; i++) {
+            if (tabList[i].routeName==props.task) {
+                initialTabIndex=i;
+            }
+        }
+        if (!initialTabIndex) {
+            console.log('Did not find routeName ',props.task,tabList.map((t)=>t.routeName));
+        }
+    }
+
+    
+    function doSetCourse (course) {
+        if (course) {
+            history.push(`/teacher/${course.id}/`);
+            setCourse(course);
+        }
+    }
+
+    function updateRoute (routeName) {
+        if (course) {
+            history.push(`/teacher/${course.id}/${routeName}/`);
+        }
+        else {
+            history.push(`/teacher${routeName}/`);
+        }
+    }
 
     return (
         <div className='viewport2 bottom'>
-           <div className='body'>
-             {user &&
-              mainPage()
-              || <div>No user??? Please Log In</div>
-             }
-           </div>
+          <div className='body'>
+            {
+                course && tabs() ||
+                    <Container>
+                      <ClassList
+                        user={props.user}
+                        CoursesApi={CoursesApi}
+                        onCourseSelected={(course)=>{
+                            doSetCourse(course);
+                        }}
+                      /></Container>
+                    
+            }
+          </div>
           <Navbar>
             <Navbar.QuickBrand>
               {Brand.name}: Teacher Mode
             </Navbar.QuickBrand>
             <Navbar.Item>
-              User: {JSON.stringify(user)}
+              User: {JSON.stringify(props.user)}
             </Navbar.Item>
             <Navbar.Item>{course&&(
                 <a  target="_blank" className="navbar-item" href={course.alternateLink}>{course.name}</a>
             )}
             </Navbar.Item>
-            {page!==COURSECHOOSER &&  <a className="navbar-item" onClick={()=>setPage(COURSECHOOSER)}>Switch course</a>}
+            {course &&  <a className="navbar-item" onClick={()=>doSetCourse()}>Switch course</a>}
           </Navbar>
         </div>
     )
 
-    function mainPage () {
-        return (<React.Fragment>{page==COURSECHOOSER &&
-         (<ClassList
-            user={user}
-            onCourseSelected={(course)=>{
-                setCourse(course);
-                setPage(MENU)
-            }}
-          />)
-                                 ||
-                                 tabs()}
-                </React.Fragment>);
-    }
-
     function tabs () {
         return (
             <div className="viewport2">
-              <Tabs className="is-centered">
-                <span>
-                  Assess Student Portfolios
-                </span>
-                <TeacherPortfolioView course={course}/>
-                <span>
-                  Assess Assignments
-                </span>
-                <TeacherAssignmentView course={course}/>
-                <span>
-                  Build Skill Portfolio
-                </span>
-                <PortfolioBuilder course={course}/>
-                <span>
-                  Map Skills to Assignments
-                </span>
-                <AssignmentMapper course={course}/>
+              <Tabs className="is-centered" groupedMode={true}
+                    initialTab={initialTabIndex}
+              >
+                <>{tabList.map(
+                    (tabInfo)=><span>{tabInfo.label}</span>
+                )}
+                </>
+                <>
+                  {tabList.map(
+                      (tabInfo)=>(
+                          <div onSelected={()=>updateRoute(tabInfo.routeName)}>
+                            {tabInfo.element}
+                          </div>
+                      ))}
+                </>
+                {/* <span> */}
+                {/*   Assess Student Portfolios */}
+                {/* </span> */}
+                {/* <span> */}
+                {/*   Assess Assignments */}
+
+                {/* </span> */}
+                {/* <TeacherAssignmentView course={course} {...props} */}
+                {/*                        onSelected={()=>updateRoute('assignment')} */}
+                {/* /> */}
+                {/* <span> */}
+                {/*   Build Skill Portfolio */}
+                {/* </span> */}
+                {/* <span> */}
+                {/*   Map Skills to Assignments */}
+                {/* </span> */}
+                {/* <AssignmentMapper course={course} {...props} */}
+                {/*                   onSelected={()=>updateRoute('map')}/> */}
               </Tabs>
             </div>
         );
