@@ -48,10 +48,10 @@ function MagicLink (props) {
             props.href && 
             <span>
             {r.isStandalone(props.href) && 
-                <a href={r.toProject(props.href)}>(Project)</a>
+                <a target="_blank" href={r.toProject(props.href)}>(Project)</a>
             ||
              r.isProject(props.href) &&
-             <a href={r.toStandalone(props.href)}>(Standalone)</a>
+             <a target="_blank" href={r.toStandalone(props.href)}>(Standalone)</a>
             }
             </span>
         )
