@@ -514,9 +514,10 @@ function ExemplarSkillEditor (props) {
                   </div>
                 </CustomSelectableItem>
             <div className="skillDetail">
+              {selectedSkill && selectedSkill.exemplars && 
               <div className="is-small">{selectedSkill.exemplars.length} {selectedSkill.exemplars.length==1 && 'exemplar' || 'exemplars'}, due&nbsp;
                 {selectedSkill.exemplars.map((ex,i)=><span>{ex.dueDate && ex.dueDate.toLocaleDateString()}{i<(selectedSkill.exemplars.length-1)&&','}</span>)}
-              </div>
+              </div>}
             </div>
             <Navbar className="navbar3 skillControl">
               {props.mode=='student' &&
