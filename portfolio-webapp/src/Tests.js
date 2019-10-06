@@ -361,11 +361,24 @@ function TestView () {
                 </SelectableItem>
                 <Box>
                   <h.h3>Tabs!</h.h3>
-                  <Tabs>
+                  <Tabs onChange={(o)=>console.log('Test Tab selected: got description',o)}>
                     <span>Hello</span>
-                    <div>Hello World</div>
+                    <div onSelected={()=>console.log('hello selected!')}>Hello World</div>
                     <span>Goodbye</span>
-                    <div>See you around!</div>
+                    <div onSelected={()=>console.log('goodbye selected!')}>See you around!</div>
+                  </Tabs>
+                </Box>
+                <Box>
+                  <h.h3>Tabs Grouped Mode!</h.h3>
+                  <Tabs groupedMode={true}>
+                    <div>
+                      <span>Head1</span><span>Head2</span><span>Head3</span>
+                    </div>
+                    <div>
+                      <p>Howdy 1</p>
+                      <p>Howdy 2</p>
+                      <p>Howdy 3</p>
+                    </div>
                   </Tabs>
                 </Box>
               </div>
