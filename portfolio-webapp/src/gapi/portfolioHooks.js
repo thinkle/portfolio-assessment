@@ -12,6 +12,7 @@ function useStudentPortfolioManager (params) {
     const busyMap = objProp(...useState({}))
     const portfolioMap = objProp(...useState({}))
     const origPortfolioMap = objProp(...useState({}));
+    const updatedTimeMap = objProp(...useState({}));
     const savedStateMap = objProp(...useState({}));
     const doFetchNowMap = objProp(...useState({}));
     const spObjectMap = objProp(...useState({}));
@@ -27,7 +28,7 @@ function useStudentPortfolioManager (params) {
             }
             try {
                 busyMap.updateKey(id,true)
-                var newPortfolioData = await sp.get_portfolio();
+                var portf = await sp.get_portfolio_data();
             }
             catch (err) {
                 if (err.error = Api.StudentPortfolio.NO_PORTFOLIO_ERROR) {
@@ -40,39 +41,16 @@ function useStudentPortfolioManager (params) {
                 busyMap.updateKey(id,false);
                 return; // we're done if there's no portfolio data
             }
-            busyMap.updateKey(id,false);
-            if (newPortfolioData) {
-                var assessments;
-                busyMap.updateKey(id,true);
-                try {
-                    var assessments = await sp.get_assessments();
-                }
-                catch (err) {
-                    if (err.error == Api.StudentPortfolio.NO_PORTFOLIO_ERROR) {
-                        console.log('No assessments for student yet',id);
-                    }
-                    else {
-                        console.log('ERROR FETCHING ASSESSMENTS',id,err);
-                        errorMap.updateKey(id,err);
-                    }
-                }
-            }
-            try {
-                var portf = Api.StudentPortfolio.parsePortfolio(newPortfolioData,assessments);
-            }
-            catch (err) {
-                console.log('portfolioHooks: Error parsing portfolio',id,err);
-                errorMap.updateKey(id,err);
-            }
             // update original
-            origPortfolioMap.updateKey(id,portf)
+            origPortfolioMap.updateKey(id,portf.data)
             // update current
-            portfolioMap.updateKey(id,portf)
+            portfolioMap.updateKey(id,portf.data)
             // update saved state
+            updatedTimeMap.updateKey(id,portf.updatedTimes);
             savedStateMap.updateKey(id,true);
             // Finally, call our callback :)
-            busyMap.updateKey(id,false);            
-            if (callback) {callback(portf);}
+            busyMap.updateKey(id,false);      
+            if (callback) {callback(portf.data);}
         }
 
         for (var key in doFetchNowMap.map) {
@@ -120,12 +98,19 @@ function useStudentPortfolioManager (params) {
             throw 'WTF? No object';
         }
         try {
-            sp.set_portfolio_and_assessments(portfolioMap.map[key]);
+            await sp.set_portfolio_and_assessments({
+                data:portfolioMap.map[key],
+                updatedTimes:updatedTimeMap.map[key],
+            });
             origPortfolioMap.updateKey(key,portfolioMap.map[key]);
             savedStateMap.updateKey(key,true);
+            var newTimes = await sp.get_updated_time();
+            updatedTimeMap.updateKey(key,{...newTimes});
+            console.log('Done saving!');
         }
         catch (err) {
             errorMap.updateKey(key,err);
+            console.log('ERROR!');
         }
         busyMap.updateKey(key,false)
     }
@@ -202,21 +187,25 @@ function useStudentPortfolioManager (params) {
 
 
 
-function useStudentPortfolio ({course, student, includeAssessments, dontFetch}) {
+function useStudentPortfolio (params) {
+    console.log('useStudentPortfolio got params: ',params);
+    const {course, student, includeAssessments, dontFetch} = params;
     const [busy,setBusy] = useState(false);
     const [origPortfolio,setOrigPortfolio] = useState([]);
     const [portfolio,_setPortfolio] = useState([]); // we don't return the "pure" setPortfolio because we wrap it
     const [saved,setSaved] = useState(true); // updated by comparing portfolio and original...
     const [doFetch,setDoFetch] = useState(!dontFetch)
+    const [updatedTimes,setUpdatedTimes] = useState({});
     const sp = Api.StudentPortfolio(course,student);
 
     useEffect( ()=>{
 
         async function getPortfolio () {
+            var newPortfolioData;
             try {
                 console.log('hooks:useStudentPortfolio - getting portfolio data');
                 setBusy(true);
-                var newPortfolioData = await sp.get_portfolio();
+                newPortfolioData = await sp.get_portfolio_data();
                 console.log('hooks:useStudentPortfolio - got portfolio data',newPortfolioData);
             }
             catch (err) {
@@ -225,28 +214,10 @@ function useStudentPortfolio ({course, student, includeAssessments, dontFetch}) 
                 console.log('hooks:useStudentPortfolio: ignoring...');
             }
             if (newPortfolioData) {
-                var assessments;
-                console.log('hooks:useStudentPortfolio - fetching assessments');
-                try {
-                    setBusy(true);
-                    var assessments = await sp.get_assessments();
-                    console.log('hooks:useStudentPortfolio - got assessments',assessments);
-                }
-                catch (err) {
-                    setBusy(false);
-                    console.log('hooks:useStudentPortfolio: Error fetching assessments',err);
-                }
-                try {
-                    var portf = Api.StudentPortfolio.parsePortfolio(newPortfolioData,assessments)
-                    setOrigPortfolio(portf);
-                    _setPortfolio(portf);
-                    setSaved(true)
-                }
-                catch (err) {
-                    console.log('hooks:useStudentPortfolio: Error parsing portfolio',newPortfolioData,assessments);
-                    setBusy(false);
-                    throw err;
-                }
+                setOrigPortfolio(newPortfolioData.data);
+                _setPortfolio(newPortfolioData.data);
+                setUpdatedTimes(newPortfolioData.updatedTimes);
+                setSaved(true)
                 setBusy(false);
             }
         }
@@ -266,7 +237,11 @@ function useStudentPortfolio ({course, student, includeAssessments, dontFetch}) 
     async function savePortfolio () {
         setBusy(true);
         try {
-            var result = await Api.StudentPortfolio(course,student).set_portfolio_and_assessments(portfolio);
+            var result = await Api.StudentPortfolio(course,student).set_portfolio_and_assessments({
+                data:portfolio,
+                updatedTimes:updatedTimes,
+            }
+                                                                                                 );
         }
         catch (err) {
             setBusy(false);
