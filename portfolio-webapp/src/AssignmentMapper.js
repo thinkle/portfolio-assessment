@@ -76,7 +76,8 @@ function SkillPicker (props) {
     
 }
 
-function usePortfolioSkillHook (props) {
+function usePortfolioSkillHook (props, updatedCallback) {
+    const [key,setKey] = useState(0);
     const [skills,setSkills] = useState([])
     const [strands,setStrands] = useState([])
     const [assignments,setAssignments] = useState({});
@@ -102,8 +103,12 @@ function usePortfolioSkillHook (props) {
             );
             setAssignments(assignmentMap);
         }
+        else {
+            console.log('No assignments to map');
+        }
         portfolioData && portfolioData.skills && portfolioData.skills.forEach(
             (skill)=>{
+                console.log('Parse skill',skill);
                 if (!skill.skill) {return}
                 if (uniqueStrands.indexOf(skill.strand)==-1) {
                     uniqueStrands.push(skill.strand)
@@ -131,6 +136,12 @@ function usePortfolioSkillHook (props) {
         console.log('Setting unique skills and strands...');
         setStrands(uniqueStrands);
         setSkills(Object.values(uniqueSkills))
+        console.log(uniqueStrands)
+        console.log(uniqueSkills)
+        var newKey = key + 1;
+        console.log('KEY',newKey)
+        setKey(newKey);
+        updatedCallback && updatedCallback(newKey)
     }
 
     useEffect(()=>{
@@ -139,18 +150,21 @@ function usePortfolioSkillHook (props) {
             var portfolioData = await Api.get_portfolio_desc(props.course);
             console.log('Got portfolio data!');
             if (portfolioData) {
+                console.log('Processing portfolio data',props.course,portfolioData);
                 processPortfolioData(portfolioData);
             }
-            console.log(
-                'BLANK PORTFOLIO DATA?',props.course,portfolioData
-            );
+            else {
+                console.log(
+                    'BLANK PORTFOLIO DATA',props.course
+                );
+            }
             console.log('Done processing portfolioData');
         }
         getPortfolioDesc();
     },[props.course])
 
     return {
-        skills, strands, assignments, skillsP, strandsP, assignmentsP
+        skills, strands, assignments, skillsP, strandsP, assignmentsP, key
     }
     
 }
