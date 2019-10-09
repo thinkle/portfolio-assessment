@@ -117,13 +117,13 @@ function SelectableItem (props) {
           <div 
                className='relWrap' 
                style={{height:elHeight,width:elWidth}}>           
-            <CSSTransition classNames='fade-item' in={!(!selected)} mountOnEnter>
+            <CSSTransition timeout={200} classNames='fade-item' in={!(!selected)} mountOnEnter>
               <div className='static selectedItem'>
                 {selected && renderItem(selected)}
                 <Icon className='close-button' icon={Icon.close} onClick={()=>select()}/>
               </div>
             </CSSTransition>
-            <CSSTransition classNames='fade-menu' in={!selected} mountOnEnter>
+            <CSSTransition timeout={200} classNames='fade-menu' in={!selected} mountOnEnter>
               <div className='static'>
                 <Menu {...menuProps}/>
               </div>
@@ -181,13 +181,13 @@ function CustomSelectableItem (props) {
           </div>
           {/* End div for calculating width/height */}
           <div className='relWrap' style={{height:elHeight,width:elWidth}}>          
-            <CSSTransition classNames='fade-item' in={!(!selected)} mountOnEnter>
+            <CSSTransition timeout={0} classNames='fade-item' in={!(!selected)} mountOnEnter>
               <div className='static selectedItem'>
                 {item}
                 <Icon className='close-button' icon={Icon.close} onClick={()=>props.unselect()}/>
               </div>
             </CSSTransition>
-            <CSSTransition classNames='fade-menu' in={!selected} mountOnEnter>
+            <CSSTransition timeout={0} classNames='fade-menu' in={!selected} mountOnEnter>
               <div className='static'>
                 {menu}
               </div>
