@@ -4,6 +4,7 @@ import './App.sass';
 import {Container,Navbar,Card,Progress,h} from './widgets.js';
 import TestView from './Tests.js';
 import TeacherView from './TeacherView.js';
+import StudentView from './StudentView.js';
 import Api from './gapi/gapi.js';
 import Gapi from './gapi/gapiLoader.js';
 import history from './history.js';
@@ -71,8 +72,8 @@ function MainView (props) {
               </div>
           )}
           {!user && 'No user? Please log in ^^^'}
-          {userType=='student' && user && 'Student View... coming soon'}
           {userType=='teacher' && user && <TeacherView user={user} {...props}/>}
+          {userType=='student' && user && <StudentView user={user} {...props}/>}
 
         </div>
     );
