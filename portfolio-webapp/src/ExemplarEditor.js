@@ -41,7 +41,7 @@ function assignmentStateToIcon (state) {
 
 function GradeBox (props) {
     /* To do: make fancy */
-    return (<input type="text" onChange={(event)=>props.onChange(event.target.value)} value={props.value}/>)
+    return (<input className="grade input" type="text" onChange={(event)=>props.onChange(event.target.value)} value={props.value}/>)
 }
 
 function StandAloneExemplarEditor (props) {
@@ -148,14 +148,14 @@ function ExemplarEditor (props) {
     }
 
     function updateSkill (exemplar, n) {
-        console.log('updateSkill',exemplar,n);
+        //console.log('updateSkill',exemplar,n);
         var skillCopy = selectedSkills.slice();
         skillCopy[n] = exemplar;
         setSelectedSkills(skillCopy);
     }
 
     function removeSkill (n) {
-        console.log('removeSkill',n);
+        //console.log('removeSkill',n);
         var skillCopy = selectedSkills.slice();
         skillCopy[n] = undefined;
         setSelectedSkills(skillCopy);
@@ -340,7 +340,7 @@ function ExemplarEditor (props) {
                                  onChange={
                                         (event)=>{
                                             if (Material.getLink(attachment)==permalink) {
-                                                console.log('remove permalink...');
+                                                //console.log('remove permalink...');
                                                 setPermalink('')
                                             }
                                             else {
@@ -390,9 +390,9 @@ function ExemplarSkillEditor (props) {
     useEffect(
         ()=>{
             if (typeof props.skill == 'string') {
-                console.log('skill string... that should change.');
+                //console.log('skill string... that should change.');
                 var skillObj = getById(skills,props.skill,'skill');
-                console.log('Setting skill to ',skillObj);
+                //console.log('Setting skill to ',skillObj);
                 setSelectedSkill(skillObj);
             }
             else {
@@ -409,7 +409,7 @@ function ExemplarSkillEditor (props) {
     useEffect(
         ()=>{
             if (props.onChange) {
-                console.log('change handler in exemplar skill editor triggered',this);
+                //console.log('change handler in exemplar skill editor triggered',this);
                 save();
             }
         },
@@ -440,7 +440,7 @@ function ExemplarSkillEditor (props) {
     useEffect(
         ()=>{
             if (doSave) {
-                console.log('Do save do!');
+                //console.log('Do save do!');
                 save();
                 setDoSave(false);
             }
@@ -449,7 +449,7 @@ function ExemplarSkillEditor (props) {
     );
     
     function save () {
-        console.log('and save!');
+        //console.log('and save!');
         var exemplar = {
             id : props.id,
             submissionId : selectedSubmission && selectedSubmission.id,
@@ -464,7 +464,7 @@ function ExemplarSkillEditor (props) {
             },
             revisionCount : revisionCount
         }
-        console.log('Exemplar Editor says save: ',exemplar);
+        //console.log('Exemplar Editor says save: ',exemplar);
         props.onChange(exemplar);
     }
 
