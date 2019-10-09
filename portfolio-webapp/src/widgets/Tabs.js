@@ -33,10 +33,10 @@ function Tabs (props) {
         if (children.length % 2) {
             throw 'Tabs needs an even number of children in flat mode';
         }
-        else {
-            console.log('Tab got %s children',children.length);
-            console.log('Children are: ',children);
-        }
+        // else {
+        //     console.log('Tab got %s children',children.length);
+        //     console.log('Children are: ',children);
+        // }
         for (var i=0; i<children.length; i++) {
             if (i % 2) { // odd - but counting from 0 :)
                 contents.push(children[i]);
@@ -49,8 +49,8 @@ function Tabs (props) {
 
     useEffect(()=>{
         if (!fresh) {
-            console.log('Tab changed!');
-            console.log('New child is',contents[activeTab]);
+            // console.log('Tab changed!');
+            // console.log('New child is',contents[activeTab]);
             if (props.onChange) {
                 props.onChange({
                     tabNumber:activeTab,
@@ -87,4 +87,5 @@ function Tabs (props) {
     
 }
 
+Tabs.TabsTop = TabsTop;
 export default Tabs;
