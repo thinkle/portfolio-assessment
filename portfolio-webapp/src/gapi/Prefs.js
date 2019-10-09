@@ -6,8 +6,9 @@ function getApi () {
     gapi = window.gapi;
 }
 
-function Prefs () {
+function Prefs (pref_file=PREF_FILENAME, main=true) {
     getApi();
+
 
     function drive () {
         return gapi.client.drive;
@@ -17,22 +18,26 @@ function Prefs () {
         return gapi.auth.getToken().access_token;
     }
     var propFileId;
+    var propContents;
 
     return {
-        createPropFile : function () {
+        getId : function () {
+            return propFileId;
+        },
+        setId : function (id) {
+            propFileId = id;
+        },
+        createPropFile : function (initialData) {
             console.log('Create prop file...');
             return new Promise ((resolve,reject)=>{
                 // ht: https://gist.github.com/tanaikech/bd53b366aedef70e35a35f449c51eced
                 var metadata = {
-                    name : PREF_FILENAME,
+                    name : pref_file,
                     appProperties : {
-                        role : 'propertiesFile',
+                        role : main && 'propertiesFile' || 'sharedPropertyFile',
                     }
-                    //parents : ['appDataFolder'],
                 }
-                var file = new Blob([JSON.stringify( {
-                    hello : 'world'
-                })],{type:'application/json'})
+                var file = new Blob([JSON.stringify( initialData || {} )]);
                 
                 var form = new FormData();
                 form.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}))
@@ -55,6 +60,7 @@ function Prefs () {
             }); // end promise
         },
         updateFile : function (id, data) {
+            propContents = data;
             return new Promise((resolve,reject)=>{
                 var file = JSON.stringify(data)
                 var form = new FormData();
@@ -78,44 +84,32 @@ function Prefs () {
                     .catch(reject);
             });
         },
-        getFile : function (id) {
+        getFile : async function (id) {
+            if (propContents) {
+                return propContents;
+            }
             console.log('Get file: %s',id);
-            return new Promise((resolve,reject)=>{
-                fetch(
+            var resp = await fetch(
                     `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
                     {
                         method : 'GET',
                         headers : new Headers({'Authorization':'Bearer '+getAccessToken()}),
-                    }).then(
-                        (resp)=>{
-                            resp.json().then(
-                                (jsonData)=>{
-                                    console.log('getFile %s got JSON response!',
-                                                id,
-                                                resp,jsonData);
-                                    resolve(jsonData);
-                                }
-                            )
-                                .catch((err)=>reject(err))
-                        }
-                    )
-                    .catch((err)=>{
-                        console.log('file %s Error with data? %s',id,err);
-                        reject(err);
                     });
-            }); // end promise
+            var jsonData = await resp.json();
+            console.log('getFile %s got JSON response!',
+                        id,
+                        resp,jsonData);
+            propContents = jsonData;
+            return jsonData;
         },
         getPropFile : function () {
-            console.log('get props file...')
             return new Promise((resolve,reject)=>{
                 if (propFileId) {
                     resolve(propFileId);
                 }
                 drive().files.list(
                     {
-                        //spaces : 'appDataFolder',
                         spaces : 'drive',
-                        //q : `name='${PREF_FILENAME}'`
                         q : `appProperties has {key="role" and value="propertiesFile"}`
                     })
                     .then(
@@ -164,14 +158,18 @@ function Prefs () {
             });
         },
         setProp : function (key, val) {
-            console.log('setProp',key,val);
+            return this.setProps({key:val},{updateMode:false});
+        },
+
+        setProps : function (newProps) {
+            console.log('setProps',newProps);
             return new Promise((resolve,reject)=>{
                 this.getProps().then(
                     (allProps)=>{
-                        allProps[key] = val;
+                        var dataToPush = {...allProps, ...newProps}
                         this.getPropFile().then(
                             (id)=>{
-                                this.updateFile(id,allProps)
+                                this.updateFile(id,dataToPush)
                                     .then(resolve)
                                     .catch(reject);
                             }
@@ -180,6 +178,21 @@ function Prefs () {
                 );
             });
         },
+        shareProps : async function  (propList, newProps, filename='share.json') {
+            var props = await this.getProps();
+            var propsToShare = {}
+            for (var prop of propList) {
+                propsToShare[prop] = props[prop]
+            }
+            if (newProps) {
+                propsToShare = {...propsToShare,...newProps}
+            }
+            var sharedPrefs = Prefs(filename,main=false)
+            var result = await sharedPrefs.createPropFile(propsToShare);
+            //await sharedPrefs.updateFile(propId,propsToShare);
+            this.setProp(`shared-file-${filename}`,result.id)
+            return result.id;
+        }
     }
 }
 
