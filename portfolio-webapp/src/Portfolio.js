@@ -74,14 +74,17 @@ var testExemplar = {
 
 function Portfolio (props) {
     const skillHookProps = usePortfolioSkillHook(props);
+    console.log('Use with props',props);
     const studentPortfolioProps = useStudentPortfolio(props);
     const coursework = useCoursework(props);
     const studentwork = useStudentWork(props);
-    return <PortfolioComponent {...props}
-                               {...skillHookProps}
-                               {...studentPortfolioProps}
-                               coursework={coursework}
-                               studentwork={studentwork}
+    return <PortfolioComponent
+             key={skillHookProps.key}
+             {...props}
+             {...skillHookProps}
+             {...studentPortfolioProps}
+             coursework={coursework}
+             studentwork={studentwork}
            />
 }
 
@@ -90,7 +93,6 @@ function LazyPortfolioComponent (props) {
 
     useEffect( ()=>{
         if (props.fetchNow) {
-            console.log('LazyPortfolioComponent... Now we fetch!!!');
             studentPortfolioProps.fetch();
         }
     },
@@ -120,7 +122,6 @@ function PortfolioComponent (props) {
 
     useEffect(
         ()=>{
-            console.log('build data...');
             setTreeData(buildTreeDataStructure())
             setDataCount(dataCount + 1);
         },
@@ -242,7 +243,6 @@ function PortfolioComponent (props) {
     }
 
     function saveExemplars (exemplars) {
-        console.log('Portfolio.saveExemplars(...)',exemplars);
         updateExemplars(exemplars)
         buildTreeDataStructure()
         setDataCount(dataCount+1);
@@ -264,7 +264,6 @@ function PortfolioComponent (props) {
              noDelete={true}
              key={dataCount}
              data={treeData}
-           /*onDataChange={()=>{console.log('tree data changed');}}*/
              headers={[
                  'Strand','Skill','Points','Exemplars','Due','Assessment'
              ]}
@@ -361,7 +360,6 @@ function PortfolioComponent (props) {
                         (skill) => {
                             skill.children.forEach((exemplar)=>{
                                 if (exemplar.data.submission == data.submission && exemplar.data != data) {
-                                    console.log('Got a match: adding another skill!');
                                     props.selectedSkills.push(skillFromData(exemplar.data));
                                 }
                             })
