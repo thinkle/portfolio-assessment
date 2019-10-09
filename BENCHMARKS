@@ -152,6 +152,40 @@ TO DO...
 
 - Try caching(?) data to reduce number of API calls (in progress) (x)
 - Add router so we can jump to a page more easily  (x)
+- Cache google doc calls so we don't refetch if we don't have to
+  -> While we're at it we'll have to think through...
+     - When we fetch data from a doc/sheet, we have the cached data, then we decide whether to get new data,
+       then we fetch new data or not. (x)
+     - Once we have multiple users we have to deal with potential conflicts(!) so when we write to a sheet
+       we need a way to check if there is any conflict and merge data accordingly.
+        -> This means we need to start tracking when we fetched the data or (better yet) the mtime of the
+           file when we fetched the data. It looks like just using the drive API is the way to go there
+           since the spreadsheet API doesn't provide this info (https://github.com/googleapis/google-api-nodejs-client/issues/635)
+        - Currently throws an error if there's a conflict (X)
+           -> Implement data merging in case of conflict??? (TODO) <------------ **TODO**
+     - So, now the portfolio manager will have to keep track of...
+       -> modified times of portfolio sheets (x)
+       -> cache of portfolio sheets (x)
+       -> updates of portfoio sheets need to know about modified times and fetch new modified times before running. (x)
+
+
+- Get student view working and URLs so we can share URL to assessed items etc.
+  --> Fix sharing of portfolio doc and test two-way communication (x)
+  --> Set up sharing with class
+      -> shareFileWithClass (TEST THIS OUT)
+      -> Retroactively share...
+      -> Add share to creation step...
+         ~~ ACK -- even a shared file seems unsearchable by properties until it is opened first.
+            Searching by filename seems risky. Our best bet seems to be to share a config
+            file with everyone via classroom link or via email. Let's test that out...
+
+            -> Plan is...
+               - URL has config file ID in it
+               - We grab the config file
+               - We parse the config file and use its settings
+               
+              
+- Get emails working?
 - Save sidebar state of exemplar editor in assignment view [ ]
 - extend caching system for google docs/sheets fetching so we don't fetch new data if there is no new data 
 
