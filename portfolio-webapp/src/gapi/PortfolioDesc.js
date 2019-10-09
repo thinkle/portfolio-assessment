@@ -14,9 +14,9 @@ function PortfolioDesc (course) {
         var resp = await dm.shareFileWithClass(fid,course);
         const propsToShare = otherPropNames||[];
         propsToShare.push(DocumentManager.propname(course.id,PDESC))
-        var sharedId = await Api.getPrefs().shareProps(propsToShare,otherProps);
+        var sharedId = await Api.getPrefs().shareProps(propsToShare,otherPropNames);
         var resp2 = await dm.shareFileWithClass(sharedId,course);
-        return `/share/${sharedId}/student/${course.id}/`
+        return `${window.location.origin}/share/${sharedId}/student%2F${course.id}/`
     }
 
     function get_portfolio_desc () {
