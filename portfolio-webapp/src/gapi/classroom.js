@@ -12,6 +12,14 @@ const Classroom = {
         return Classroom.fetchAll(cr().courses.list,params,'courses');
     },
 
+    get_student_classes () {
+        var params = {
+            pageSize:25,
+            courseStates:['ACTIVE'],
+        };
+        return Classroom.fetchAll(cr().courses.list,params,'courses');
+    },
+
     get_coursework ({course, teacherMode}) {
         const params = {
             courseId:course.id,
@@ -37,6 +45,14 @@ const Classroom = {
         }
         return Classroom.fetchAll(cr().courses.courseWork.studentSubmissions.list,
                         params,'studentSubmissions');
+    },
+
+    async get_student_profile () {
+        const params = {
+            userId : 'me',
+        }
+        var resp = await cr().userProfiles.get({userId:'me'})
+        return resp.result;
     },
 
     get_students ({course}) {
