@@ -9,12 +9,11 @@ import {useCoursesApi} from './gapi/hooks.js';
 function ClassList (props) {
     const CourseFetcher = props.CoursesApi
 
-    const [customCourses,setCustomCourses] = useState(
-        Api.getLocalCachedProp('custom-courses-'+props.user)||[]
-    );
-    
-    const [showCustomModal,setShowCustomModal] = useState(false);
-    var customCourseWidget;
+    // const [customCourses,setCustomCourses] = useState(
+    //     Api.getLocalCachedProp('custom-courses-'+props.user)||[]
+    // );
+    //const [showCustomModal,setShowCustomModal] = useState(false);
+    //var customCourseWidget;
     // useEffect(()=>{
     //     Api.Classroom.get_teacher_classes({teacher:props.user})
     //         .then(function (result) {
@@ -73,59 +72,59 @@ function ClassList (props) {
                    </div>
                  </div>
                 }
-                <div className="section">
-                  <h3>Other Courses</h3>
-                  <div className="buttons">
-        {customCourses && customCourses.map(
-                    (course)=>(
-                        <a className='button is-medium is-secondary'
-                          onClick={()=>props.onCourseSelected({
-                              name:course
-                          })}>{course}
-                        </a>
-                    ))
-                }
-                <a className="button is-medium is-primary"
-                   onClick={setShowCustomModal}
-                >
-                  Add New Course
-                </a></div></div>
+        {/*         <div className="section"> */}
+        {/*           <h3>Other Courses</h3> */}
+        {/*           <div className="buttons"> */}
+        {/* {customCourses && customCourses.map( */}
+        {/*             (course)=>( */}
+        {/*                 <a className='button is-medium is-secondary' */}
+        {/*                   onClick={()=>props.onCourseSelected({ */}
+        {/*                       name:course */}
+        {/*                   })}>{course} */}
+        {/*                 </a> */}
+        {/*             )) */}
+        {/*         } */}
+        {/*         <a className="button is-medium is-primary" */}
+        {/*            onClick={setShowCustomModal} */}
+        {/*         > */}
+        {/*           Add New Course */}
+        {/*         </a></div></div> */}
               </div>
             </div>
           </div>
 
-          <Modal active={showCustomModal} onClose={()=>setShowCustomModal(false)}
-          >
-            <label className=''>Enter custom course:
-              <input className="input" type="text" ref={(n)=>customCourseWidget=n}/>
-            </label>
-            <div className="level level-right top-pad">
-              <div className="level-item level-right">
-                <button className='button is-secondary space-right'
-                        onClick={()=>setShowCustomModal(false)}>
-                  Cancel
-                </button>
-                <button
-                  className='button is-primary'
-                  onClick={()=>{
-                      console.log('Use value: %s from widget %s',
-                                  customCourseWidget.value,
-                                  customCourseWidget);
-                      if (customCourses) {
-                          var newCourses = customCourses.slice(0)
-                      }
-                      else {
-                          var newCourses = [];
-                      }
-                      newCourses.push(customCourseWidget.value);
-                      Api.setProp('custom-courses-'+props.user,newCourses).then(()=>console.log('Set custom prop!'));
-                      setCustomCourses(newCourses);
-                      props.onCourseSelected(customCourseWidget.value);
-                  }}
-                >Add course</button>
-              </div>
-            </div>
-          </Modal>
+          {/* <Modal active={showCustomModal} onClose={()=>setShowCustomModal(false)} */}
+          {/* > */}
+          {/*   <label className=''>Enter custom course: */}
+          {/*     <input className="input" type="text" ref={(n)=>customCourseWidget=n}/> */}
+          {/*   </label> */}
+          {/*   <div className="level level-right top-pad"> */}
+          {/*     <div className="level-item level-right"> */}
+          {/*       <button className='button is-secondary space-right' */}
+          {/*               onClick={()=>setShowCustomModal(false)}> */}
+          {/*         Cancel */}
+          {/*       </button> */}
+          {/*       <button */}
+          {/*         className='button is-primary' */}
+          {/*         onClick={()=>{ */}
+          {/*             console.log('Use value: %s from widget %s', */}
+          {/*                         customCourseWidget.value, */}
+          {/*                         customCourseWidget); */}
+          {/*             if (customCourses) { */}
+          {/*                 var newCourses = customCourses.slice(0) */}
+          {/*             } */}
+          {/*             else { */}
+          {/*                 var newCourses = []; */}
+          {/*             } */}
+          {/*             newCourses.push(customCourseWidget.value); */}
+          {/*             Api.setProp('custom-courses-'+props.user,newCourses).then(()=>console.log('Set custom prop!')); */}
+          {/*             setCustomCourses(newCourses); */}
+          {/*             props.onCourseSelected(customCourseWidget.value); */}
+          {/*         }} */}
+          {/*       >Add course</button> */}
+          {/*     </div> */}
+          {/*   </div> */}
+          {/* </Modal> */}
         </div>
     );
 }
