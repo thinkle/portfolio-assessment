@@ -6,17 +6,18 @@ import TeacherPortfolioView from './TeacherPortfolioView.js';
 import TeacherAssignmentView from './TeacherAssignmentView.js';
 import AssignmentMapper from './AssignmentMapper.js';
 import Api from './gapi/gapi.js';
-import {useCoursesApi} from './gapi/hooks.js';
+import {useTeacherCoursesApi} from './gapi/hooks.js';
 import Brand from './brand.js';
-import {Container,Menu,Navbar,Tabs} from './widgets.js';
+import {Container,Menu,Navbar,Tabs,Button,Modal} from './widgets.js';
 import history from './history.js';
+import {inspect} from 'util';
 
 function TeacherView (props) {
 
     const [course,setCourse] = useState();
-
+    const [message,setMessage] = useState('');
+    
     function setCourseFromId () {
-        console.log('Set course from ID...',CoursesApi.value,props.courseId);
         if (props.courseId) {
             var myCourses = CoursesApi.value.filter((c)=>c.id==props.courseId)
             if (myCourses.length==1) {
@@ -31,9 +32,21 @@ function TeacherView (props) {
         }
     }
 
-    const CoursesApi = useCoursesApi({teacher:props.user},
+    const CoursesApi = useTeacherCoursesApi({teacher:props.user},
                                       setCourseFromId
                                      );
+
+
+    function sharePortfolio () {
+        setMessage('Sharing portfolio with class -- one second');
+        var promise = Api.PortfolioDesc(course).share_with_class(); // make sure the doc is shared...        
+        promise.then((resp)=>{
+            setMessage(`Shared portfolio with class group ${course.courseGroupEmail}. ${inspect(resp)}`);
+        }).catch((err)=>{
+            setMessage(`Ran into trouble I am afraid... ${inspect(err)}`);
+            throw err;
+        });
+    }
 
     const tabList = [
         {routeName:'assignment',
@@ -73,8 +86,11 @@ function TeacherView (props) {
     function doSetCourse (course) {
         if (course) {
             history.push(`/teacher/${course.id}/`);
-            setCourse(course);
         }
+        else {
+            history.push(`/teacher/`);
+        }
+        setCourse(course);
     }
 
     function updateRoute (routeName) {
@@ -93,7 +109,6 @@ function TeacherView (props) {
                 course && tabs() ||
                     <Container>
                       <ClassList
-                        user={props.user}
                         CoursesApi={CoursesApi}
                         onCourseSelected={(course)=>{
                             doSetCourse(course);
@@ -109,6 +124,9 @@ function TeacherView (props) {
             <Navbar.Item>
               User: {JSON.stringify(props.user)}
             </Navbar.Item>
+            <Navbar.Item>
+              {course && <Button onClick={()=>sharePortfolio()}>Share Portfolio w/ Class</Button>}
+            </Navbar.Item>
             <Navbar.Item>{course&&(
                 <a  target="_blank" className="navbar-item" href={course.alternateLink}>{course.name}</a>
             )}
@@ -120,6 +138,7 @@ function TeacherView (props) {
 
     function tabs () {
         return (
+            <div style={{height:'100%'}}>
             <div className="viewport2">
               <Tabs className="is-centered" groupedMode={true}
                     initialTab={initialTabIndex}
@@ -155,6 +174,10 @@ function TeacherView (props) {
                 {/* <AssignmentMapper course={course} {...props} */}
                 {/*                   onSelected={()=>updateRoute('map')}/> */}
               </Tabs>
+            </div>
+              <Modal active={message} onClose={()=>setMessage('')}>
+                {message}
+              </Modal>
             </div>
         );
 
