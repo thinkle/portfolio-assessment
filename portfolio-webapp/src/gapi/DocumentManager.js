@@ -168,13 +168,14 @@ function DocumentManager () {
             var response = await gsheets.spreadsheets.create(spreadsheetObj);
             console.log('DM:Created resulted in!',response);
             var ssheet = response.result;
-            await Api.setProp(propname(course.id,prop,student.userId),ssheet.spreadsheetId);
+            const fullprop = propname(course.id,prop,student.userId)
+            await Api.setProp(fullprop,ssheet.spreadsheetId);
             var courseFolder = await this.getCourseFolder(course);
             await FileUpdater(ssheet.spreadsheetId)
                 .addToFolder(courseFolder)
                 .addCourse(course.id) // ID
                 .addStudent(student.userId)
-                .addAppProp('prop',prop)
+                .addAppProp('prop',fullprop)
                 .execute()
 
             const permissionsParams = {
