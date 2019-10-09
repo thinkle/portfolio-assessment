@@ -20,6 +20,7 @@ import Menu from './widgets/Menu.js';
 import Tabs from './widgets/Tabs.js';
 import TeacherAssignmentView from './TeacherAssignmentView.js';
 
+
 function TestView () {
     const [page,setPage] = useState('gapi')
     const [prop,setProp] = useState(undefined);
@@ -78,11 +79,12 @@ function TestView () {
     
     const prefs = Prefs();
 
+
     const defaultStudent = {
         "courseId":"20912946613",
-        "userId":"118286616169423182268",
+        "userId": "109899082656923697222",
         "profile":{"id":"118286616169423182268",
-                   "name":{"givenName":"Fake","familyName":"Sans Idente","fullName":"Fake Sans Idente"},
+                   "name":{"givenName":"Test","familyName":"Student","fullName":"Test Student"},
                    emailAddress:'test.student@innovationcharter.org',                   
                   },
     }
@@ -152,12 +154,22 @@ function TestView () {
                 <Button onClick={()=>{
                     prefs.setProp('foo','val'+Math.random());
                 }}>Update prop!</Button>
-                {/* <Button onClick={()=>{ */}
-                {/*     prefs.getPropFile(). */}
-                {/*         then((id)=>{ */}
-                {/*             prefs.updateFile(id,{foo:'bar',new:'baz',bang:'booo'}) */}
-                {/*         }); */}
-                {/* }}>Clobber props!</Button> */}
+                <Button onClick={()=>{
+                    async function foo () {
+                        var p = await prefs.getProps();
+                        var id = await prefs.getPropFile();
+                        delete p['error']
+                        prefs.updateFile(id,p);
+                    }
+                    foo();
+                }}>Remove bad prop</Button>
+                <button className="button is-danger" onDoubleClick={()=>{
+                    prefs.getPropFile().
+                        then((id)=>{
+                            prefs.updateFile(id,{foo:'bar',new:'baz',bang:'booo'})
+                        });
+                }}>Clobber props! (dblclk)</button>
+                <button className="button is-danger" onDoubleClick={()=>{window.localStorage.clear()}}>CLEAR LOCALSTORAGE (dblclk)</button>
               </Box>
               {/* <Box> */}
               {/*   <h.h3>UI</h.h3> */}
@@ -171,6 +183,12 @@ function TestView () {
               {/* </Box> */}
               <Box>
                 <h.h3>Drive/Docs</h.h3>
+                <Button onClick={
+                    ()=>Api.StudentPortfolio(defaultCourse,defaultStudent).get_portfolio_data().then(setTestData)
+                }>Get portfolio...</Button>
+                <Button onClick={
+                    ()=>Api.StudentPortfolio(defaultCourse,defaultStudent).get_updated_time().then(setTestData)
+                }>Get modified time on portfolio item...</Button>
                 <Button onClick={
                     ()=>{
                         DocumentManager().createStudentSheet(
