@@ -29,18 +29,37 @@ var Api = {
     
     getPrefs () {
         if (!prefs) {
+            console.log('creating prefs...');
             prefs = Prefs();
         }
         return prefs
     },
 
     //converted
-    getUser () {
+    getUser (backoff=50) {
         console.log('getUser...');
         return new Promise ((resolve,reject)=>{
             if (!auth2) {
                 console.log('Tried to call Api before auth2');
-                reject('Auth2 not loaded yet');
+                if (window.gapi && window.gapi.auth2) {
+                    gapi = window.gapi;
+                    auth2 = gapi.auth2;
+                    Api.getUser().then(resolve).catch(reject);
+                }
+                else {
+                    gapi = window.gapi;
+                    auth2 = gapi.auth2;
+                    if (backoff < 10000) {
+                        console.log(`Auth2 not loaded yet, try again in ${backoff} ms`);
+                        Api.getUser(backoff*2).then(resolve).catch(reject);
+                    }
+                    else {
+                        console.log('GIVING UP!');
+                        reject('Auth2 not loaded yet');
+                    }
+                    
+
+                }
             }
             var authInst = auth2.getAuthInstance()
             if (authInst.isSignedIn.get()) {
@@ -99,6 +118,10 @@ var Api = {
         return this.getPrefs().setProp(prop,val);
     },
 
+    setProps (props) {
+        return this.getPrefs().setProps(props);
+    },
+
     getLocalCachedProp (prop) {
         try {
             return JSON.parse(window.localStorage.getItem(prop))
@@ -120,5 +143,6 @@ var Api = {
 
 Api.Classroom = Classroom
 Api.StudentPortfolio = StudentPortfolio;
+Api.PortfolioDesc = PortfolioDesc;
 
 export default Api;
