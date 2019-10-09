@@ -369,7 +369,9 @@ function PortfolioBuilder (props) {
                           console.log('Successful push to google: %s',result);
                           console.log(JSON.stringify(result))
                       })
-                      .catch((err)=>{setBusyState(false);setErrorState(err)});
+                      .catch((err)=>{
+                          console.log('ERROR pushing portfolio',err);
+                          setBusyState(false);setErrorState(err)});
               }}>
                 Save to Google
               </Button>
