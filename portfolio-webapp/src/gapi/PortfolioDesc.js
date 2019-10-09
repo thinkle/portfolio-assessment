@@ -1,13 +1,23 @@
 import DocumentManager from './DocumentManager.js';
 import Sheets from './SheetBasics.js';
 import SheetManager from './SheetManager.js';
-
+import Api from './gapi.js';
 const ASPENEX = 'portfolio-desc-export'
 const PDESC = 'portfolio-desc'
 
 function PortfolioDesc (course) {
 
     const dm = DocumentManager();
+
+    async function share_with_class (otherPropNames=[],otherProps={}) {
+        var fid = await dm.getSheetId(course.id,PDESC)
+        var resp = await dm.shareFileWithClass(fid,course);
+        const propsToShare = otherPropNames||[];
+        propsToShare.push(DocumentManager.propname(course.id,PDESC))
+        var sharedId = await Api.getPrefs().shareProps(propsToShare,otherProps);
+        var resp2 = await dm.shareFileWithClass(sharedId,course);
+        return `/share/${sharedId}/student/${course.id}/`
+    }
 
     function get_portfolio_desc () {
         return new Promise((resolve,reject)=>{
@@ -44,13 +54,13 @@ function PortfolioDesc (course) {
             data.push({rowData:Sheets.jsonToRowData(skills),
                        title:'skills'})
         }
-        if (descriptors) {
+        if (descriptors && descriptors.length) {
             data.push({
                 rowData : Sheets.jsonToRowData(descriptors),
                 title:'descriptors'
             });
         }
-        if (assignments) {
+        if (assignments && assignments.length) {
             data.push({
                 rowData : Sheets.jsonToRowData(assignments),
                 title:'assignments'
@@ -98,6 +108,7 @@ function PortfolioDesc (course) {
         set_aspen_assignments,
         get_portfolio_url, // was get_sheets_url
         get_aspen_assignments_url,
+        share_with_class,
     }
 
 }
