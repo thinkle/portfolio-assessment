@@ -1,3 +1,5 @@
+$animation-time : 300ms
+
 .menu-content-holder
   position: relative;
   
@@ -13,12 +15,12 @@
 
 .unreverse 
   transform : rotateZ(360deg)
-  transition : transform 300ms
+  transition : transform $animation-time
   display: inline-block
   
 .reverse 
   transform : rotateZ(180deg)
-  transition : transform 300ms
+  transition : transform $animation-time
   display: inline-block
 
 .dropdown
@@ -34,15 +36,15 @@
   transform: scaleY(1)
   /*transform: translateY(0)*/
   opacity: 1
-  transition: transform 500ms
+  transition: transform $animation-time
 
 .is-dropdown .dropdown-exit-done
   opacity: 0
-  transition: opacity 300ms
+  transition: opacity $animation-time
   
 .dropdown-exit-done
   transform: scaleY(0)
-  transition: transform 300ms
+  transition: transform $animation-time
   transform-origin: top
 
 .menu-content.dropdown-enter,.menu-content.dropdown-enter-done,.menu-content.dropdown-exit-done
@@ -56,7 +58,7 @@
 
 .revealed
   opacity: 1
-  transition: opacity 300ms
+  transition: opacity $animation-time
 
 .selectedItem
   opacity: 1
@@ -69,7 +71,7 @@
 .fade-item-enter-done
   opacity: 1
   transform: translateY(0)
-  transition: opacity 500ms, transform 500ms
+  transition: opacity $animation-time, transform $animation-time
   pointer-events: auto
 
 .fade-item-exit
@@ -79,7 +81,7 @@
 .fade-item-exit-done
   opacity: 0
   transform: translateX(200px)translateY(-5px)
-  transition: opacity 500ms, transform 500ms
+  transition: opacity $animation-time, transform $animation-time
   width: 0
   pointer-events: none
 
@@ -91,7 +93,7 @@
   pointer-events: none
   transform: translateY(-50px)
   opacity: 0
-  transition: opacity 500ms, transform 500ms
+  transition: opacity $animation-time, transform $animation-time
 
 .relWrap
   position: relative
