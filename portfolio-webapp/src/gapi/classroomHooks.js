@@ -31,12 +31,29 @@ const useStudentsApi = makeCachingApiHook({
 const useStudents = (params) => useStudentsApi(params).value;
 //const useStudents = makeApiHook(Api.Classroom.get_students,[]);
 
-const useCoursesApi = makeCachingApiHook({
+const useTeacherCoursesApi = makeCachingApiHook({
     getter : Api.Classroom.get_teacher_classes,
     makeCacheName : (params) => `teacher-courses-${params.teacher}`,
     defaultVal : [],
     refetchAfter : 1*t.DAYS,
 });
 
+const useStudentCoursesApi = makeCachingApiHook({
+    getter : Api.Classroom.get_teacher_classes,
+    makeCacheName : (params) => `student-courses`,
+    defaultVal : [],
+    refetchAfter : 1*t.DAYS,
+});
 
-export {useCoursework,useStudents,useStudentWork,useCourseworkApi,useStudentsApi, useCoursesApi}
+const useStudentProfileApi = makeCachingApiHook({
+    getter : Api.Classroom.get_student_profile,
+    makeCacheName : (params) => 'student-profile',
+    defaultVal : [],
+    refetchAfter : 30*t.DAYS,
+});
+
+export {useCoursework,useCourseworkApi,
+        useStudents,useStudentsApi,
+        useStudentWork,
+        useStudentCoursesApi,useTeacherCoursesApi,
+        useStudentProfileApi}
