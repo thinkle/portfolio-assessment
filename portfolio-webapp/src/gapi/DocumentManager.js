@@ -97,12 +97,12 @@ function DocumentManager () {
                 if (typeof fileId == 'string' && 
                     fileId.length > 10 &&
                     appProperties.prop.indexOf('-')>-1) {
-                    console.log('Try updating metadata!',fileId,appProperties)
+                    //console.log('DM:Try updating metadata!',fileId,appProperties)
                     await gdrive.files.update({fileId : fileId,
                                                appProperties : appProperties});
                 }
                 else {
-                    console.log("Skip %s:%s, doesn't look like a file",key,fileId);
+                    //console.log("Skip %s:%s, doesn't look like a file",key,fileId);
                 }
                 completed.push({fileId : fileId,
                                 appProperties : appProperties});
@@ -116,9 +116,9 @@ function DocumentManager () {
                 return id;
             }
             else {
-                console.log('Creating root folder');
+                //console.log('DM:Creating root folder');
                 var newFolder = await createFolder(rootFolderTitle);
-                console.log('Got result: %s',JSON.stringify(newFolder.result));
+                //console.log('DM:Got result: %s',JSON.stringify(newFolder.result));
                 Api.setProp('root-folder-id',newFolder.result.id);
                 return newFolder.id;
             }
@@ -134,6 +134,22 @@ function DocumentManager () {
             return fileResp.result.id;
         },
 
+        async shareFileWithClass (fid, course) {
+            var group = course.courseGroupEmail;
+            //console.log('Sharing with ',course.courseGroupEmail);
+            var resp = await gdrive.permissions.create(
+                {
+                    fileId : fid,
+                    sendNotificationEmail : false,
+                    resource : {
+                        role : 'reader',
+                        type : 'user',
+                        emailAddress : group
+                    }
+                });
+            return resp;
+        },
+
         async getCourseFolder (course) {
             var id = await Api.getProp(course.id+'-folder')
             if (id) {
@@ -147,10 +163,10 @@ function DocumentManager () {
 
         async createStudentSheet (course, student, prop, title, sheets, studentWrite) {
             var spreadsheetObj = Sheets.getSpreadsheetBody({title,sheetsData:sheets});
-            console.log('Creating student sheet with spreadsheetObj',spreadsheetObj);
-            console.log(title,prop);
+            //console.log('DM:Creating student sheet with spreadsheetObj',spreadsheetObj);
+            //console.log(title,prop);
             var response = await gsheets.spreadsheets.create(spreadsheetObj);
-            console.log('Created resulted in!',response);
+            console.log('DM:Created resulted in!',response);
             var ssheet = response.result;
             await Api.setProp(propname(course.id,prop,student.userId),ssheet.spreadsheetId);
             var courseFolder = await this.getCourseFolder(course);
@@ -158,6 +174,7 @@ function DocumentManager () {
                 .addToFolder(courseFolder)
                 .addCourse(course.id) // ID
                 .addStudent(student.userId)
+                .addAppProp('prop',prop)
                 .execute()
 
             const permissionsParams = {
@@ -175,12 +192,12 @@ function DocumentManager () {
         
         async createSheet (title, sheetsData) {
             var spreadsheetObj = Sheets.getSpreadsheetBody({title,sheetsData})
-            console.log('Spreadsheet object: %s',spreadsheetObj);
-            console.log(JSON.stringify(spreadsheetObj));
+            //console.log('DM:Spreadsheet object: %s',spreadsheetObj);
+            //console.log(JSON.stringify(spreadsheetObj));
             var response = await gsheets.spreadsheets.create(
                 spreadsheetObj
             )
-            console.log('Complete! %s',JSON.stringify(response.result));
+            //console.log('DM:Complete! %s',JSON.stringify(response.result));
             var rootId = await this.getRootFolderId()
             await FileUpdater(response.result.id)
                 .addToFolder(rootId)
@@ -193,36 +210,64 @@ function DocumentManager () {
             var response = await gsheets.spreadsheets.create(
                     spreadsheetObj
             )
-            console.log('Created sheet! %s',JSON.stringify(response.result));
-            console.log('ID=%s',response.result.id);
+            //console.log('DM:Created sheet! %s',JSON.stringify(response.result));
+            //console.log('DM:ID=%s',response.result.id);
             await Api.setProp(propname(course.id,prop),response.result.spreadsheetId)
             var courseFolder = await this.getCourseFolder(course);
             FileUpdater(response.result.spreadsheetId)
                 .addToFolder(courseFolder)
                 .addCourse(course.id)
+                .addAppProp('prop',prop)
                 .execute()
             return response.result;
+        },
+
+        async getUpdateTime (courseId, prop, studentId) {
+            const fullprop = propname(courseId,prop,studentId);
+            var id = await Api.getProp(fullprop);
+            //console.log('DM:Getting modified time on',fullprop,id);
+            if (!id) {
+                return // undefined - never updated, doesn't exist
+            }
+            else {
+                var response = await gdrive.files.get({fileId:id,fields:'modifiedTime'})
+                //console.log(response);
+                return response.result.modifiedTime;
+            }
         },
 
         async getSheetId (courseId, prop, studentId) {
             const fullprop = propname(courseId,prop,studentId)
             var id = await Api.getProp(fullprop) // is a promise
-            console.log('getSheetId: We had property',fullprop,'=>',id);
+            //console.log('DM:getSheetId: We had property',fullprop,'=>',id);
             if (!id) {
-                console.log('Search drive for file...');
-                var response = await gapi.client.drive.files.list(
-                    {spaces:'drive',
+                //console.log('DM:Search drive for file... prop,',fullprop,courseId,prop,studentId);
+                try {
+                    var response = await gdrive.files.list(
+                        {spaces:'drive',
+                         corpora:'allDrives',
+                         includeItemsFromAllDrives:true,
+                         supportsAllDrives:true,
                      q:`appProperties has {key="prop" and value="${fullprop}"}`
                     }
-                );
+                    );
+                }
+                catch (err) {
+                    console.log('DM: Error searching for file ${fullprop} :(');
+                    console.log(err)
+                    throw err;
+                }
                 if (response.result.files.length==1) {
-                    console.log('Found a result: ',response.result.files[0])
+                    console.log('DM:Found a result ${fullprop}: ',response.result.files[0])
                     Api.setProp(fullprop,response.result.files[0].id);
                     return response.result.files[0].id
                 }
                 else if (response.result.files.length > 0) {
-                    console.log(`WARNING: ${response.result.files.length} results found for file for prop ${fullprop}:`,response.result.files);
+                    console.log(`DM:WARNING: ${response.result.files.length} results found for file for prop ${fullprop}:`,response.result.files);
                     return response.result.files[0].id;
+                }
+                else {
+                    console.log(`DM:No file found ${fullprop}`);
                 }
             }
             else {
@@ -246,7 +291,7 @@ function DocumentManager () {
             });
         },
 
-                    
+        
                     
         
         
@@ -254,4 +299,5 @@ function DocumentManager () {
     }
 }
 
+DocumentManager.propname = propname;
 export default DocumentManager;
