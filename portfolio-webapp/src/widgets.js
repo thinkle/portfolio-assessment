@@ -29,6 +29,23 @@ const Content = makeComponent(['content']);
 const Container = makeComponent(['container']);
 const Progress = makeComponent(['progress'],'progress')
 
+function Loader (props) {
+    return <Card {...props}>
+             <div>{props.children}</div>
+             <div>
+               <p>Just a moment and we'll have your data ready I promise!</p>
+               <Progress/>
+             </div>
+             <div>Patience is a virtue</div>
+           </Card>
+}
+
+
+const Viewport = makeComponent(['viewport2'])
+Viewport.Three = makeComponent(['viewport3'])
+Viewport.Two = Viewport;
+Viewport.Bottom = makeComponent(['viewport2','bottom']);
+
 
 const h = {};
 for (let i=1; i<=6; i++) {
@@ -36,4 +53,4 @@ for (let i=1; i<=6; i++) {
     h['sh'+i] = makeComponent(['subtitle','is-'+i])
 }
 
-export {InputWithEnter,Modal,Card,Button,Buttons,Content,Icon,Container,Menu,SelectableItem,CustomSelectableItem,Navbar,h,Box,Tabs,Progress}
+export {Viewport,InputWithEnter,Modal,Card,Button,Buttons,Content,Icon,Container,Menu,SelectableItem,CustomSelectableItem,Navbar,h,Box,Tabs,Progress,Loader}
