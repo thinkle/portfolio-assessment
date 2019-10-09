@@ -28,7 +28,6 @@ function Prefs (pref_file=PREF_FILENAME, main=true) {
             propFileId = id;
         },
         createPropFile : function (initialData) {
-            console.log('Create prop file...');
             return new Promise ((resolve,reject)=>{
                 // ht: https://gist.github.com/tanaikech/bd53b366aedef70e35a35f449c51eced
                 var metadata = {
@@ -88,7 +87,6 @@ function Prefs (pref_file=PREF_FILENAME, main=true) {
             if (propContents) {
                 return propContents;
             }
-            console.log('Get file: %s',id);
             var resp = await fetch(
                     `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
                     {
