@@ -9,14 +9,17 @@ function PortfolioDesc (course) {
 
     const dm = DocumentManager();
 
-    async function share_with_class (otherPropNames=[],otherProps={}) {
+    async function share_with_class ({otherPropNames=[],otherProps={}}) {
         var fid = await dm.getSheetId(course.id,PDESC)
         var resp = await dm.shareFileWithClass(fid,course);
-        const propsToShare = otherPropNames||[];
-        propsToShare.push(DocumentManager.propname(course.id,PDESC))
-        var sharedId = await Api.getPrefs().shareProps(propsToShare,otherPropNames);
-        var resp2 = await dm.shareFileWithClass(sharedId,course);
-        return `${window.location.origin}/share/${sharedId}/student%2F${course.id}/`
+        // console.log('Sharing description...');
+        // const propsToShare = otherPropNames||[];
+        // propsToShare.push(DocumentManager.propname(course.id,PDESC))
+        // var sharedId = await Api.getPrefs().shareProps(propsToShare,otherProps);
+        // console.log('Created file to share: ',sharedId);
+        // var resp2 = await dm.shareFileWithClass(sharedId,course);
+        // console.log(`${window.location.origin}/share/${sharedId}/student%2F${course.id}/`)
+        // return `${window.location.origin}/share/${sharedId}/student%2F${course.id}/`
     }
 
     function get_portfolio_desc () {
