@@ -143,7 +143,7 @@ function useStudentPortfolioManager (params) {
         }
     }
 
-    async function savePortfolio (student, course=defaultCourse, callback) {
+    async function savePortfolio (student, course=defaultCourse, callback, studentMode, force) {
         var key = makeID(course,student);
         console.log('PH:Set key busy',key);
         busyMap.updateKey(key,true)
@@ -152,10 +152,14 @@ function useStudentPortfolioManager (params) {
             throw 'WTF? No object';
         }
         try {
-            await sp.set_portfolio_and_assessments({
-                data:portfolioMap.map[key],
-                updatedTimes:updatedTimeMap.map[key],
-            });
+            await sp.set_portfolio_and_assessments(
+                {
+                    data:portfolioMap.map[key],
+                    updatedTimes:updatedTimeMap.map[key],
+                },
+                studentMode,
+                force
+            );
             origPortfolioMap.updateKey(key,portfolioMap.map[key]);
             savedStateMap.updateKey(key,true);
             var newTimes = await sp.get_updated_time();
@@ -247,8 +251,9 @@ function useStudentPortfolioManager (params) {
 
 function useStudentPortfolio (params) {
     console.log('PH:useStudentPortfolio got params: ',params);
-    const {course, student, includeAssessments, dontFetch} = params;
+    const {course, student, includeAssessments, dontFetch, studentMode} = params;
     const [busy,setBusy] = useState(false);
+    const [error,setError] = useState();
     const [origPortfolio,setOrigPortfolio] = useState([]);
     const [portfolio,_setPortfolio] = useState([]); // we don't return the "pure" setPortfolio because we wrap it
     const [saved,setSaved] = useState(true); // updated by comparing portfolio and original...
@@ -292,18 +297,27 @@ function useStudentPortfolio (params) {
              );
 
 
-    async function savePortfolio () {
+    async function saveOverPortfolio () {return savePortfolio(true)}
+
+    async function savePortfolio (force=false) {
+        console.log('savePortfolio student',studentMode,'force',force,portfolio);
         setBusy(true);
         try {
-            var result = await Api.StudentPortfolio(course,student).set_portfolio_and_assessments({
-                data:portfolio,
-                updatedTimes:updatedTimes,
-            }
-                                                                                                 );
+            var result = await Api.StudentPortfolio(course,student).set_portfolio_and_assessments(
+                {
+                    data:portfolio,
+                    updatedTimes:updatedTimes,
+                },
+                studentMode,
+                force
+            );
         }
         catch (err) {
             setBusy(false);
-            throw err;
+            setError(err);
+            console.log('PH hit error saving: ',err);//
+            //throw err;
+            return
         }
         setBusy(false);
         setSaved(true);
@@ -323,8 +337,8 @@ function useStudentPortfolio (params) {
     }
 
     return {
-        busy, saved, // read-only
-        portfolio, setPortfolio, savePortfolio,  // read/write/save
+        busy, saved, error, // read-only
+        portfolio, setPortfolio, savePortfolio, saveOverPortfolio,  // read/write/save
         updateExemplars (exemplars) {
             var copy = updatePortfolioWithExemplars(portfolio,exemplars);
             setPortfolio(copy);
