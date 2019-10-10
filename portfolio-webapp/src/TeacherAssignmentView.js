@@ -2,11 +2,100 @@ import React,{useState,useEffect,useRef} from 'react';
 import {useStudents,useStudentWork,useCoursework,useStudentPortfolioManager} from './gapi/hooks.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import {getProp,classNames,getById} from './utils.js';
-import {Container,Navbar,Button,Icon,Modal} from './widgets.js';
+import {Card,Container,Navbar,Button,Icon,Modal,Loader,h} from './widgets.js';
 import {SelectableItem,Menu,Dropdown} from './widgets/Menu.js';
 import ExemplarEditor from './ExemplarEditor.js';
 import history from './history.js';
 import AssignmentExporter from './AssignmentExporter.js';
+import {inspect} from 'util';
+
+function PortfolioCreator (props) {
+    const [message,setMessage] = useState('');
+    const [busy,setBusy] = useState(false);
+    const [havePortfolios,setHavePortfolios] = useState([]);
+    const [needPortfolios,setNeedPortfolios] = useState([]);
+    
+    function getPortfolios () {
+        var havePortfolios = [];
+        var needPortfolios = [];
+        props.portfolioManager.getMany(
+            props.students,props.course,
+            (portfolio,student) => {
+                if (portfolio.length > 0) {
+                    havePortfolios.push(student)
+                    setHavePortfolios(havePortfolios);
+                    setMessage(student.profile.name.fullName+' has a portfolio already');
+                }
+                else {
+                    needPortfolios.push(student)
+                    setNeedPortfolios(needPortfolios);
+                    setMessage(student.profile.name.fullName+' needs a portfolio');
+                }
+            }
+        );
+    }
+
+    function createPortfolios () {
+
+        async function doCreate (student) {
+            setMessage("Create... "+student.profile.name.fullName);
+            try {
+                var result = await props.portfolioManager.touchPortfolio(
+                    student,
+                    (result)=>{
+                        setMessage(student.profile.name.fullName+' created portfolio: '+JSON.stringify(result));
+                    },
+                    (err)=>{
+                        setMessage(student.profile.name.fullName+' got error: '+JSON.stringify(err));
+                    }
+                );
+            }
+            catch (err) {
+                setMessage(student.profile.name.fullName+' got error :( '+inspect(err))
+                return
+            }
+        }
+        
+        setMessage('oops');
+        needPortfolios.forEach(
+            (student,i)=>{
+                window.setTimeout(()=>doCreate(student),1000*i)
+
+            });
+    }
+    
+    return (
+        <Card>
+          <h.h2>Create Portfolios</h.h2>
+          <div>
+            {message && <p>{message}</p>}
+          <div>
+            <table className="table">
+              <tr>
+                <th>Have Portfolio</th>
+                <th>Need Portfolio</th>
+              </tr>
+              <tr>
+                <td>
+                  {havePortfolios.map((s)=>s.profile.name.fullName).join(', ')}
+                </td>
+                <td>
+                  {needPortfolios.map((s)=>s.profile.name.fullName).join(', ')}
+                </td>
+              </tr>
+            </table>
+          </div>
+          </div>
+          <div>
+
+          <Button onClick={getPortfolios}>See who needs portfolios...</Button>
+          {!busy && <Button onClick={createPortfolios}>Create</Button>}
+          </div>
+        </Card>
+    )
+    
+}
+
 
 function TeacherAssignmentView (props) {
 
@@ -22,6 +111,7 @@ function TeacherAssignmentView (props) {
     const [exemplarRenderCount,setERC] = useState(1);
     const [initialStateReady,setInitialStateReady] = useState(false);
     const [showExporter,setShowExporter] = useState(false);
+    const [showCreator,setShowCreator] = useState(false);
     
     useEffect( ()=>{
         // Manage props from URL...
@@ -187,6 +277,10 @@ function TeacherAssignmentView (props) {
             </Navbar.Item>
             <Navbar.End>
               <Navbar.Item>
+                <Button onClick={setShowCreator}>Create All Portfolio</Button>
+              </Navbar.Item>
+
+              <Navbar.Item>
                 <Button onClick={setShowExporter}>Export Grades</Button>
               </Navbar.Item>
             {selectedStudent &&
@@ -225,6 +319,10 @@ function TeacherAssignmentView (props) {
               key={exemplarRenderCount}
               onChange={saveExemplars}
             /></div>
+          <Modal active={showCreator} onClose={()=>setShowCreator(false)}>
+            <PortfolioCreator {...props} students={students} portfolioManager={portfolioManager}/>
+            
+          </Modal>
           <AssignmentExporter
             active={showExporter}
             onClose={()=>setShowExporter(false)}
