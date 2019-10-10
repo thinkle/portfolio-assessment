@@ -17,24 +17,13 @@ function useStudentPortfolioManager (params) {
     const doFetchNowMap = objProp(...useState({}));
     const spObjectMap = objProp(...useState({}));
     const errorMap = objProp(...useState({}));
-    var [fetchingOne,_setFetchingOne] = useState(false)
     
-    function setFetchingOne (val) {
-        console.log('setFetchingOne (delay...) => ',val,timestamp());
-        var timeout = val && 2000 || 100
-        return window.setTimeout(()=>{
-            console.log('Actually setting fetchingOne now=>',val,timestamp());
-            _setFetchingOne(val)
-        },timeout);
-    }
 
     const checkForUpdatesToFetch = () => {
         //console.log('PH: Effect triggered!',timestamp())
         var timeouts = []
 
         async function goFetchPortfolio (id, callback) {
-            timeouts.push(setFetchingOne(true));
-            fetchingOne = true;
             const sp = spObjectMap.map[id]
             console.log('PH:goFetchPortfolio with object',sp);
             console.log('PH:State of the fetchies...',doFetchNowMap.map);
@@ -49,13 +38,12 @@ function useStudentPortfolioManager (params) {
             catch (err) {
                 if (err.error == Api.StudentPortfolio.NO_PORTFOLIO_ERROR) {
                     console.log('PH:No portfolio for student yet',id);
-                    debugger;
                     if (callback) {callback([])}
                 }
                 else {
                     errorMap.updateKey(id,err);
-                    debugger;
                     console.log('PH:ERROR FETCHING PORTFOLIO',id,err);
+                    callback([]); // for now...
                 }
                 busyMap.updateKey(id,false);
                 return; // we're done if there's no portfolio data
@@ -73,30 +61,36 @@ function useStudentPortfolioManager (params) {
             if (callback) {callback(portf.data);}
         }
         const toFetch = [];
+        const toUpdate = {}
         for (var key in doFetchNowMap.map) {
             if (doFetchNowMap.map[key]) {
                 toFetch.push({key:key,callback:doFetchNowMap.map[key].callback});
             }
+            toUpdate[key] = false;
         }
-        if (toFetch.length && !fetchingOne) {
+        if (toFetch.length) {
             console.log('PH: %s to fetch, we will do one now',toFetch.length);
-            const theOne = toFetch[0];
-            goFetchPortfolio(theOne.key,theOne.callback)
-            doFetchNowMap.updateKey(theOne.key,false);
-            timeouts.push(setFetchingOne(false));
+            const theFirstOne = toFetch[0]
+            goFetchPortfolio(theFirstOne.key,theFirstOne.callback)
+            for (let i=1; i<toFetch.length; i++) {
+                let nextOne = toFetch[i];
+                console.log('Set up timeout # ',i,'in',i*1000,'ms');
+                timeouts.push(
+                    window.setTimeout(
+                        function () {
+                            console.log('Launching timeout #',i);
+                            goFetchPortfolio(nextOne.key,nextOne.callback)
+                        },
+                        i * 2000
+                    )
+                );
+            }
+            doFetchNowMap.updateKeys(toUpdate);
         }
-        else if (toFetch.length) {
-            console.log('Waiting to fetch...');
-        }
-        var delay
-        if (toFetch.length > 1) {
-            delay = 1750;
-        }
-        else {
-            delay = 500
-        }
-        //const fetchTimeout = window.setTimeout(checkForUpdatesToFetch,delay)
-        return (()=>timeouts.forEach((t)=>window.clearTimeout(t)));
+        return (()=>{
+            //console.log('PH: Clearing timeouts');
+            //timeouts.forEach((t)=>window.clearTimeout(t))
+        });
         
     }
 
