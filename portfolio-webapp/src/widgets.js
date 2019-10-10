@@ -36,7 +36,6 @@ function Loader (props) {
                <p>Just a moment and we'll have your data ready I promise!</p>
                <Progress/>
              </div>
-             <div>Patience is a virtue</div>
            </Card>
 }
 
