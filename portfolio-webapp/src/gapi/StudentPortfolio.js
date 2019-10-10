@@ -6,7 +6,7 @@ const DOES_NOT_EXIST = 1751171717;
 const PORTPROP = 'student-portfolio'
 const GRADEPROP = 'portfolio-assessment'
 
-function StudentPortfolio (course, student) {
+function StudentPortfolio (course, student, studentMode=false) {
     const dm = DocumentManager();
     const ASSCACHE = `student-portfolio-assessments-${course.id}-${student.userId}`
     const EXCACHE = `student-portfolio-exemplars-${course.id}-${student.userId}`
@@ -15,7 +15,7 @@ function StudentPortfolio (course, student) {
 
     var updatedTimes = {}
 
-    async function set_portfolio_and_assessments (portData) {
+    async function set_portfolio_and_assessments (portData, studentMode=studentMode, force=false) {
         console.log('SP:set_portfolio_and_assessments',portData);
         var portfolioEntries = portData.data;
         var fetchedTimes = {...portData.updatedTimes};
@@ -26,28 +26,32 @@ function StudentPortfolio (course, student) {
         if (latestGoogleTimes.exemplars > fetchedTimes.exemplars) {
             console.log('SP:Crap, this was updated while we were playing with it...')
             console.log('SP:PANIC!!!!!')
-            throw 'Not yet implemented... :( :( :(';
+            throw 'File was updated by somebody else while you were working :(';
         }
         else {
             console.log('SP:Pushing portfolio data',portfolio);
             var portfolioResult = await set_portfolio(portfolio);
-            console.log('SP:Pushing assessments data',assessments);
         }
-        // Assessments... (fix me - don't try for students).
-        if (latestGoogleTimes.assessments > fetchedTimes.assessments) {
-            console.log('SP:Crap, assessments updated while we were playing - bad bad bad');
-            throw 'oops - not implemeneted';
+        if (studentMode) {
+            return [portfolioResult,{}]
         }
-        else {
-            try {
-                var assessmentResult = await set_assessments(assessments);
+        if (!studentMode) {
+            // Assessments... (fix me - don't try for students).
+            if (latestGoogleTimes.assessments > fetchedTimes.assessments) {
+                console.log('SP:Crap, assessments updated while we were playing - bad bad bad');
+                throw 'assessments file updated while we were working - merge not implemeneted';
             }
-            catch (err) {
-                if (err.result && err.result.status=='PERMISSON_DENIED') {
-                    console.log('SP:No permission to write assessments - are we in student mode?');
+            else {
+                try {
+                    var assessmentResult = await set_assessments(assessments);
                 }
-                else {
-                    throw err;
+                catch (err) {
+                    if (err.result && err.result.status=='PERMISSON_DENIED') {
+                        console.log('SP:No permission to write assessments - are we in student mode?');
+                    }
+                    else {
+                        throw err;
+                    }
                 }
             }
         }
