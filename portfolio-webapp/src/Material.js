@@ -32,12 +32,12 @@ function Material (props) {
             )
         }
         else if (material.driveFile) {
-            var itm = material.driveFile.driveFile
+            var itm = material.driveFile.driveFile || material.driveFile
             if (!itm) {return 'Drive File coming soon?'}
             return (
                 <div>
                   <img src={itm.thumbnailUrl}/>
-                  <a href={itm.alternativeLink} target="_blank">{itm.title}</a>
+                  <a href={itm.alternateLink} target="_blank">{itm.title}</a>
                   {itm.shareMode} {itm.shareMode=='VIEW' && 'Students get copy?'} 
                 </div>
             );
@@ -53,7 +53,7 @@ function getLink (material) {
         return material.link.url
     }
     if (material.driveFile) {
-        return material.alternativeLink
+        return material.driveFile.alternateLink
     }
     else {
         var obj = Object.values(material)[0]
