@@ -74,7 +74,7 @@ function useStudentPortfolioManager (params) {
             goFetchPortfolio(theFirstOne.key,theFirstOne.callback)
             for (let i=1; i<toFetch.length; i++) {
                 let nextOne = toFetch[i];
-                console.log('Set up timeout # ',i,'in',i*1000,'ms');
+                console.log('Set up timeout # ',i,'in',i*600,'ms');
                 timeouts.push(
                     window.setTimeout(
                         function () {
@@ -123,6 +123,37 @@ function useStudentPortfolioManager (params) {
         busyMap.updateKeys(newBusyMap);
         spObjectMap.updateKeys(newObjectMap);
         doFetchNowMap.updateKeys(newFetchMap);
+    }
+
+    async function touchPortfolio (student, callback, errorCallback) {
+        if (portfolioMap.map[makeID(defaultCourse,student)]) {
+            const error ={
+                student:student,
+                error:'Already has a portfolio?',
+                portfolio:portfolioMap.map[makeID(defaultCourse,student)]}
+            console.log('Touch Portfolio had error',error);
+            errorCallback(error);
+        }
+        else {
+
+            try {
+                var sp = Api.StudentPortfolio(defaultCourse,student,false)
+                var result = await sp.set_portfolio_and_assessments(
+                    {data: [{skill:'hello',reflection:'world'}],
+                     updatedTimes:{
+                         assessments:new Date(),
+                         exemplars:new Date()
+                     }},
+                    false,
+                    true
+                );
+                callback(result);
+            }
+            catch (err) {
+                console.log('Error: ',err);
+                errorCallback(err)
+            }
+        }
     }
 
     function fetchPortfolio (student, course=defaultCourse, callback) {
@@ -221,6 +252,7 @@ function useStudentPortfolioManager (params) {
         fetchPortfolio,
         getMany,
         hasPortfolio,
+        touchPortfolio,
         setPortfolio,
         savePortfolio,
         getPortfolio,
@@ -300,6 +332,7 @@ function useStudentPortfolio (params) {
     async function saveOverPortfolio () {return savePortfolio(true)}
 
     async function savePortfolio (force=false) {
+        setError('');
         console.log('savePortfolio student',studentMode,'force',force,portfolio);
         setBusy(true);
         try {
