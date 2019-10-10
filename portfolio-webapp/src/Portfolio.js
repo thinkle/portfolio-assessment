@@ -110,7 +110,7 @@ function PortfolioComponent (props) {
     // student =
 
     const {skills, strands, assignments,
-           busy, portfolio, setPortfolio, savePortfolio, saved, updateExemplars,
+           busy, error, portfolio, setPortfolio, savePortfolio, saveOverPortfolio, saved, updateExemplars,
            coursework, studentwork
           } = props; // state lifted...
 
@@ -260,6 +260,15 @@ function PortfolioComponent (props) {
           <h3>{props.student.profile.name.fullName} Portfolio</h3>
           {!saved && <span><Button className="is-primary" icon={Icon.save} onClick={()=>savePortfolio()}>Save Changes to Google</Button> <span className="has-text-danger is-bold">Work not saved yet!</span></span>}
           {busy && <span className="has-warning-text">Communicating with the google...</span>}
+          {error &&
+           <div>
+             <span className="has-danger-text">Error :( </span>
+             <Button className="is-danger"
+                     icon={Icon.save}
+                     onClick={()=>saveOverPortfolio()}>
+               Force Save (save over any other changes)
+             </Button>
+           </div>}
           {filterView()}
           {true && 
            <TreeView
