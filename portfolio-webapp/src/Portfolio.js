@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import TreeView from './TreeView.js';
-import {Container,Button,Icon,Modal} from './widgets.js';
+import {Container,Button,Icon,Modal,Navbar,Menu,Viewport} from './widgets.js';
 import {useStudentPortfolio,useCoursework,useStudentWork} from './gapi/hooks.js';
 import {getItemById,replaceItemInArray,getProp} from './utils.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
@@ -111,8 +111,8 @@ function PortfolioComponent (props) {
     // student =
 
     const {skills, strands, assignments,
-           busy, error, portfolio, setPortfolio, savePortfolio, saveOverPortfolio, saved, updateExemplars,
-           coursework, studentwork
+           urls, busy, error, portfolio, setPortfolio, savePortfolio, saveOverPortfolio, saved, updateExemplars,
+           coursework, studentwork, 
           } = props; // state lifted...
 
     const [filters,setFilters] = useState({});
@@ -257,21 +257,48 @@ function PortfolioComponent (props) {
     var treeState = TreeView.NapTime(1); // state manager for toggled state of tree
 
     return (
-        <Container>
-          <h3>{props.student.profile.name.fullName} Portfolio</h3>
-          {!saved && <span><Button className="is-primary" icon={Icon.save} onClick={()=>savePortfolio()}>Save Changes to Google</Button> <span className="has-text-danger is-bold">Work not saved yet!</span></span>}
-          {busy && <span className="has-warning-text">Communicating with the google...</span>}
-          {error &&
-           <div>
-             <span className="has-danger-text">Error :( </span>
-             <span>{inspect(error)}</span>
-             <Button className="is-danger"
-                     icon={Icon.save}
-                     onClick={()=>saveOverPortfolio()}>
-               Force Save (save over any other changes)
-             </Button>
-           </div>}
-          {filterView()}
+        <Viewport>
+          <Navbar>
+            <Navbar.Start>
+              <Navbar.QuickBrand>
+                {props.student.profile.name.fullName} Portfolio
+              </Navbar.QuickBrand>
+              <Navbar.Item>
+                {filterView()}                   
+              </Navbar.Item>
+            </Navbar.Start>
+            <Navbar.End>                         
+              {error &&
+               <React.Fragment>
+                 <Navbar.Item className="has-danger-text">Error :( 
+                   <span>{inspect(error)}</span>
+                 </Navbar.Item>             
+                 <Navbar.Item>
+                   <Button className="is-danger"
+                           icon={Icon.save}
+                           onClick={()=>saveOverPortfolio()}>
+                     Force Save (save over any other changes)
+                   </Button>
+                 </Navbar.Item>
+               </React.Fragment>}
+              <Navbar.Item>{busy && <span className="has-warning-text">Communicating with the google...</span>}</Navbar.Item>
+              <Navbar.Item>{
+                  !saved &&
+                      <span>
+                        <Button className="is-primary" icon={Icon.save} onClick={()=>savePortfolio()}>Save Changes to Google</Button>
+                        <span className="has-text-danger is-bold">Work not saved yet!</span>
+                      </span>
+                      ||
+                      <div className="is-success">
+                        <a target='_blank' href={urls && urls.exemplars}>Exemplars</a>
+                        &amp;
+                        <a target='_blank' href={urls && urls.assessments}>Assessments</a>
+                        Synced to Google
+                      </div>
+              }
+              </Navbar.Item>
+            </Navbar.End>
+          </Navbar>
           {true && 
            <TreeView
              getShowChildrenState={treeState.getShowChildrenState}
@@ -330,7 +357,7 @@ function PortfolioComponent (props) {
           </Modal>
 
           
-        </Container>
+        </Viewport>
     )
     function getExemplarKey () {
         if (!exemplarEditorProps) {
@@ -409,18 +436,34 @@ function PortfolioComponent (props) {
 
 
 
-    function filterView () {
-        return (<div className="is-grouped field">
-                  {filterNames.map(
-                      ([name,prop])=>(
-                          <label className='control label'><input type="checkbox"
-                                 className='checkbox'
-                                 checked={!!filters[prop]}
-                                 onChange={(event)=>setFilters({...filters,[prop]:event.target.checked})}
-                                /> {name}</label>
-                      )
-                  )}
-                </div>);
+        function filterView () {
+            return <Menu
+                     title="Filter"
+                     items={filterNames}
+                     renderItem={
+                         ([name,prop])=>(
+                             <label className='control'>
+                               <input type="checkbox"
+                                      className='checkbox'
+                                      checked={!!filters[prop]}
+                                      onChange={(event)=>setFilters({...filters,[prop]:event.target.checked})}
+                               />
+                               {name}
+                             </label>
+                         )
+                     }
+                     />
+        // return (<div className="is-grouped field">
+        //           {filterNames.map(
+        //               ([name,prop])=>(
+        //                   <label className='control label'><input type="checkbox"
+        //                          className='checkbox'
+        //                          checked={!!filters[prop]}
+        //                          onChange={(event)=>setFilters({...filters,[prop]:event.target.checked})}
+        //                         /> {name}</label>
+        //               )
+        //           )}
+        //         </div>);
     }
 
 
