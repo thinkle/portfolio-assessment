@@ -3,7 +3,7 @@ import ClassList from './ClassList.js';
 import CourseworkList from './CourseworkList.js';
 import PortfolioBuilder from './PortfolioBuilder.js';
 import {Link} from 'react-router-dom';
-import {Viewport,Container,Card,Menu,Navbar,Tabs,Loader} from './widgets.js';
+import {Viewport,Container,Card,Menu,Navbar,Tabs,Loader,Button} from './widgets.js';
 import {useStudentCoursesApi,useStudentProfileApi} from './gapi/hooks.js';
 import {getProp,classNames} from './utils.js';
 import history from './history.js';
@@ -44,7 +44,7 @@ function StudentView (props) {
               }}/>
             </Container>
          ||
-         <Viewport>
+         <Viewport.Three>
            <Tabs.TabsTop className="is-centered">
               <ul>
                 <li className={classNames({
@@ -73,7 +73,19 @@ function StudentView (props) {
              {task==ASGN &&
               <Container><Card>Assignment View for students, coming soon... for now, add assignments by editing your portfolio and clicking "Add Exemplar" next to any skill.</Card></Container>}
            </div>
-         </Viewport>
+           <Navbar>
+             <Navbar.Item>
+               Signed in as {StudentApi.value && StudentApi.value.name.fullName}
+             </Navbar.Item>
+             <Navbar.Item>
+               {course && <strong>{course.name}</strong>}
+             </Navbar.Item>
+             
+             <Navbar.Item>
+               <Button onClick={()=>setCourse()}>Switch Course</Button>
+             </Navbar.Item>
+           </Navbar>
+         </Viewport.Three>
         }
             </React.Fragment>
     );
