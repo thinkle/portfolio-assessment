@@ -23,7 +23,7 @@ function StudentPortfolio (course, student, studentMode=false) {
         const [portfolio,assessments] = splitPortfolioAndAssessmentData(portfolioEntries);
         console.log('SP:Check times: latest vs fetched',latestGoogleTimes,fetchedTimes);
         // Exemplars...
-        if (latestGoogleTimes.exemplars > fetchedTimes.exemplars) {
+        if (!force && latestGoogleTimes.exemplars > fetchedTimes.exemplars) {
             console.log('SP:Crap, this was updated while we were playing with it...')
             console.log('SP:PANIC!!!!!')
             throw 'File was updated by somebody else while you were working :(';
