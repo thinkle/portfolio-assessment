@@ -10,6 +10,7 @@ ReactDOM.render(
     (<BrowserRouter>
        <Switch>
          <Route exact path="/" render={()=><App/>}/>
+         <Route exact path="/index.html" render={()=><App/>}/>
          <Route exact path="/teacher/" render={()=><App/>}/>
          <Route exact path="/student/" render={()=><App/>}/>
          <Route path="/share/:file/:redirect/" render={({match})=><LinkReceiver sharefile={match.params.file} redirect={match.params.redirect}/>}/>
