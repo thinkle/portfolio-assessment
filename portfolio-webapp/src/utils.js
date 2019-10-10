@@ -2,6 +2,9 @@ function objProp (obj, setObj) {
     return {
         map : obj,
         setMap : setObj,
+        updateKeys (props) {
+            setObj({...obj,...props});
+        },
         updateKey (k,v) {
             setObj({...obj,[k]:v});
         },
@@ -153,9 +156,59 @@ function getById (array, idvalue, idprop='id') {
 }
 
 function sanitize (content) { // FIXME: Replace with dompurify
+    if (!content) {
+        return content
+    }
     content = content.replace(/<script[^>]>/g,'<div style="display:none" class="sanitizedScript">')
     content = content.replace(/<\/script>/g,'</div>')
     return {__html:content}
 }
 
-export  {classNames, arrayProp, objProp, getItemById, getProp, replaceItemInArray,getById, sanitize}
+
+function gradeToNum (g) {
+    var num = Number(g)
+    if (!isNaN(num)) {
+        return num;
+    }
+    if (g=='') {
+        return 0;
+    }
+    const base = {
+        'A':100,
+        'B':85,
+        'C':75,
+        'D':65,
+        'F':55,
+        'M':0,
+    }
+    g = g.toUpperCase();
+    if (base[g]) {
+        return base[g];
+    }
+    const grade = g[0];
+    const suffix = g.substr(1);
+    if (base[grade]) {
+        var baseNum = base[grade]
+        if (suffix=='+') {
+            return baseNum + 3
+        }
+        else if (suffix=='-') {
+            return baseNum - 3
+        }
+        else {
+            console.log('gradeToNum ignoring unknown suffix: ',g,suffix)
+            return baseNum;
+        }
+    }
+    else {
+        return -1 // default to -1 -- unknown
+    }
+}
+
+function timestamp () {
+    var d = new Date();
+    return `${d.toLocaleTimeString()}.${d.getMilliseconds()}`
+}
+
+
+export  {classNames, arrayProp, objProp, getItemById, getProp, replaceItemInArray,getById, sanitize, gradeToNum, timestamp}
