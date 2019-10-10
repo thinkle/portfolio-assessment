@@ -291,6 +291,7 @@ function useStudentPortfolio (params) {
     const [saved,setSaved] = useState(true); // updated by comparing portfolio and original...
     const [doFetch,setDoFetch] = useState(!dontFetch)
     const [updatedTimes,setUpdatedTimes] = useState({});
+    const [urls,setUrls] = useState();
     const sp = Api.StudentPortfolio(course,student);
 
     useEffect( ()=>{
@@ -315,6 +316,8 @@ function useStudentPortfolio (params) {
                 setSaved(true)
                 setBusy(false);
             }
+            var urls = await sp.get_urls();
+            setUrls(urls);
         }
 
         if (doFetch) {
@@ -370,7 +373,7 @@ function useStudentPortfolio (params) {
     }
 
     return {
-        busy, saved, error, // read-only
+        busy, saved, error, urls, // read-only
         portfolio, setPortfolio, savePortfolio, saveOverPortfolio,  // read/write/save
         updateExemplars (exemplars) {
             var copy = updatePortfolioWithExemplars(portfolio,exemplars);
