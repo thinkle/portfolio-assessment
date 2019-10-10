@@ -1,4 +1,5 @@
 import React,{useEffect,useState} from 'react';
+import Brand from '../brand.js';
 import {Navbar,Button} from '../widgets.js';
 // LOCAL MODE 
 //import apiInfo from './secrets.js'; // comment out before committing
@@ -193,10 +194,13 @@ function Gapi (props) {
               </Navbar.Item>
             </Navbar.Start>
               <Navbar.End>
-                <Navbar.Item>
-                  <Button onClick={initClient}>Init Client again?</Button>
-                </Navbar.Item>
+                <Navbar.QuickBrand>{Brand.shortname} Google Classroom Sign-In</Navbar.QuickBrand>
               </Navbar.End>
+              {/* <Navbar.End> */}
+              {/*   <Navbar.Item> */}
+              {/*     <Button onClick={initClient}>Init Client again?</Button> */}
+              {/*   </Navbar.Item> */}
+              {/* </Navbar.End> */}
             </Navbar>
     )
 
