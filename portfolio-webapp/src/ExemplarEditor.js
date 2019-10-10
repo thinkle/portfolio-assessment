@@ -297,13 +297,14 @@ function ExemplarEditor (props) {
                 {makeSubmissionChooser()}
               </Navbar.Center>
               <Navbar.End>
+                <Navbar.Item>{(selectedSubmission || (customSubmissionMode && permalink)) && <Button icon={Icon.plus} onClick={()=>addSkillBox()}>Add Skill</Button>}</Navbar.Item>
                 <Navbar.Item >
-                  <Button onClick={saveDraft}>Save Draft</Button>
+                  <Button onClick={saveDraft}>Keep Draft</Button>
                 </Navbar.Item>
                 <Navbar.Item>
-                  <Button className="is-primary" icon={Icon.save}
+                  <Button className="is-primary" icon={Icon.check}
                           onClick={updateAndSaveAll}
-                  >Save and
+                  >
                     {props.mode=='teacher' && 'Give Feedback'
                      || 'Submit for Feedback'}
                   </Button>
@@ -525,9 +526,9 @@ function ExemplarSkillEditor (props) {
                  {assessmentCount < revisionCount &&
                   <div>Revision #{revisionCount} waiting for feedback</div>
                   ||
-                  <Button className='is-primary' icon={Icon.save} onClick={updateCountAndSave}>
-                    Submit
-                    {revisionCount>=1 && <span>&nbsp;New Revision</span>}
+                  <Button className='is-primary' icon={Icon.check} onClick={updateCountAndSave}>
+                    Mark 
+                    {revisionCount>=1 && <span>&nbsp;New Revision</span> || <span>&nbsp;Done</span>}
                   </Button>
                  }
                </Navbar.Item>
@@ -540,7 +541,7 @@ function ExemplarSkillEditor (props) {
                <Navbar.Item>
                  {assessmentCount > 0 && assessmentCount >= revisionCount && <span>Assessment Round #{assessmentCount}</span>
                   ||
-                  <Button className='is-primary' icon={Icon.save} onClick={updateCountAndSave}>
+                  <Button className='is-primary' icon={Icon.check} onClick={updateCountAndSave}>
                     {revisionCount>1 && <span>New Revision </span>}
                     Feedback
                   </Button>
