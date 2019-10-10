@@ -2,10 +2,11 @@ import DocumentManager from './DocumentManager';
 import Sheets from './SheetBasics.js';
 import SheetManager from './SheetManager.js';
 
-const DOES_NOT_EXIST = 1;
+const DOES_NOT_EXIST = 1751171717;
+const PORTPROP = 'student-portfolio'
+const GRADEPROP = 'portfolio-assessment'
+
 function StudentPortfolio (course, student) {
-    const PORTPROP = 'student-portfolio'
-    const GRADEPROP = 'portfolio-assessment'
     const dm = DocumentManager();
     const ASSCACHE = `student-portfolio-assessments-${course.id}-${student.userId}`
     const EXCACHE = `student-portfolio-exemplars-${course.id}-${student.userId}`
@@ -15,26 +16,26 @@ function StudentPortfolio (course, student) {
     var updatedTimes = {}
 
     async function set_portfolio_and_assessments (portData) {
-        console.log('set_portfolio_and_assessments',portData);
+        console.log('SP:set_portfolio_and_assessments',portData);
         var portfolioEntries = portData.data;
         var fetchedTimes = {...portData.updatedTimes};
         const latestGoogleTimes = await get_updated_time();
         const [portfolio,assessments] = splitPortfolioAndAssessmentData(portfolioEntries);
-        console.log('Check times: latest vs fetched',latestGoogleTimes,fetchedTimes);
+        console.log('SP:Check times: latest vs fetched',latestGoogleTimes,fetchedTimes);
         // Exemplars...
         if (latestGoogleTimes.exemplars > fetchedTimes.exemplars) {
-            console.log('Crap, this was updated while we were playing with it...')
-            console.log('PANIC!!!!!')
+            console.log('SP:Crap, this was updated while we were playing with it...')
+            console.log('SP:PANIC!!!!!')
             throw 'Not yet implemented... :( :( :(';
         }
         else {
-            console.log('Pushing portfolio data',portfolio);
+            console.log('SP:Pushing portfolio data',portfolio);
             var portfolioResult = await set_portfolio(portfolio);
-            console.log('Pushing assessments data',assessments);
+            console.log('SP:Pushing assessments data',assessments);
         }
         // Assessments... (fix me - don't try for students).
         if (latestGoogleTimes.assessments > fetchedTimes.assessments) {
-            console.log('Crap, assessments updated while we were playing - bad bad bad');
+            console.log('SP:Crap, assessments updated while we were playing - bad bad bad');
             throw 'oops - not implemeneted';
         }
         else {
@@ -43,14 +44,14 @@ function StudentPortfolio (course, student) {
             }
             catch (err) {
                 if (err.result && err.result.status=='PERMISSON_DENIED') {
-                    console.log('No permission to write assessments - are we in student mode?');
+                    console.log('SP:No permission to write assessments - are we in student mode?');
                 }
                 else {
                     throw err;
                 }
             }
         }
-        console.log('success! returning results.');
+        console.log('SP:success! returning results.');
         return [portfolioResult,assessmentResult];
     }
 
@@ -97,10 +98,11 @@ function StudentPortfolio (course, student) {
             var cacheTime = JSON.parse(window.localStorage.getItem(EXCACHETIME))
         }
         catch (err) {
-            console.log('Error parsing cache time...',window.localStorage.getItem(EXCACHETIME));
+            console.log('SP:Error parsing cache time...',window.localStorage.getItem(EXCACHETIME));
             cacheTime = 0;
         }
         if (!cacheTime || cacheTime < updatedTimes.exemplars) {
+            console.log('SP:Get whole file from google');
             var data = await get_portfolio_from_google();
             // Set cache!
             try {
@@ -108,21 +110,21 @@ function StudentPortfolio (course, student) {
                 window.localStorage.setItem(EXCACHETIME,JSON.stringify(updatedTimes.exemplars||new Date()));
             }
             catch (err) {
-                console.log('ERROR storing cache',EXCACHE,err);
+                console.log('SP:ERROR storing cache',EXCACHE,err);
             }
             return data;
         }
         else {
-            console.log('using cache',EXCACHE);
+            console.log('SP:using cache',EXCACHE);
             try {
                 var data = JSON.parse(window.localStorage.getItem(EXCACHE))
             }
             catch (err) {
-                console.log('Error parsing cached data',err,EXCACHE);
-                console.log('Clearing cache...');
+                console.log('SP:Error parsing cached data',err,EXCACHE);
+                console.log('SP:Clearing cache...');
                 window.localStorage.removeItem(EXCACHE)
                 window.localStorage.removeItem(EXCACHETIME)
-                console.log('Try again...');
+                console.log('SP:Try again...');
                 return get_portfolio(); // give it another go!
             }
             return data;            
@@ -132,7 +134,7 @@ function StudentPortfolio (course, student) {
     async function get_portfolio_from_google () {
         var id = await dm.getSheetId(course.id,PORTPROP,student.userId);
         if (id) {
-            console.log('StudentPortfolio: exemplar data in file with ID: %s',id);
+            console.log('SP:StudentPortfolio: exemplar data in file with ID: %s',id);
             var sheets = await SheetManager(id).getSheetsDataJson();
             return sheets.exemplars;
         }
@@ -148,7 +150,7 @@ function StudentPortfolio (course, student) {
             var cacheTime = JSON.parse(window.localStorage.getItem(ASSCACHETIME));
         }
         catch (err) {
-            console.log('Error parsing cache time',ASSCACHETIME,window.localStorage.getItem(ASSCACHETIME));
+            console.log('SP:Error parsing cache time',ASSCACHETIME,window.localStorage.getItem(ASSCACHETIME));
             cacheTime = 0;
         }
         if (!cacheTime || cacheTime < updatedTimes.assessments) {
@@ -159,21 +161,21 @@ function StudentPortfolio (course, student) {
                 window.localStorage.setItem(ASSCACHETIME,JSON.stringify(updatedTimes.assessments||new Date()));
             }
             catch (err) {
-                console.log('ERROR storign cache',ASSCACHE,err);
+                console.log('SP:ERROR storign cache',ASSCACHE,err);
             }
             return data;
         }
         else {
-            console.log('using cache',ASSCACHE)
+            console.log('SP:using cache',ASSCACHE)
             try {
                 var data = JSON.parse(window.localStorage.getItem(ASSCACHE))
             }
             catch (err) {
-                console.log('Error parsing cached data',err,ASSCACHE);
-                console.log('Clearing cache...');
+                console.log('SP:Error parsing cached data',err,ASSCACHE);
+                console.log('SP:Clearing cache...');
                 window.localStorage.removeItem(ASSCACHE)
                 window.localStorage.removeItem(ASSCACHETIME)
-                console.log('Try again...');
+                console.log('SP:Try again...');
                 return get_assessments(); // give it another go!
             }
             return data;
@@ -183,7 +185,7 @@ function StudentPortfolio (course, student) {
     async function get_assessments_from_google () {
         var id = await dm.getSheetId(course.id,GRADEPROP,student.userId);
         if (id) {
-            console.log('StudentPortfolio: assessment data in file with ID: %s',id);
+            console.log('SP:StudentPortfolio: assessment data in file with ID: %s',id);
             var sheets = await SheetManager(id).getSheetsDataJson();
             return sheets.assessments;
         }
@@ -272,7 +274,7 @@ function parsePortfolio (studentPortfolio, assessments) {
                     exemplarById[assessment.id].assessment = assessment; // done!
                 }
                 else {
-                    console.log('WEIRD: We have an assessment for %s but no exemplar :(',assessment.id);
+                    console.log('SP:WEIRD: We have an assessment for %s but no exemplar :(',assessment.id);
                 }
             }
         );
@@ -324,4 +326,7 @@ function splitPortfolioAndAssessmentData (fullPortfolio) {
 StudentPortfolio.parsePortfolio = parsePortfolio; // convenience
 StudentPortfolio.splitPortfolioAndAssessmentData = parsePortfolio; // convenience
 StudentPortfolio.NO_PORTFOLIO_ERROR = DOES_NOT_EXIST
+StudentPortfolio.PORTPROP = PORTPROP;
+StudentPortfolio.GRADEPROP = GRADEPROP;
+
 export default StudentPortfolio;
