@@ -158,7 +158,8 @@ function PortfolioComponent (props) {
 
     const filterNames = [
         ['Has student exemplar','hasWork'],
-        ['Empty','isEmpty'],
+        //['Empty','isEmpty'],
+        ['Is assessed','isAssessed'],
         ['Needs exemplar','needsWork'],
         ['Is Complete','complete'],
         ['Needs assessment','needsAssessment'],
@@ -175,12 +176,15 @@ function PortfolioComponent (props) {
             }
             if (filters.needsAssessment) {
                 filterBasedOnWork((skill)=>(exemplar)=>{
-                    console.log('Filter on skill',skill);
-                    console.log('Looking at exemplar',exemplar);
-                    const val = (!(exemplar.assessment&&exemplar.assessment.score))
-                    console.log('Got value: ',val)
-                    return val;
+                    const notAssessed = (!(exemplar.assessment&&exemplar.assessment.score))
+                    return (notAssessed || exemplar.assessment.count < exemplar.revisionCount);
                 })
+                keepOnlyWithWork();
+            }
+            if (filters.isAssessed) {
+                filterBasedOnWork((skill)=>(exemplar)=>{
+                    return exemplar.assessment && exemplar.assessment.count >= exemplar.revisionCount
+                });
                 keepOnlyWithWork();
             }
             if (filters.needsReflection) {
@@ -189,9 +193,9 @@ function PortfolioComponent (props) {
                 );
                 keepOnlyWithWork();
             }
-            if (filters.isEmpty) {
+            // if (filters.isEmpty) {
                 
-            }
+            // }
             if (filters.needsWork) {
                 filterSkill((skill,work)=>{
                     const exemplarsNeeded = skill.exemplars.length;
@@ -395,13 +399,14 @@ function PortfolioComponent (props) {
 
 
     function filterView () {
-        return (<div>
+        return (<div className="is-grouped field">
                   {filterNames.map(
                       ([name,prop])=>(
-                          <span><input type="checkbox"
+                          <label className='control label'><input type="checkbox"
+                                 className='checkbox'
                                  checked={!!filters[prop]}
                                  onChange={(event)=>setFilters({...filters,[prop]:event.target.checked})}
-                                /> {name}</span>
+                                /> {name}</label>
                       )
                   )}
                 </div>);
