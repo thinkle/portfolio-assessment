@@ -105,7 +105,7 @@ function ExemplarEditor (props) {
 
     function saveAll (updateCounts) {
         var exemplarsToSave = selectedSkills
-            .filter((sk)=>sk) // filter out "empty" skills that we deleted
+            .filter((sk)=>sk&&sk.skill) // filter out "empty" skills that we deleted
             .map(
             (sk)=>{
                 var copy = {...sk,
@@ -131,7 +131,7 @@ function ExemplarEditor (props) {
                 }
                 return copy;
             }
-        );
+            );
         props.onChange(exemplarsToSave);
     }
     function saveDraft () {
