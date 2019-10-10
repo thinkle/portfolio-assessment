@@ -152,6 +152,21 @@ function TestView () {
                     prefs.getProps().then((result)=>setTestData(result))
                 }}>Show props</Button>
                 <Button onClick={()=>{
+                    prefs.getProps().then(
+                        (result)=>{
+                            const toDelete = [];
+                            for (var key in result) {
+                                if (key.match('23982913786')) {
+                                    toDelete.push(key)
+                                }
+                            }
+                            prefs.deleteProps(toDelete)
+                                .then('Done deleting ',toDelete);
+                        });
+                }}>
+                  Remove Props for Class
+                </Button>
+                <Button onClick={()=>{
                     prefs.setProp('foo','val'+Math.random());
                 }}>Update prop!</Button>
                 <Button onClick={()=>{
@@ -204,6 +219,9 @@ function TestView () {
                   Test Create Student Sheet
                 </Button>
                 <Button onClick={()=>DocumentManager().addMetadata().then(setTestData)}>Set MEtadata</Button>
+                <Button onClick={
+                    ()=>{window.gapi.client.drive.files.get({fileId:'167TcaEa5k6nibSfvMoznybGiZdTH4QQsOoO9V7_rq7c',fields:'appProperties,id'})
+                         .then(setTestData)}}>Grab appProperties for file</Button>
                 <Button onClick={()=>DocumentManager().getRootFolderId().then(setTestData)}>Create root folder?
                 </Button>
                 <Button onClick={()=>{
