@@ -27,10 +27,6 @@ function repl (link) {
 }
 
 var r = repl();
-console.log(r.toStandalone('https://repl.it/@DeclanDonahue/ChooseYourOwnAdventureAssignment'));
-console.log(r.toProject('https://choose-your-own-adventure--hannahsan.repl.co/'));
-console.log(r.toProject('https://choose-your-own-adventure--hannahsan.repl.co/'));
-console.log(r.toProject('https://chooseyourownadventureassignment.kavyaadabala.repl.co'));
 
 function MagicLink (props) {
     var r = repl()
