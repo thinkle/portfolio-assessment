@@ -66,6 +66,7 @@ function StudentView (props) {
                        userId:StudentApi.value.id,
                        profile:StudentApi.value
                    }}
+                   studentMode={true}
                    teacherMode={false}/> 
                </ErrorBoundary>
                || <Loader>Loading student profile...</Loader>)
