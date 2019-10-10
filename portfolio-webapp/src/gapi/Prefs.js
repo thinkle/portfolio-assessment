@@ -156,7 +156,7 @@ function Prefs (pref_file=PREF_FILENAME, main=true) {
             });
         },
         setProp : function (key, val) {
-            return this.setProps({key:val},{updateMode:false});
+            return this.setProps({[key]:val},{updateMode:false});
         },
 
         setProps : function (newProps) {
@@ -175,6 +175,30 @@ function Prefs (pref_file=PREF_FILENAME, main=true) {
                     }
                 );
             });
+        },
+        deleteProps : function (props) {
+            console.log('deleteProps',props);
+            return new Promise((resolve,reject)=>{
+                this.getProps().then(
+                    (allProps)=>{
+                        console.log('Delete begins with %s keys',Object.keys(allProps).length);
+                        for (var key of props) {
+                            console.log('Delete key...',key);
+                            delete allProps[key]
+                        }
+                        console.log('Delete ends with %s keys',Object.keys(allProps).length);
+                        console.log('Leaving us with',props);
+                        this.getPropFile().then(
+                            (id)=>{
+                                this.updateFile(id,allProps)
+                                    .then(resolve)
+                                    .catch(reject);
+                            }
+                        );
+                    }
+                );
+            });
+            
         },
         shareProps : async function  (propList, newProps, filename='share.json') {
             var props = await this.getProps();
