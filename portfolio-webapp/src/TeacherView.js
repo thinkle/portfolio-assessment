@@ -2,13 +2,14 @@ import React,{useState,useEffect} from 'react';
 import ClassList from './ClassList.js';
 import CourseworkList from './CourseworkList.js';
 import PortfolioBuilder from './PortfolioBuilder.js';
+import StudentPortfolio from './gapi/StudentPortfolio.js';
 import TeacherPortfolioView from './TeacherPortfolioView.js';
 import TeacherAssignmentView from './TeacherAssignmentView.js';
 import AssignmentMapper from './AssignmentMapper.js';
 import Api from './gapi/gapi.js';
 import {useTeacherCoursesApi} from './gapi/hooks.js';
 import Brand from './brand.js';
-import {Container,Menu,Navbar,Tabs,Button,Modal} from './widgets.js';
+import {Container,Menu,Navbar,Tabs,Button,Modal,Icon,Card} from './widgets.js';
 import history from './history.js';
 import {inspect} from 'util';
 
@@ -37,15 +38,36 @@ function TeacherView (props) {
                                      );
 
 
-    function sharePortfolio () {
-        setMessage('Sharing portfolio with class -- one second');
-        var promise = Api.PortfolioDesc(course).share_with_class(); // make sure the doc is shared...        
-        promise.then((resp)=>{
+    async function sharePortfolio () {
+        setMessage('Sharing portfolio with class... ');
+        /** This may be unnecessary -- it seems like portfolios shared directly w/ students show up in 
+           search unlike portfolios shared with groups. But if that's true maybe we can just share
+           portfolios directly with students in the first place and we don't need any of this sharing
+           infrastructure in which case FACE PALM
+         **/
+        // var allThePrefs = await Api.getPrefs().getProps();
+        const propsToShare = {}
+        // for (var key in allThePrefs) {
+        //     if (key.match(StudentPortfolio.PORTPROP) || key.match(StudentPortfolio.GRADEPROP)) {
+        //         console.log('SP: Prop is a portfolio prop!',key)
+        //         if (key.match(course.id)) {
+        //             propsToShare[key] = allThePrefs[key]
+        //         }
+        //         else {
+        //             console.log('No dice');
+        //         }
+        //     }
+        // }
+        // console.log('Got matches? ',propsToShare);
+        try {
+            var resp = await Api.PortfolioDesc(course).share_with_class({otherProps:propsToShare}); // make sure the doc is shared...
             setMessage(`Shared portfolio with class group ${course.courseGroupEmail}. ${inspect(resp)}`);
-        }).catch((err)=>{
+        }
+        catch (err) {
             setMessage(`Ran into trouble I am afraid... ${inspect(err)}`);
-            throw err;
-        });
+            console.log(err);
+            
+        }
     }
 
     const tabList = [
@@ -176,7 +198,11 @@ function TeacherView (props) {
               </Tabs>
             </div>
               <Modal active={message} onClose={()=>setMessage('')}>
-                {message}
+                <Card>
+                  <p>Complex processes at work...</p>
+                  <p>{message}</p>
+                  <Button icon={Icon.close} onClick={()=>setMessage('')}>Close</Button>
+                </Card>
               </Modal>
             </div>
         );
