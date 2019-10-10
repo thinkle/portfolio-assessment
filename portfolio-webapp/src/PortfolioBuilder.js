@@ -11,6 +11,7 @@ import Api from './gapi/gapi.js';
 import TreeView from './TreeView.js';
 import {classNames} from './utils.js';
 import Shortener from './shortener.js';
+import Exporters from './Exporters.js';
 import {Modal,Button,Icon} from './widgets.js';
 
 var BE_FUSSY = false;
@@ -162,30 +163,8 @@ function PortfolioModel (course) {
     }
 
     function toAspen (skillsList, params) {
-        
-        var gbShortener = Shortener({maxLength:10})
-        var assignmentShortener = Shortener({maxLength:50})
 
-        const mapper = {
-            'GB column name':(row)=>gbShortener.shorten(row.skill),
-            'Assignment name':(row)=>assignmentShortener.shorten(row.skill),
-            'Category':(row)=>row.strand,
-            'Date assigned':(row)=>row.assignedDate,
-            'Date due':(row)=>row.dueDate,
-            'Total points':(row)=>row.points,
-            'Extra credit points':(row)=>params.extraCredit||0,
-            'Grade Scale':(row)=>params.gradingScale||'Current High School Grading Scale',
-            'Grade Term':(row)=>params.semester||'S1',
-        };
-        var aspenList = skillsList.map(
-            (row)=>{
-                const newRow = {}
-                for (var col in mapper) {
-                    const converter = mapper[col];
-                    newRow[col] = converter(row);
-                }
-                return newRow;
-            });
+        var aspenList = Exporters.Aspen.skillsToAspenAssignments(skillsList,params);
 
         return new Promise((resolve,reject)=>{
             Api.set_aspen_assignments(aspenList,course)
