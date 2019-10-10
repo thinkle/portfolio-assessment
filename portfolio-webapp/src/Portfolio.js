@@ -258,8 +258,8 @@ function PortfolioComponent (props) {
     return (
         <Container>
           <h3>{props.student.profile.name.fullName} Portfolio</h3>
-          {busy && <span>Fetching student portfolio data...</span>}
-          {!saved && <Button icon={Icon.save} onClick={()=>savePortfolio()}>Save Changes to Google</Button>}
+          {!saved && <span><Button className="is-primary" icon={Icon.save} onClick={()=>savePortfolio()}>Save Changes to Google</Button> <span className="has-text-danger is-bold">Work not saved yet!</span></span>}
+          {busy && <span className="has-warning-text">Communicating with the google...</span>}
           {filterView()}
           {true && 
            <TreeView
