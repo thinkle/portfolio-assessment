@@ -1,3 +1,6 @@
+@import '../../node_modules/bulma/sass/utilities/initial-variables.sass'
+@import '../../node_modules/bulma/sass/utilities/derived-variables.sass'
+
 $animation-time : 300ms
 
 .menu-content-holder
@@ -121,3 +124,8 @@ $animation-time : 300ms
 
 .button .reverse,.button .unreverse
   margin-right: .6rem;
+
+.menu.is-primary > .button
+  background-color: $primary
+  color: white
+  color: $primary-invert
