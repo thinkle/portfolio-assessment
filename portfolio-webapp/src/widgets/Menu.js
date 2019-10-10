@@ -32,8 +32,7 @@ function Menu (props) {
     
     function selectItem (itm) {
         setActive(false);
-        console.log('menu selectItem(%s)',itm);
-        props.onSelected(itm)
+        props.onSelected && props.onSelected(itm)
     }
 
     var renderItem = props.renderItem
