@@ -2,13 +2,11 @@ import React,{useState,useEffect,useRef} from 'react';
 import {useStudents,useStudentWork,useCoursework,useStudentPortfolioManager} from './gapi/hooks.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import {getProp,classNames,getById} from './utils.js';
-import {Container,Navbar,Button,Icon} from './widgets.js';
+import {Container,Navbar,Button,Icon,Modal} from './widgets.js';
 import {SelectableItem,Menu,Dropdown} from './widgets/Menu.js';
 import ExemplarEditor from './ExemplarEditor.js';
 import history from './history.js';
-
-// To do: make some kind of manager class for keeping track of all the portfolio documents and interactions
-// back to google with those on top of this which keeps track of all the google classroom data etc.
+import AssignmentExporter from './AssignmentExporter.js';
 
 function TeacherAssignmentView (props) {
 
@@ -22,8 +20,8 @@ function TeacherAssignmentView (props) {
     const [selectedCoursework,setSelectedCoursework] = useState();
     const [exemplarEditorProps,setEEProps] = useState({});
     const [exemplarRenderCount,setERC] = useState(1);
-
     const [initialStateReady,setInitialStateReady] = useState(false);
+    const [showExporter,setShowExporter] = useState(false);
     
     useEffect( ()=>{
         // Manage props from URL...
@@ -73,6 +71,12 @@ function TeacherAssignmentView (props) {
         return getProp(selectedStudent,'userId')+'-'+getProp(selectedCoursework,'id')+currentPortfolio.length // hacky -- but we should jump to 0 and then up when we fetch...
     }
 
+    function exportAspenAssignments () {
+        // map skills
+        
+        // map grades for each student
+    }
+    
     useEffect( ()=>{
         console.log('recalc our exemplarEditorProps...');
         var submission;
@@ -182,6 +186,9 @@ function TeacherAssignmentView (props) {
               />
             </Navbar.Item>
             <Navbar.End>
+              <Navbar.Item>
+                <Button onClick={setShowExporter}>Export Grades</Button>
+              </Navbar.Item>
             {selectedStudent &&
              <React.Fragment>
                {/* portfolioManager.getId(selectedStudent) */}                                      
@@ -208,14 +215,24 @@ function TeacherAssignmentView (props) {
             }
             </Navbar.End>
           </Navbar>
-          <ExemplarEditor
+          <div>
+            <ExemplarEditor
+              {...props}
+              {...skillHookProps}
+              {...exemplarEditorProps}
+              coursework={coursework}
+              mode={'teacher'}
+              key={exemplarRenderCount}
+              onChange={saveExemplars}
+            /></div>
+          <AssignmentExporter
+            active={showExporter}
+            onClose={()=>setShowExporter(false)}
             {...props}
             {...skillHookProps}
-            {...exemplarEditorProps}
-            coursework={coursework}
-            mode={'teacher'}
-            key={exemplarRenderCount}
-            onChange={saveExemplars}
+            portfolioManager={portfolioManager}
+            students={students}
+            onClose={()=>setShowExporter(false)}
           />
         </div>
     );
