@@ -92,28 +92,40 @@ function App(props) {
     }
     
     return (
-        <div className="App viewport3 shrinky">
-          <div><Gapi onReady={onApiLoaded} onLoggedOut={()=>console.log('logged out?')}/></div>
-          {props.mode=='test'&& apiReady && <TestView {...props}/>}
-          {props.mode!='test'&& apiReady && <MainView  {...props}/>}
-          {!apiReady && 
+        <React.Fragment>{!apiReady && 
            <Container>
              <Card>
                <h.h2>{Brand.name}</h.h2>
                <div>
-                 <div>Loading Google API...one second please.</div>
-                 <div><Progress/></div>
+                 <p>Welcome to a tool for keeping a portfolio of your work.</p>
+                 <p>This tool is still in beta, so I&rsquo;ll be improving it throughout the semester.</p>
+                 <p>The first time you log in, you
+                   will have to click through a somewhat scary warning from google which is telling
+                   you you don&rsquo;t have to trust me. That's because they don't know I'm your teacher
+                   and your tech director &mdash; they figure I'm just some random programmer who
+                   might as well be out to hack you.</p>
+                 <p>Don't worry, I'm not out to hack you. If I did, I'd be the one who had to fix
+                   your stuff anyway. Also, I already have access to everyone&rsquo;s google
+                   drive files anyway, so hacking you with this program would really be a stupid
+                   use of my time :)</p>
+                 <Gapi onReady={onApiLoaded} onLoggedOut={()=>console.log('logged out?')}/>
                </div>
+               
              </Card>
            </Container>
-          }
+          ||
+           <div className="App viewport3 shrinky">
+          <div><Gapi onReady={onApiLoaded} onLoggedOut={()=>console.log('logged out?')}/></div>
+          {props.mode=='test'&& apiReady && <TestView {...props}/>}
+          {props.mode!='test'&& apiReady && <MainView  {...props}/>}
           {/* <div className="bottom"> */}
           {/*   <div className="buttons"> */}
           {/*     <button className="button" onClick={()=>setPage('test')}>Run Tests</button> */}
           {/*     <button className="button" onClick={()=>setPage('main')}>Main View</button> */}
           {/*   </div> */}
           {/* </div> */}
-        </div>
+           </div>
+          }</React.Fragment>
     );
 }
 
