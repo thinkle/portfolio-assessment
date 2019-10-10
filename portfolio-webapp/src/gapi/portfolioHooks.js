@@ -1,6 +1,6 @@
 import {useState,useEffect} from 'react';
 import Api from './gapi.js';
-import {getProp,objProp,arrayProp,replaceItemInArray} from '../utils.js';
+import {timestamp,getProp,objProp,arrayProp,replaceItemInArray} from '../utils.js';
 
 
 
@@ -17,26 +17,45 @@ function useStudentPortfolioManager (params) {
     const doFetchNowMap = objProp(...useState({}));
     const spObjectMap = objProp(...useState({}));
     const errorMap = objProp(...useState({}));
+    var [fetchingOne,_setFetchingOne] = useState(false)
+    
+    function setFetchingOne (val) {
+        console.log('setFetchingOne (delay...) => ',val,timestamp());
+        var timeout = val && 2000 || 100
+        return window.setTimeout(()=>{
+            console.log('Actually setting fetchingOne now=>',val,timestamp());
+            _setFetchingOne(val)
+        },timeout);
+    }
 
-    useEffect ( ()=> {
+    const checkForUpdatesToFetch = () => {
+        //console.log('PH: Effect triggered!',timestamp())
+        var timeouts = []
 
         async function goFetchPortfolio (id, callback) {
+            timeouts.push(setFetchingOne(true));
+            fetchingOne = true;
             const sp = spObjectMap.map[id]
-            console.log('goFetchPortfolio with object',sp);
+            console.log('PH:goFetchPortfolio with object',sp);
+            console.log('PH:State of the fetchies...',doFetchNowMap.map);
             if (!sp) {
                 throw `fetchPortfolio called but spObject not set? ${id}`
             }
             try {
                 busyMap.updateKey(id,true)
+                console.log('PH:Firing off API Call to get portfolio data',timestamp(),id,callback)
                 var portf = await sp.get_portfolio_data();
             }
             catch (err) {
-                if (err.error = Api.StudentPortfolio.NO_PORTFOLIO_ERROR) {
-                    console.log('No portfolio for student yet',id);
+                if (err.error == Api.StudentPortfolio.NO_PORTFOLIO_ERROR) {
+                    console.log('PH:No portfolio for student yet',id);
+                    debugger;
+                    if (callback) {callback([])}
                 }
                 else {
                     errorMap.updateKey(id,err);
-                    console.log('ERROR FETCHING PORTFOLIO',id,err);
+                    debugger;
+                    console.log('PH:ERROR FETCHING PORTFOLIO',id,err);
                 }
                 busyMap.updateKey(id,false);
                 return; // we're done if there's no portfolio data
@@ -49,22 +68,39 @@ function useStudentPortfolioManager (params) {
             updatedTimeMap.updateKey(id,portf.updatedTimes);
             savedStateMap.updateKey(id,true);
             // Finally, call our callback :)
+            console.log('PH:Set key not busy',id);
             busyMap.updateKey(id,false);      
             if (callback) {callback(portf.data);}
         }
-
+        const toFetch = [];
         for (var key in doFetchNowMap.map) {
-            const doFetch = doFetchNowMap.map[key];
-            if (doFetch) {
-                console.log('We have one to fetch!',key,doFetch);
-                goFetchPortfolio(key,doFetch.callback);
-                doFetchNowMap.updateKey(key,false);
+            if (doFetchNowMap.map[key]) {
+                toFetch.push({key:key,callback:doFetchNowMap.map[key].callback});
             }
         }
+        if (toFetch.length && !fetchingOne) {
+            console.log('PH: %s to fetch, we will do one now',toFetch.length);
+            const theOne = toFetch[0];
+            goFetchPortfolio(theOne.key,theOne.callback)
+            doFetchNowMap.updateKey(theOne.key,false);
+            timeouts.push(setFetchingOne(false));
+        }
+        else if (toFetch.length) {
+            console.log('Waiting to fetch...');
+        }
+        var delay
+        if (toFetch.length > 1) {
+            delay = 1750;
+        }
+        else {
+            delay = 500
+        }
+        //const fetchTimeout = window.setTimeout(checkForUpdatesToFetch,delay)
+        return (()=>timeouts.forEach((t)=>window.clearTimeout(t)));
         
-    },
-                [doFetchNowMap]
-              );
+    }
+
+    useEffect(checkForUpdatesToFetch ,[doFetchNowMap]);
 
     function makeID (course, student) {
         return course.id + '-' + student.userId
@@ -74,7 +110,30 @@ function useStudentPortfolioManager (params) {
         return portfolioMap.map[makeID(course,student)]
     }
 
+    function getMany (students, course=defaultCourse, callback) {
+
+        const newBusyMap = {};
+        const newObjectMap = {};
+        const newFetchMap = {};
+        students.forEach(
+            (student)=>{
+                const id = makeID(course,student);
+                if (portfolioMap.map[id]) {
+                    window.setTimeout(callback(portfolioMap.map[id],student))
+                }
+                newBusyMap[id] = true;
+                newObjectMap[id] = Api.StudentPortfolio(course,student);
+                newFetchMap[id] = {doIt:true,callback:(data)=>callback(data,student)}
+            }
+        );
+        busyMap.updateKeys(newBusyMap);
+        spObjectMap.updateKeys(newObjectMap);
+        doFetchNowMap.updateKeys(newFetchMap);
+    }
+
     function fetchPortfolio (student, course=defaultCourse, callback) {
+        const id = makeID(course,student);
+        busyMap.updateKey(makeID(course,student),true)
         spObjectMap.updateKey(makeID(course,student),Api.StudentPortfolio(course,student));
         doFetchNowMap.updateKey(makeID(course,student),{doIt:true,callback:callback});
     }
@@ -92,6 +151,7 @@ function useStudentPortfolioManager (params) {
 
     async function savePortfolio (student, course=defaultCourse, callback) {
         var key = makeID(course,student);
+        console.log('PH:Set key busy',key);
         busyMap.updateKey(key,true)
         var sp = spObjectMap.map[key];
         if (!sp) {
@@ -106,24 +166,25 @@ function useStudentPortfolioManager (params) {
             savedStateMap.updateKey(key,true);
             var newTimes = await sp.get_updated_time();
             updatedTimeMap.updateKey(key,{...newTimes});
-            console.log('Done saving!');
+            console.log('PH:Done saving!');
         }
         catch (err) {
             errorMap.updateKey(key,err);
-            console.log('ERROR!');
+            console.log('PH:ERROR!');
         }
+        console.log('PH:Set key not busy',key);
         busyMap.updateKey(key,false)
     }
 
     function getPortfolio (student, course=defaultCourse, callback) {
         var result = portfolioMap.map[makeID(course,student)]
         if (!result) {
-            console.log('getPortfolio comes up empty -- fetch it!');
-            callback([]); // first one...
-            fetchPortfolio(student,course,callback); // second one will be triggered when we fetch it!
+            console.log('PH:getPortfolio comes up empty -- fetch it!');
+            fetchPortfolio(student,course,callback);
             return []
         }
         else {
+            console.log('PH:We have a result already!');
             if (callback) {callback(result)}
             return result
         }
@@ -131,6 +192,7 @@ function useStudentPortfolioManager (params) {
     }
 
     function isBusy (student,course=defaultCourse) {
+        console.log('PH:Check isbusy?',busyMap,makeID(course,student),busyMap.map[makeID(course,student)]);
         if (course) {
             return busyMap.map[makeID(course,student)]
         }
@@ -159,12 +221,14 @@ function useStudentPortfolioManager (params) {
 
     return {
         fetchPortfolio,
+        getMany,
         hasPortfolio,
         setPortfolio,
         savePortfolio,
         getPortfolio,
         getError,
         getAllErrors,
+        isBusy,
 
         getId (student, course=defaultCourse) {
             return makeID(course,student);
@@ -188,7 +252,7 @@ function useStudentPortfolioManager (params) {
 
 
 function useStudentPortfolio (params) {
-    console.log('useStudentPortfolio got params: ',params);
+    console.log('PH:useStudentPortfolio got params: ',params);
     const {course, student, includeAssessments, dontFetch} = params;
     const [busy,setBusy] = useState(false);
     const [origPortfolio,setOrigPortfolio] = useState([]);
@@ -203,15 +267,15 @@ function useStudentPortfolio (params) {
         async function getPortfolio () {
             var newPortfolioData;
             try {
-                console.log('hooks:useStudentPortfolio - getting portfolio data');
+                console.log('PH:hooks:useStudentPortfolio - getting portfolio data');
                 setBusy(true);
                 newPortfolioData = await sp.get_portfolio_data();
-                console.log('hooks:useStudentPortfolio - got portfolio data',newPortfolioData);
+                console.log('PH:hooks:useStudentPortfolio - got portfolio data',newPortfolioData);
             }
             catch (err) {
                 setBusy(false);
-                console.log('hooks:useStudentPortfolio: Error fetching portfolio',err);
-                console.log('hooks:useStudentPortfolio: ignoring...');
+                console.log('PH:hooks:useStudentPortfolio: Error fetching portfolio',err);
+                console.log('PH:hooks:useStudentPortfolio: ignoring...');
             }
             if (newPortfolioData) {
                 setOrigPortfolio(newPortfolioData.data);
@@ -226,7 +290,7 @@ function useStudentPortfolio (params) {
             getPortfolio(); // do it!
         }
         else {
-            console.log('hooks: useStudentPortfolio holding off fetching for now...');
+            console.log('PH:hooks: useStudentPortfolio holding off fetching for now...');
         }
         
     },
@@ -259,7 +323,7 @@ function useStudentPortfolio (params) {
             setSaved(true)
         }
         else {
-            console.log('hooks:not the same: saved=false');
+            console.log('PH:hooks:not the same: saved=false');
             setSaved(false);
         }
     }
@@ -296,7 +360,7 @@ function updatePortfolioWithExemplars (portfolio, exemplars) {
                     newPortfolio.push(exemplar);
                 }
             });
-    console.log('Built new portfolio structure: ',newPortfolio);
+    console.log('PH:Built new portfolio structure: ',newPortfolio);
     return newPortfolio
 }
 
