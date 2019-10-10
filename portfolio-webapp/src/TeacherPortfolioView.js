@@ -47,6 +47,7 @@ function TeacherPortfolioView (props) {
                     {...skillHookProps}
                     student={student}
                     teacherMode={true}
+                    studentMode={false}
                     coursework={coursework}
                     studentwork={allStudentWork.filter((item)=>item.userId = student.userId)}
                     fetchNow={student==selectedStudent}                    
