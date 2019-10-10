@@ -24,6 +24,9 @@ function FileUpdater (fileId) {
     var request = {fileId:fileId}
     
     return {
+        getRequest () {
+            return request;
+        },
         addToFolder (folder) {
             request.addParents = folder;
             return this;
@@ -44,6 +47,7 @@ function FileUpdater (fileId) {
             return this;
         },
         execute () {
+            console.log("Adding metadata with request",request);
             return gdrive.files.update(request)
         }
     }
@@ -80,34 +84,40 @@ function DocumentManager () {
             var prefs = await Api.getPrefs().getProps();
             for (var key in prefs) {
                 var fileId = prefs[key]
-                let appProperties = {prop:key}
+                var updater = FileUpdater(fileId)
+                updater.addAppProp('prop',key);
+                //let appProperties = {prop:key}
                 if (key.indexOf('portfolio-desc') > -1) {
                     var names = key.split('-');
                     if (names.length==4) {
                         if (names[2]=='export') {
-                            appProperties.role = 'portfolio-desc-export'
+                            //appProperties.role = 'portfolio-desc-export'
+                            updater.addAppProp('role','portfolio-desc-export');
                         }
-                        appProperties.courseId = names[3] // portfolio-desc-export-123124
+                        //appProperties.courseId = names[3] // portfolio-desc-export-123124
+                        updater.addCourse(names[3]);
                     }
                     else {
-                        appProperties.role = 'portfolio-desc'
-                        appProperties.courseId = names[2] // portfolio-desc-123124
+                        //appProperties.role = 'portfolio-desc'
+                        updater.addAppProp('role','portfolio-desc');
+                        updater.addCourse(names[2]);
+                        //appProperties.courseId = names[2] // portfolio-desc-123124
                     }
                 }
                 if (typeof fileId == 'string' && 
                     fileId.length > 10 &&
-                    appProperties.prop.indexOf('-')>-1) {
+                    key.indexOf('-')>-1) {
                     //console.log('DM:Try updating metadata!',fileId,appProperties)
-                    await gdrive.files.update({fileId : fileId,
-                                               appProperties : appProperties});
+                    // await gdrive.files.update({fileId : fileId,
+                    //                            appProperties : appProperties});
+                    await updater.execute();
                 }
                 else {
                     //console.log("Skip %s:%s, doesn't look like a file",key,fileId);
                 }
-                completed.push({fileId : fileId,
-                                appProperties : appProperties});
+                completed.push(updater);
             }
-            return completed;
+            return completed.map((u)=>u.getRequest());
         },
 
         async getRootFolderId () {
@@ -143,10 +153,24 @@ function DocumentManager () {
                     sendNotificationEmail : false,
                     resource : {
                         role : 'reader',
-                        type : 'user',
+                        type : 'group',
                         emailAddress : group
                     }
                 });
+            var students = await Api.Classroom.get_students({course});
+            for (var student of students) {
+                console.log('Share with ',student);
+                var resp = await gdrive.permissions.create(
+                    {
+                        fileId : fid,
+                        sendNotificationEmail : false,
+                        resource : {
+                            role : 'reader',
+                            type : 'user',
+                            emailAddress : student.profile.emailAddress
+                        }
+                    });
+            }
             return resp;
         },
 
@@ -213,12 +237,13 @@ function DocumentManager () {
             )
             //console.log('DM:Created sheet! %s',JSON.stringify(response.result));
             //console.log('DM:ID=%s',response.result.id);
-            await Api.setProp(propname(course.id,prop),response.result.spreadsheetId)
+            const fullprop = propname(course.id,prop);
+            await Api.setProp(fullprop,response.result.spreadsheetId)
             var courseFolder = await this.getCourseFolder(course);
             FileUpdater(response.result.spreadsheetId)
                 .addToFolder(courseFolder)
                 .addCourse(course.id)
-                .addAppProp('prop',prop)
+                .addAppProp('prop',fullprop)
                 .execute()
             return response.result;
         },
