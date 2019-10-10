@@ -5,7 +5,7 @@ import Classroom from './classroom.js';
 import StudentPortfolio from './StudentPortfolio.js';
 
 var gapi = window.gapi;
-var auth2 = gapi.auth2;
+var auth2 = gapi && gapi.auth2;
 
 function sanitize (arg) {
     if (typeof arg == 'string') {
