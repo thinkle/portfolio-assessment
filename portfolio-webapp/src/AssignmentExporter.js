@@ -1,6 +1,6 @@
 import React,{useState,useEffect,useRef} from 'react';
 import Exporters from './Exporters';
-import {Buttons,Container,Card,h,Button,Progress} from './widgets.js';
+import {Modal,Icon,Buttons,Container,Card,h,Button,Progress} from './widgets.js';
 import DocumentManager from './gapi/DocumentManager.js';
 import Sheets from './gapi/SheetBasics.js';
 import SheetManager from './gapi/SheetManager.js';
@@ -82,22 +82,24 @@ function AssignmentExporter (props) {
         return url;
     }
     
-    return (<Container><Card>
-              <div>
-                 Export for {props.course.name}
-              </div>
-              <div>
+    return (<Modal.ModalCard active={props.active} title={`Export for ${props.course.name}`}
+                             onClose={props.onClose}>
+              
+                         <div>
+            <div>Export grades for {props.students.length} students into a spreadsheet
+            for further tweaking and/or export into Aspen?</div>
                 <div>{busy && <Progress/>}</div>
                 {message && <div>{message}</div>}
                 {url && <a target="_BLANK" href={url}>Click here to see export</a>}
               </div>
                          <div>
                            <Buttons>
-                             <Button onClick={()=>{doExport()}}>EXPORT</Button>
+                             <Button icon={Icon.close} onClick={props.onClose}>Close</Button>
+                             <Button icon={Icon.export} onClick={()=>{doExport()}}>Export Grades</Button>
                            </Buttons>
                          </div>
-            </Card>
-            </Container>);
+            </Modal.ModalCard>
+            );
 }
 
 export default AssignmentExporter;
