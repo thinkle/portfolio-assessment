@@ -1,11 +1,23 @@
 import React from 'react';
 
-
+function googledrive (link) {
+    // example: https://drive.google.com/open?id=1riCPWUg9zz4Y4wYS9ccXRGl-N7k9-KgD
+    const driveMatcher = /https:\/\/drive.google.com\/open[?]id=(.*)/;
+    return {
+        isDrive (url) {
+            return url.match(driveMatcher);
+        },
+        toPreview (url) {
+            const [fullurl,fileid] = url.match(driveMatcher);
+            return `https://drive.google.com/file/d/${fileid}/preview`
+        }
+    }
+}
 
 function repl (link) {
-    var standaloneMatcher = /\/\/([^.]*)[.-][-]?([^.-]*)[.]repl.co.*/;
-    var projectMatcher = /\/\/repl.it\/@([^\/]+)\/([^\/]+)/;
-    var words = ['Assignment','Exercise','CSS','Your','Own','Adventure','Choose']
+    const standaloneMatcher = /\/\/([^.]*)[.-][-]?([^.-]*)[.]repl.co.*/;
+    const projectMatcher = /\/\/repl.it\/@([^\/]+)\/([^\/]+)/;
+    const words = ['Assignment','Exercise','CSS','Your','Own','Adventure','Choose']
     return {
         isProject (url) {return url.match(projectMatcher)},
         isStandalone (url) {return url.match(standaloneMatcher)},
@@ -26,7 +38,8 @@ function repl (link) {
     
 }
 
-var r = repl();
+const r = repl();
+const d = googledrive();
 
 function MagicLink (props) {
     var r = repl()
@@ -35,8 +48,16 @@ function MagicLink (props) {
         <span className='magic-link-box'>
           <a href={props.href} target="_blank" {...props}>{props.children}</a>
           {replitMagic()}
+          {/* driveMagic() */}
         </span>
     )
+
+    // function driveMagic () {
+    //     return (
+    //         props.href &&
+    //             ''
+    //     );
+    // }
 
     function replitMagic () {
         
@@ -60,10 +81,15 @@ function makeIframable (url) {
     if (r.isProject(url)) {
         return r.toStandalone(url)
     }
+    else if (d.isDrive(url)) {
+        return d.toPreview(url);
+    }
     else {
         return url;
     }
 }
 
+MagicLink.repl = r;
+MagicLink.gdrive = d;
 export default MagicLink;
 export {makeIframable}
