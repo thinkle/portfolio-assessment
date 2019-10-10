@@ -5,6 +5,7 @@ import {useStudentPortfolio,useCoursework,useStudentWork} from './gapi/hooks.js'
 import {getItemById,replaceItemInArray,getProp} from './utils.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import ExemplarEditor from './ExemplarEditor.js';
+import {inspect} from 'util';
 
 /****
 
@@ -263,6 +264,7 @@ function PortfolioComponent (props) {
           {error &&
            <div>
              <span className="has-danger-text">Error :( </span>
+             <span>{inspect(error)}</span>
              <Button className="is-danger"
                      icon={Icon.save}
                      onClick={()=>saveOverPortfolio()}>
