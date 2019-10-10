@@ -226,10 +226,14 @@ function ExemplarEditor (props) {
                 <React.Fragment>
                   <Navbar.Item>
                     {customSubmissionMode &&
-                     <label>Custom Link: <input className="input" type="text" value={permalink} onChange={(event)=>setPermalink(event.target.value)}/></label>                   ||
+                     <label>Custom Link: <input className="input" type="text" value={permalink} onChange={(event)=>setPermalink(event.target.value)}/></label>
+                     ||
                      <SelectableItem
                        initialValue={selectedSubmission}            
                        items={studentWork}
+                       classNames={{
+                           'is-primary' : !selectedSubmission,
+                       }}
                        title="Choose Classroom Assignment"
                        renderItem={
                            (itm)=><span>
@@ -239,7 +243,7 @@ function ExemplarEditor (props) {
                                   </span>}
                        onSelected={setSelectedSubmission}
                      />}
-                    <MagicLink href={permalink} target="_blank"><Icon icon={Icon.external}/></MagicLink>
+                    {permalink && <MagicLink href={permalink} target="_blank"><Icon icon={Icon.external}/></MagicLink>}
                   </Navbar.Item>
                   <Navbar.Item>
                     {!selectedSubmission &&
@@ -302,7 +306,9 @@ function ExemplarEditor (props) {
                   <Button onClick={saveDraft}>Keep Draft</Button>
                 </Navbar.Item>
                 <Navbar.Item>
-                  <Button className="is-primary" icon={Icon.check}
+                  <Button className={classNames({
+                      "is-primary":selectedSubmission && selectedSkills.filter((sk)=>sk&&sk.skill).length > 0,
+                  })}icon={Icon.check}
                           onClick={updateAndSaveAll}
                   >
                     {props.mode=='teacher' && 'Give Feedback'
@@ -387,6 +393,9 @@ function ExemplarSkillEditor (props) {
     const [revisionCount,setRevisionCount] = useState(props.revisionCount||0)
     const [assessmentCount,setAssessmentCount] = useState(props.assessment && props.assessment.count||0)
 
+    const ready = (
+        props.mode=='teacher' && score || reflection
+    )
 
     useEffect(
         ()=>{
@@ -526,7 +535,9 @@ function ExemplarSkillEditor (props) {
                  {assessmentCount < revisionCount &&
                   <div>Revision #{revisionCount} waiting for feedback</div>
                   ||
-                  <Button className='is-primary' icon={Icon.check} onClick={updateCountAndSave}>
+                  <Button className={classNames({
+                      'is-primary':ready,                      
+                  })} icon={Icon.check} onClick={updateCountAndSave}>
                     Mark 
                     {revisionCount>=1 && <span>&nbsp;New Revision</span> || <span>&nbsp;Done</span>}
                   </Button>
@@ -541,7 +552,10 @@ function ExemplarSkillEditor (props) {
                <Navbar.Item>
                  {assessmentCount > 0 && assessmentCount >= revisionCount && <span>Assessment Round #{assessmentCount}</span>
                   ||
-                  <Button className='is-primary' icon={Icon.check} onClick={updateCountAndSave}>
+                  <Button className={classNames({
+                      'is-primary':ready,                      
+                  })}
+                          icon={Icon.check} onClick={updateCountAndSave}>
                     {revisionCount>1 && <span>New Revision </span>}
                     Feedback
                   </Button>
