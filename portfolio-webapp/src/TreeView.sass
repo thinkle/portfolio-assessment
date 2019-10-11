@@ -43,31 +43,37 @@
     display: grid
     grid-column-gap: 3px
 
+$step : 1rem
+
 +touch
   .treerow
-    display: flex
-    flex-direction: column
-    flex-grow: 1
-    flex-wrap: wrap
-    justify-items: flex-end
+    display: block
+    position: relative
   .treehead
     display: none
-  .treecell:first-child
-    margin-left: 2px
-  .nested1 .treecell
-    margin-left: 4rem
-  .nested2 .treecell
-    margin-left: 6em
-  .nested3 .treecell
-    margin-left: 8em
-  .treecell:first-child
-    display: flex
-  .treecell:last-child
-    margin-right: 0
-    flex-grow: 1
-    align-items: flex-end
+  .treecell.controls:first-child
+    position: absolute
+    left: 2px
+  .treerow
+    padding-left: $step + 5rem
+  .nested1
+    padding-left: 2 * $step
+  .nested2
+    padding-left: 3 * $step
+  .nested3
+    padding-left: 4 * $step
   .treecell.blank
     display: none
+  .treecell
+    display: inline-block
+    margin-right: 1em;
+  .treecell:last-child
+    margin-right: 0
+  .treecell.mobile-break
+    display: block
+  .treecell.break-after+.treecell
+    display: block
+    
     
 $row-types: even odd
 $colors: #659dbd #BC986A
