@@ -40,7 +40,7 @@ function Loader (props) {
 }
 
 
-const Viewport = makeComponent(['viewport2'])
+const Viewport = makeComponent(['viewport2','top'])
 Viewport.Three = makeComponent(['viewport3'])
 Viewport.Two = Viewport;
 Viewport.Bottom = makeComponent(['viewport2','bottom']);
