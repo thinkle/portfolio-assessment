@@ -2,7 +2,7 @@ import React,{useState,useEffect,useRef} from 'react';
 import {useStudents,useStudentWork,useCoursework,useStudentPortfolioManager} from './gapi/hooks.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import {getProp,classNames,getById} from './utils.js';
-import {Card,Container,Navbar,Button,Icon,Modal,Loader,h} from './widgets.js';
+import {Viewport,Card,Container,Navbar,Button,Icon,Modal,Loader,h} from './widgets.js';
 import {SelectableItem,Menu,Dropdown} from './widgets/Menu.js';
 import ExemplarEditor from './ExemplarEditor.js';
 import history from './history.js';
@@ -241,7 +241,7 @@ function TeacherAssignmentView (props) {
     }
 
     return (
-        <div className="viewport2">
+        <Viewport.Two>
           <Navbar className="navbar1">
             <Navbar.Item>
               <SelectableItem
@@ -253,13 +253,11 @@ function TeacherAssignmentView (props) {
                 key={`${getProp(selectedCoursework,'id')}-${getProp(coursework,'length')}`}
               />
             </Navbar.Item>
-            <Navbar.Item>
+            <Navbar.Item className="has-addons">
               <Button
                 icon={Icon.left}
                 onClick={prevStudent}
               />
-            </Navbar.Item>
-            <Navbar.Item>
               <Dropdown
                 className="student-name-picker"
                 initialValue={selectedStudent}
@@ -268,33 +266,29 @@ function TeacherAssignmentView (props) {
                 renderItem={(itm)=><span>{getProp(itm,'profile.name.fullName')}</span>}
                 onSelected={doChangeStudent}
               />
-            </Navbar.Item>
-            <Navbar.Item>
               <Button
                 icon={Icon.right}
                 onClick={nextStudent}
               />
             </Navbar.Item>
             <Navbar.End>
-              <Navbar.Item>
+              <Navbar.Item className="buttons">
                 <Button onClick={setShowCreator}>Create All Portfolio</Button>
-              </Navbar.Item>
-
-              <Navbar.Item>
                 <Button onClick={setShowExporter}>Export Grades</Button>
               </Navbar.Item>
+              <Navbar.Item>
             {selectedStudent &&
              <React.Fragment>
                {/* portfolioManager.getId(selectedStudent) */}                                      
                {portfolioManager.errorState.map[portfolioManager.getId(selectedStudent)] &&
-                <Navbar.Item className="error">Error: {JSON.stringify(
+                <span className="error">Error: {JSON.stringify(
                     portfolioManager.getError(selectedStudent)
-                )}</Navbar.Item>}
-               <Navbar.Item>{portfolioManager.savedState.map[portfolioManager.getId(selectedStudent)]
+                )}</span>}
+               <span>{portfolioManager.savedState.map[portfolioManager.getId(selectedStudent)]
                              && 'SAVED!' ||
                              'NOT SAVED'}
-               </Navbar.Item>
-               <Navbar.Item>
+               </span>
+               <span>
                  {portfolioManager.busyState.map[portfolioManager.getId(selectedStudent)] &&
                   <progress max="100" className="progress">Loading</progress> || 
                   <Button icon={Icon.save}
@@ -303,10 +297,14 @@ function TeacherAssignmentView (props) {
                               ()=>{portfolioManager.savePortfolio(selectedStudent)}
                           }
                   >Save to Google</Button>
+
                  }
-               </Navbar.Item>
-             </React.Fragment>
-            }
+               </span>
+             </React.Fragment>}
+              </Navbar.Item>
+             
+
+
             </Navbar.End>
           </Navbar>
           <div>
@@ -332,7 +330,7 @@ function TeacherAssignmentView (props) {
             students={students}
             onClose={()=>setShowExporter(false)}
           />
-        </div>
+        </Viewport.Two>
     );
 
 
