@@ -9,7 +9,7 @@ import AssignmentMapper from './AssignmentMapper.js';
 import Api from './gapi/gapi.js';
 import {useTeacherCoursesApi} from './gapi/hooks.js';
 import Brand from './brand.js';
-import {Container,Menu,Navbar,Tabs,Button,Modal,Icon,Card} from './widgets.js';
+import {Container,Menu,Navbar,Tabs,Button,Modal,Icon,Card,Viewport} from './widgets.js';
 import history from './history.js';
 import {inspect} from 'util';
 
@@ -125,7 +125,7 @@ function TeacherView (props) {
     }
 
     return (
-        <div className='viewport2 bottom'>
+        <Viewport.Bottom>
           <div className='body'>
             {
                 course && tabs() ||
@@ -153,15 +153,21 @@ function TeacherView (props) {
                 <a  target="_blank" className="navbar-item" href={course.alternateLink}>{course.name}</a>
             )}
             </Navbar.Item>
-            {course &&  <a className="navbar-item" onClick={()=>doSetCourse()}>Switch course</a>}
+            <Navbar.Item>
+              {course &&
+               <a className="navbar-item"
+                  onClick={()=>doSetCourse()}
+               >Switch course</a>
+              }
+            </Navbar.Item>
           </Navbar>
-        </div>
+        </Viewport.Bottom>
     )
 
     function tabs () {
         return (
             <div style={{height:'100%'}}>
-            <div className="viewport2">
+            <Viewport.Two>
               <Tabs className="is-centered" groupedMode={true}
                     initialTab={initialTabIndex}
               >
@@ -196,7 +202,7 @@ function TeacherView (props) {
                 {/* <AssignmentMapper course={course} {...props} */}
                 {/*                   onSelected={()=>updateRoute('map')}/> */}
               </Tabs>
-            </div>
+            </Viewport.Two>
               <Modal active={message} onClose={()=>setMessage('')}>
                 <Card>
                   <p>Complex processes at work...</p>
