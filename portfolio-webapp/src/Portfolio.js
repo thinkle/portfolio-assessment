@@ -266,6 +266,9 @@ function PortfolioComponent (props) {
               <Navbar.Item>
                 {filterView()}                   
               </Navbar.Item>
+              <Navbar.Item>
+                {assessmentInfo()}                   
+              </Navbar.Item>
             </Navbar.Start>
             <Navbar.End>                         
               {error &&
@@ -434,6 +437,27 @@ function PortfolioComponent (props) {
         
     }
 
+        function assessmentInfo () {
+            var needAssessment = portfolio.filter(
+                (exemplar)=>exemplar.revisionCount&&
+                    (!exemplar.assessment
+                     ||
+                     !exemplar.assessment.score
+                     ||
+                     (getProp(exemplar,'revisionCount')>getProp(exemplar,'assessment.count'))
+                    )).length
+            var turnedIn = portfolio.filter((exemplar)=>getProp(exemplar,'revisionCount')).length;
+            var graded = portfolio.filter(
+                (exemplar)=>getProp(exemplar,'assessment.count')&&
+                    (exemplar.assessment.count>=exemplar.revisionCount)
+            ).length;
+            return <span>
+                     <a onClick={()=>setFilters({hasWork:true})}>{turnedIn} in</a>,
+                     <a onClick={()=>setFilters({needsAssessment:true})}>{needAssessment} need grades</a>,
+                     <a onClick={()=>setFilters({isAssessed:true})}>{graded} graded</a>
+                   </span>;
+        }
+        
 
 
         function filterView () {
