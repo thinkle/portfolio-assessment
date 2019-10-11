@@ -301,11 +301,10 @@ function ExemplarEditor (props) {
                 {makeSubmissionChooser()}
               </Navbar.Center>
               <Navbar.End>
-                <Navbar.Item>{(selectedSubmission || (customSubmissionMode && permalink)) && <Button icon={Icon.plus} onClick={()=>addSkillBox()}>Add Skill</Button>}</Navbar.Item>
-                <Navbar.Item >
+                <Navbar.Item className="buttons">
+                  {(selectedSubmission || (customSubmissionMode && permalink)) &&
+                   <Button icon={Icon.plus} onClick={()=>addSkillBox()}>Add Skill</Button>}
                   <Button onClick={saveDraft}>Keep Draft</Button>
-                </Navbar.Item>
-                <Navbar.Item>
                   <Button className={classNames({
                       "is-primary":selectedSubmission && selectedSkills.filter((sk)=>sk&&sk.skill).length > 0,
                   })}icon={Icon.check}
