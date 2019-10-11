@@ -2,19 +2,21 @@ import React,{useState,useEffect,useRef} from 'react';
 import Portfolio from './Portfolio.js';
 import {useStudents,useStudentWork,useCoursework,useStudentPortfolio} from './gapi/hooks.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
-import {Container,Menu,SelectableItem,h,Navbar} from './widgets.js';
+import {Container,Menu,SelectableItem,h,Button,Icon,Navbar} from './widgets.js';
 import {getProp} from './utils.js';
 
 function StudentPicker (props) {
 
-    return (<SelectableItem
+    return (
+          <SelectableItem
               items={props.students}
               onSelected={props.onSelected}
               title='Select Student'
               renderItem={
                   (student)=><span>{student.profile.name.fullName}</span>
               }
-            />)
+          />
+    )
 }
 
 
@@ -32,7 +34,9 @@ function TeacherPortfolioView (props) {
           <Navbar>
             <Navbar.QuickBrand>Portfolio (Teacher View)</Navbar.QuickBrand>
             <Navbar.Item>
+
               <StudentPicker students={students} onSelected={setSelectedStudent}/>
+
             </Navbar.Item>
           </Navbar>
           {students.map(
