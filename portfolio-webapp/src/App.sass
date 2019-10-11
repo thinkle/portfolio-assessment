@@ -68,127 +68,200 @@ $toolbar-height: 55px
 $hidden-toolbar-height: 5px
 
 
++desktop
+  .viewport3,.viewport2
+    display: flex
+    flex-direction: column
+    height: 100%
+    min-height: 100%
 
-.viewport3,.viewport2
-  display: flex
-  flex-direction: column
-  height: 100%
-  min-height: 100%
+  .viewport2 > .tabs,.viewport3 > .tabs
+    margin-bottom: 0
 
-.viewport2 > .tabs,.viewport3 > .tabs
-  margin-bottom: 0
+  .viewport3 > div:nth-child(2),.viewport2 > div:nth-child(2)
+    flex: 1
+    overflow-y: auto
 
-.viewport3 > div:nth-child(2),.viewport2 > div:nth-child(2)
-  flex: 1
-  overflow-y: auto
+  .viewport2.bottom > div:nth-child(1)
+    flex: 1
+    overflow-y: auto
 
-.viewport2.bottom > div:nth-child(1)
-  flex: 1
-  overflow-y: auto
+  .viewport3 > div:nth-child(1),.viewport2 > div:nth-child(1),.viewport3 > div:nth-child(3)
+    height: $toolbar-height
 
-.viewport3 > div:nth-child(1),.viewport2 > div:nth-child(1),.viewport3 > div:nth-child(3)
-  height: $toolbar-height
+  .viewport3.shrinky > div:nth-child(1),.viewport2.shrinky > div:nth-child(1),.viewport3.shrinky > div:nth-child(3)
+    height: $hidden-toolbar-height
+    border: 2px solid $grey
+    border-width: 2px 0px 2px 0px;
+    padding: 3px 0px 3px 0px;
+    background-color: darken($grey,20%);
+    overflow: hidden
 
-.viewport3.shrinky > div:nth-child(1),.viewport2.shrinky > div:nth-child(1),.viewport3.shrinky > div:nth-child(3)
-  height: $hidden-toolbar-height
-  border: 2px solid $grey
-  border-width: 2px 0px 2px 0px;
-  padding: 3px 0px 3px 0px;
-  background-color: darken($grey,20%);
-  overflow: hidden
+  .viewport3.shrinky > div:nth-child(1):hover,.viewport2.shrinky > div:nth-child(1):hover,.viewport3.shrinky > div:nth-child(3):hover
+    height: $toolbar-height
+    background-color: white;
+    border: 2px solid lighten($grey,20%)
+    transition: background-color 300ms,height 300ms,border-color 300ms;
 
-.viewport3.shrinky > div:nth-child(1):hover,.viewport2.shrinky > div:nth-child(1):hover,.viewport3.shrinky > div:nth-child(3):hover
-  height: $toolbar-height
-  background-color: white;
-  border: 2px solid lighten($grey,20%)
-  transition: background-color 300ms,height 300ms,border-color 300ms;
+  .viewport2.bottom > div:nth-child(2)
+    height: $toolbar-height
+    flex: 0
 
-.viewport2.bottom > div:nth-child(2)
-  height: $toolbar-height
-  flex: 0
+  .viewport2.bottom.shrinky > div:nth-child(2)
+    height: $hidden-toolbar-height
+    border: 2px solid $grey;
+    border-width: 2px 0px 2px 0px;
+    padding: 3px 0px 3px 0px;
+    background-color: #efefef
+    flex: 0
 
-.viewport2.bottom.shrinky > div:nth-child(2)
-  height: $hidden-toolbar-height
-  border: 2px solid $grey;
-  border-width: 2px 0px 2px 0px;
-  padding: 3px 0px 3px 0px;
-  background-color: #efefef
-  flex: 0
+  .viewport2.bottom.shrinky > div:nth-child(2):hover
+    height: $toolbar-height
+    position: fixed;
+    bottom: 0px;
+    background-color: white;
+    transition: background-color 300ms,height 300ms,border-color 300ms;
 
-.viewport2.bottom.shrinky > div:nth-child(2):hover
-  height: $toolbar-height
-  position: fixed;
-  bottom: 0px;
-  background-color: white;
-  transition: background-color 300ms,height 300ms,border-color 300ms;
-
-.viewport3 > div:nth-child(2),.viewport2 > div:nth-child(2)
-  overflow-y: auto;
-  flex: 1;
+  .viewport3 > div:nth-child(2),.viewport2 > div:nth-child(2)
+    overflow-y: auto;
+    flex: 1;
 
 
-// Viewport should be a menu on Mobile...
+
+.viewport2 > div:nth-child(1,2),
+.viewport3 > div:nth-child(1,2,3)
+  display: block;
+  height: auto;
+  position: initial
+  border-bottom: 2px solid lighten($grey,20%)
+  background-color: #837733
+
 
 +touch
-
-  .viewport2.top > div:nth-child(1):hover ul,
-  .viewport3 > div:nth-child(1):hover ul
-    display: block
-  
+    
+  .viewport2 > div:nth-child(1),
+  .viewport2 > div:nth-child(2),
   .viewport3 > div:nth-child(1),
-  .viewport2.top > div:nth-child(1),
-  .viewport3.shrinky > div:nth-child(1),
-  .viewport2.top.shrinky > div:nth-child(1),
-  .viewport3 > div:nth-child(3),
-  .viewport3.shrinky > div:nth-child(3)
-    color: transparent
-    overflow: hidden
-    height: 24px
-    position: relative
-    
-  .viewport3 > div:nth-child(1) > *,
-  .viewport2.top > div:nth-child(1) > *,
-  .viewport3.shrinky > div:nth-child(1) > *,
-  .viewport2.top.shrinky > div:nth-child(1) > *
-    opacity: 0
-
-  .viewport3 > div:nth-child(1):hover > *,
-  .viewport2.top > div:nth-child(1):hover > *,
-  .viewport3.shrinky > div:nth-child(1):hover > *,
-  .viewport2.top.shrinky > div:nth-child(1):hover > *
-    opacity: 1
-
-  .viewport3 > div:nth-child(1):hover::before,
-  .viewport2.top > div:nth-child(1):hover::before
-    background-color : $primary
-    
-
-  .viewport3 > div:nth-child(1)::before,
-  .viewport2.top > div:nth-child(1)::before
-    content : '.'
-    border-radius: 50%
-    background-color : $grey
-    width: 20px
-    height: 20px
-    opacity: 1
+  .viewport3 > div:nth-child(2),
+  .viewport3 > div:nth-child(3)
+    display: block;
+    height: auto;
+    position: initial;
+    border-bottom: 2px solid lighten($grey,20%);
+  
+  .viewport2 > div:nth-child(1) ul,
+  .viewport3 > div:nth-child(1) ul,
+  .viewport3 > div:nth-child(3) ul
     display: block
-    color: transparent
-    position: absolute
+  // Viewport should be a menu on Mobile...
+  /* .viewport2.top > div:nth-child(1):hover ul,
+  /* .viewport3 > div:nth-child(1):hover ul
+  /*   display: block
+  
+  /* .viewport3.shrinky > div:nth-child(1),
+  /* .viewport2.top.shrinky > div:nth-child(1),
+  /* .viewport3.shrinky > div:nth-child(3)
+  /*   height: 15px;
+  /*   color: transparent
+  /*   overflow: hidden
+  /*   margin-bottom: 3px;
 
-  .viewport3 > div:nth-child(1):hover,
-  .viewport2.top > div:nth-child(1):hover
-    height: auto;
-    color: default;
-    overflow: hidden;
+  /* .viewport3 > div:nth-child(1),
+  /* .viewport2.top > div:nth-child(1),
+  /* .viewport3 > div:nth-child(3),
+  /* .viewport3 > div:nth-child(3),
+  /* .viewport2.bottom > div:nth-child(2)
+  /*   overflow: hidden
+  /*   height: 52px;
+  /*   position: relative
+  /*   margin-bottom: 5px;
+    
+  /* .viewport3.shrinky > div:nth-child(1) > *,
+  /* .viewport2.top.shrinky > div:nth-child(1) > *,
+  /* .viewport3.shrinky > div:nth-child(3)
+  /*   opacity: 0
+
+  /* .viewport3.shrinky > div:nth-child(1):hover > *,
+  /* .viewport2.top.shrinky > div:nth-child(1):hover > *,
+  /* .viewport3.shrinky > div:nth-child(3):hover > *,
+  /*   opacity: 1
+
+  /* /* .viewport3 > div:nth-child(1) > ,
+  /* /* .viewport2.top > div:nth-child(1) > *,
+  /* /* .viewport3.shrinky > div:nth-child(1) > *,
+  /* /* .viewport2.top.shrinky > div:nth-child(1) > *,
+  /* /* .viewport3 > div:nth-child(3) > *,
+  /* /* .viewport2.bottom > div:nth-child(2) > *
+  /* /*   opacity: 0
+
+  /* /* .viewport3 > div:nth-child(1):hover > *,
+  /* /* .viewport2.top > div:nth-child(1):hover > *,
+  /* /* .viewport3.shrinky > div:nth-child(1):hover > *,
+  /* /* .viewport2.top.shrinky > div:nth-child(1):hover > *,
+  /* /* .viewport3 > div:nth-child(3) > *,
+  /* /* .viewport2.bottom > div:nth-child(2) > *
+  /* /*   opacity: 1
+
+  /* .viewport3 > div:nth-child(1):hover::before,
+  /* .viewport2.top > div:nth-child(1):hover::before
+  /*   background-color : $primary
+    
+
+  /* .viewport3 > div:nth-child(1)::before,
+  /* .viewport2.top > div:nth-child(1)::before,
+  /* .viewport3 > div:nth-child(3),
+  /* .viewport3.shrinky > div:nth-child(3)::before,
+  /* .viewport2.bottom > div:nth-child(2)::before,
+  /*   content : '.'
+  /*   border-radius: 7px
+  /*   background-color : $grey
+  /*   width: 60px
+  /*   height: 10px
+  /*   opacity: 1
+  /*   display: block
+  /*   color: transparent
+  /*   position: absolute
+
+  /* .viewport3.shrinky > div:nth-child(1):hover,
+  /* .viewport2.shrinky > div:nth-child(1):hover,
+  /* .viewport3.shrinky > div:nth-child(3):hover,
+  /* .viewport3 > div:nth-child(1):hover,
+  /* .viewport2.top > div:nth-child(1):hover
+  /*   height: auto;
+  /*   color: default;
+  /*   border-radius: 7px
+  /*   padding: 7px
+  /*   margin-right: 1rem
+  /*   margin-bottom: 1rem
+  /*   border: 1px solid $primary
+  /*   box-shadow: 2px 2px $grey
+  /*   width: 100%
+  /*   background-color: white;
+  /*   position: absolute
+  /*   overflow: initial
+  /*   z-index: 31
+
+  /* .viewport3.shrinky > div:nth-child(1):hover,
+  /* .viewport2.shrinky > div:nth-child(1):hover,
+  /* .viewport3.shrinky > div:nth-child(3):hover 
+  /*   position: absolute
+  /*   height: auto;
+  /*   background-color: white;
+  /*   border: 2px solid #adadad;
+  /*   transition: background-color 300ms,height 300ms,border-color 300ms;
+  /*   z-index: 31
   
-  .viewport3.shrinky > div:nth-child(1):hover,
-  .viewport2.shrinky > div:nth-child(1):hover,
-  .viewport3.shrinky > div:nth-child(3):hover 
-    height: auto;
-    background-color: white;
-    border: 2px solid #adadad;
-    transition: background-color 300ms,height 300ms,border-color 300ms;
-  
+  /* .viewport2,.viewport3
+  /*   position: relative
+    
+  /* .viewport2.bottom > div:nth-child(2):hover,
+  /* .viewport3 > div:nth-child(3):hover
+  /*   position: absolute;
+  /*   bottom: 0;
+  /*   height: auto
+  /*   width: 100%
+  /*   background-color: white;
+  /*   z-index: 31
 
 
 //heights
