@@ -1,13 +1,18 @@
 import React from 'react';
 import {classNames} from '../utils.js';
 
-function makeComponent (myClassNames, elementType='div') {
+function mergeClassNames (myClassNames, props) {
     var myClassNameDic = {}
     myClassNames.forEach((i)=>myClassNameDic[i]=true);
+    var className = classNames({...props.classNames, ...myClassNameDic})
+    if (props.className) {className += ' '+props.className}
+    return className
+}
+
+function makeComponent (myClassNames, elementType='div') {
     
     var f = function (props) {
-        var className = classNames({...props.classNames, ...myClassNameDic})
-        if (props.className) {className += ' '+props.className}
+        const className = mergeClassNames(myClassNames,props);
         // if (elementType=='a') {
         //     return <a className={className} onClick={props.onClick}>{props.children}</a>
         // }
@@ -38,3 +43,4 @@ function makeComponent (myClassNames, elementType='div') {
 }
 
 export default makeComponent;
+export {mergeClassNames}
