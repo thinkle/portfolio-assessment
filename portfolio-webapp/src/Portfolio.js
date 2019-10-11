@@ -7,6 +7,8 @@ import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import ExemplarEditor from './ExemplarEditor.js';
 import {inspect} from 'util';
 
+const C = TreeView.Cell;
+
 /****
 
 PORTFOLIO
@@ -326,8 +328,8 @@ function PortfolioComponent (props) {
                             TreeView.BlankCol()]
                 }
                 else if (params.level==1) {
-                    return [TreeView.TextCol('strand'),
-                            TreeView.PopupCol('descriptor',{labelField:'skill',snippetMode:false}),
+                    return [TreeView.TagCol('strand'),
+                            TreeView.PopupCol('descriptor',{labelField:'skill',snippetMode:false,className:'break-after'}),
                             PointsTotalCol,
                             ExemplarCountCol,
                             DueDateCol,
@@ -336,10 +338,10 @@ function PortfolioComponent (props) {
                 }
                 else {
                     return [StatusCol,
-                            TreeView.LinkCol('permalink',{linkField:'coursework.title'}),
-                            TreeView.PopupCol('reflection',{label:'Reflection',tagMode:true,snippetMode:true}),
-                            TreeView.PopupCol('assessment.comment',{labelField:'assessment.score',tagMode:true,snippetMode:true}),
-                            TreeView.BlankCol(),
+                            TreeView.LinkCol('permalink',{linkField:'coursework.title',className:'break-after'}),
+                            TreeView.PopupCol('reflection',{label:'Reflection',tagMode:true,snippetMode:true,className:'break-after'}),
+                            TreeView.PopupCol('assessment.comment',{labelField:'assessment.score',tagMode:true,snippetMode:true,className:'break-after'}),
+                            TreeView.BlankCol({className:'break-after'}),
                             TreeView.ButtonCol({icon:Icon.edit,content:'Edit Exemplar',generateOnClick:editExemplarCallback})
                            ];
                 }
@@ -449,7 +451,7 @@ function PortfolioComponent (props) {
             var turnedIn = portfolio.filter((exemplar)=>getProp(exemplar,'revisionCount')).length;
             var graded = portfolio.filter(
                 (exemplar)=>getProp(exemplar,'assessment.count')&&
-                    (exemplar.assessment.count>=exemplar.revisionCount)
+                    (!exemplar.revisionCount || exemplar.assessment.count>=exemplar.revisionCount)
             ).length;
             return <span>
                      <a onClick={()=>setFilters({hasWork:true})}>{turnedIn} in</a>,
@@ -503,7 +505,7 @@ function StrandExemplarCountCol ({data,children}) {
             work += skill.children.length;
         }
     );
-    return <b>{work||0} of {exemplars||0}</b>
+    return <C><b>{work||0} of {exemplars||0}</b></C>
 }
 
 function StrandPointsTotalCol ({data,children}) {
@@ -514,15 +516,15 @@ function StrandPointsTotalCol ({data,children}) {
                 (ex)=>tot+=ex.points
             )
         });
-    return <b>{tot}</b>
+    return <C><b>{tot}</b></C>
 }
 
 function ExemplarCountCol ({data,children}) {
-    return data.exemplars && <span>{children&&children.length||0} of {data.exemplars.length}</span>
+    return data.exemplars && <C>{children&&children.length||0} of {data.exemplars.length}</C>
 }
 function DueDateCol ({data,children}) {
     return data.exemplars &&
-        <span>
+        <C>
           {data.exemplars
            .map(
                (child)=>child.dueDate && child.dueDate.toLocaleDateString([],{day:'numeric',month:'short'})||''
@@ -530,17 +532,17 @@ function DueDateCol ({data,children}) {
            .filter((item,idx,array)=>array.indexOf(item)===idx) // keep unique
            .map((date)=><span><span>{date.replace(' ','\u00A0')}</span> </span>) // put in a span
           }
-        </span>
+        </C>
 }
 
 function PointsTotalCol ({data}) {
     if (data.exemplars) {
         var tot = 0;
         data.exemplars.forEach((ex)=>tot+=ex.points);
-        return data.exemplars && <span>{tot}</span>
+        return <C>{tot}</C>
     }
     else {
-        return '-'
+        return <C>'-'</C>
     }
 }
 
@@ -548,13 +550,13 @@ function StatusCol ({data}) {
     var revCount = data.revisionCount || 0;
     var assCount = data.assessment && data.assessment.count || 0;    
     if (assCount >= revCount) {
-        return <span><Icon icon={Icon.teacher}/><span className='tag'>{assCount}</span></span>
+        return <C><Icon icon={Icon.teacher}/><span className='tag'>{assCount}</span></C>
     }
     else if (revCount == 0) {
-        return <span><Icon icon={Icon.bang}/><span className='tag'>Not in</span></span>
+        return <C><Icon icon={Icon.bang}/><span className='tag'>Not in</span></C>
     }
     else {
-        return <span><Icon icon={Icon.check}/><span className='tag'>{revCount}</span></span>
+        return <C><Icon icon={Icon.check}/><span className='tag'>{revCount}</span></C>
     }
 }
 
