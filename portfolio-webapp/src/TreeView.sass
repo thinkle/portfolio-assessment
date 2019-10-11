@@ -36,10 +36,39 @@
 .treecell .button:hover
   background-color: white;
 
-.treerow 
-  display: grid
-  grid-column-gap: 3px
++desktop
+  .treeView 
+    min-width: 1024px
+  .treerow 
+    display: grid
+    grid-column-gap: 3px
 
++touch
+  .treerow
+    display: flex
+    flex-direction: column
+    flex-grow: 1
+    flex-wrap: wrap
+    justify-items: flex-end
+  .treehead
+    display: none
+  .treecell:first-child
+    margin-left: 2px
+  .nested1 .treecell
+    margin-left: 4rem
+  .nested2 .treecell
+    margin-left: 6em
+  .nested3 .treecell
+    margin-left: 8em
+  .treecell:first-child
+    display: flex
+  .treecell:last-child
+    margin-right: 0
+    flex-grow: 1
+    align-items: flex-end
+  .treecell.blank
+    display: none
+    
 $row-types: even odd
 $colors: #659dbd #BC986A
 //$colors: $red $cyan
@@ -66,9 +95,6 @@ $colors: #659dbd #BC986A
 @for $span from 2 through 20
   .colSpan#{$span}
     grid-column: span $span
-
-.treeView 
-  min-width: 1024px
   
 $spacer : 0.5em
 
