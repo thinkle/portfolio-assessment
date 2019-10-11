@@ -174,7 +174,7 @@ function useStudentPortfolioManager (params) {
         }
     }
 
-    async function savePortfolio (student, course=defaultCourse, callback, studentMode, force) {
+    async function savePortfolio (student, course=defaultCourse, callback=undefined, studentMode=false, force=false) {
         var key = makeID(course,student);
         console.log('PH:Set key busy',key);
         busyMap.updateKey(key,true)
