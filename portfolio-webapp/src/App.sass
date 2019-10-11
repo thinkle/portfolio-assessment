@@ -67,6 +67,8 @@ a:hover .tooltip
 $toolbar-height: 55px
 $hidden-toolbar-height: 5px
 
+
+
 .viewport3,.viewport2
   display: flex
   flex-direction: column
@@ -75,7 +77,7 @@ $hidden-toolbar-height: 5px
 
 .viewport2 > .tabs,.viewport3 > .tabs
   margin-bottom: 0
-  
+
 .viewport3 > div:nth-child(2),.viewport2 > div:nth-child(2)
   flex: 1
   overflow-y: auto
@@ -83,10 +85,10 @@ $hidden-toolbar-height: 5px
 .viewport2.bottom > div:nth-child(1)
   flex: 1
   overflow-y: auto
-  
+
 .viewport3 > div:nth-child(1),.viewport2 > div:nth-child(1),.viewport3 > div:nth-child(3)
   height: $toolbar-height
-  
+
 .viewport3.shrinky > div:nth-child(1),.viewport2.shrinky > div:nth-child(1),.viewport3.shrinky > div:nth-child(3)
   height: $hidden-toolbar-height
   border: 2px solid $grey
@@ -94,7 +96,7 @@ $hidden-toolbar-height: 5px
   padding: 3px 0px 3px 0px;
   background-color: darken($grey,20%);
   overflow: hidden
-  
+
 .viewport3.shrinky > div:nth-child(1):hover,.viewport2.shrinky > div:nth-child(1):hover,.viewport3.shrinky > div:nth-child(3):hover
   height: $toolbar-height
   background-color: white;
@@ -125,24 +127,76 @@ $hidden-toolbar-height: 5px
   flex: 1;
 
 
+// Viewport should be a menu on Mobile...
+
++touch
+
+  .viewport2.top > div:nth-child(1):hover ul,
+  .viewport3 > div:nth-child(1):hover ul
+    display: block
+  
+  .viewport3 > div:nth-child(1),
+  .viewport2.top > div:nth-child(1),
+  .viewport3.shrinky > div:nth-child(1),
+  .viewport2.top.shrinky > div:nth-child(1),
+  .viewport3 > div:nth-child(3),
+  .viewport3.shrinky > div:nth-child(3)
+    color: transparent
+    overflow: hidden
+    height: 24px
+    position: relative
+    
+  .viewport3 > div:nth-child(1) > *,
+  .viewport2.top > div:nth-child(1) > *,
+  .viewport3.shrinky > div:nth-child(1) > *,
+  .viewport2.top.shrinky > div:nth-child(1) > *
+    opacity: 0
+
+  .viewport3 > div:nth-child(1):hover > *,
+  .viewport2.top > div:nth-child(1):hover > *,
+  .viewport3.shrinky > div:nth-child(1):hover > *,
+  .viewport2.top.shrinky > div:nth-child(1):hover > *
+    opacity: 1
+
+  .viewport3 > div:nth-child(1):hover::before,
+  .viewport2.top > div:nth-child(1):hover::before
+    background-color : $primary
+    
+
+  .viewport3 > div:nth-child(1)::before,
+  .viewport2.top > div:nth-child(1)::before
+    content : '.'
+    border-radius: 50%
+    background-color : $grey
+    width: 20px
+    height: 20px
+    opacity: 1
+    display: block
+    color: transparent
+    position: absolute
+
+  .viewport3 > div:nth-child(1):hover,
+  .viewport2.top > div:nth-child(1):hover
+    height: auto;
+    color: default;
+    overflow: hidden;
+  
+  .viewport3.shrinky > div:nth-child(1):hover,
+  .viewport2.shrinky > div:nth-child(1):hover,
+  .viewport3.shrinky > div:nth-child(3):hover 
+    height: auto;
+    background-color: white;
+    border: 2px solid #adadad;
+    transition: background-color 300ms,height 300ms,border-color 300ms;
+  
+
+
 //heights
 
 html,body,#root,.fullHeight
   height: 100%
   padding: 0
   margin: 0
-
-/* .viewport2,.viewport3
-/*   height: 99vh
-
-/* .viewport2 .viewport3,.viewport2 .viewport2
-/*   height: calc(99vh - $toolbar-height)
-
-/* .viewport3 .viewport2,.viewport3 .viewport3
-/*   height: calc(99vh - 120px)
-
-/* .viewport3 .viewport2 .viewport2,.viewport3 .viewport2 .viewport3,.viewport2 .viewport3 .viewport2,.viewport2 .viewport3 .viewport3
-/*   height: calc(99vh - 120px - $toolbar-height)
 
 .modeBox
   position: absolute
