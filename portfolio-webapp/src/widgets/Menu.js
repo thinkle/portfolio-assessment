@@ -45,8 +45,8 @@ function Menu (props) {
           <Button
             className='menu-title'
             onClick={()=>setActive(!active)}
+            customIcon={<Icon  className={active&&'reverse'||'unreverse'} icon={Icon.down}/>}
           >
-            <span className={active&&'reverse'||'unreverse'}><Icon icon={Icon.down}/></span>
             {props.dropdown && props.initialValue &&
              renderItem(props.initialValue) ||
              <span>{props.title||'Menu'}</span>}
