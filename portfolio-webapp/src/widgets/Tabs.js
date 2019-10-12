@@ -1,5 +1,6 @@
 import React,{useState,useEffect} from 'react';
 import makeComponent from './QuickComponents';
+import {arrayProp,classNames} from '../utils.js';
 
 function TopTab (props) {
     return <li {...props}>
@@ -14,7 +15,8 @@ const TabsTop = makeComponent(['tabs']);
 function Tabs (props) {
 
     const [activeTab,setActiveTab] = useState(props.noInitialTab && -1 || props.initialTab || 0);
-    const [fresh,setFresh] = useState(true)
+    const [fresh,setFresh] = useState(0)
+    const rendered = arrayProp(...useState(!props.noInitialTab && [0] || []));
     var tabs = [];
     var contents = [];
     
@@ -47,6 +49,8 @@ function Tabs (props) {
         }
     }
 
+    const [myContents,setMyContents] = useState(contents);
+
     useEffect(()=>{
         if (!fresh) {
             // console.log('Tab changed!');
@@ -61,10 +65,14 @@ function Tabs (props) {
             if (contents[activeTab].props.onSelected) {
                 contents[activeTab].props.onSelected()
             }
+            if (!rendered.indexOf(activeTab)>-1) {
+                rendered.push(activeTab);
+            }
         }
         else {
-            setFresh(false);
+            setFresh(fresh+1);
         }
+        
     },[activeTab]);
 
     return (
@@ -79,8 +87,13 @@ function Tabs (props) {
                        )}
             </ul>
           </TabsTop>
-          <div className="tab-content">
-            {activeTab != -1 && contents[activeTab]}
+          <div className="tab-content" key={fresh}>
+            {myContents.map((c,i)=>{
+                return (
+                    <div key={i} style={{display:i==activeTab&&'block'||'none'}}>
+                      {c}
+                    </div>
+                )})}
           </div>
         </React.Fragment>
     );
