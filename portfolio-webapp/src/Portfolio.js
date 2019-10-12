@@ -286,7 +286,7 @@ function PortfolioComponent (props) {
                    </Button>
                  </Navbar.Item>
                </React.Fragment>}
-              <Navbar.Item>{busy && <span className="has-warning-text">Communicating with the google...</span>}</Navbar.Item>
+              <Navbar.Item>{busy && <em><Icon icon={Icon.spinner}/><span className="has-warning-text">Communicating with the google...</span></em>}</Navbar.Item>
               <Navbar.Item>{
                   !saved &&
                       <span>
@@ -298,7 +298,7 @@ function PortfolioComponent (props) {
                         <a target='_blank' href={urls && urls.exemplars}>Exemplars</a>
                         &amp;
                         <a target='_blank' href={urls && urls.assessments}>Assessments</a>
-                        Synced to Google
+                        &nbsp;Synced to Google
                       </div>
               }
               </Navbar.Item>
@@ -455,7 +455,9 @@ function PortfolioComponent (props) {
             ).length;
             return <span>
                      <a onClick={()=>setFilters({hasWork:true})}>{turnedIn} in</a>,
-                     <a onClick={()=>setFilters({needsAssessment:true})}>{needAssessment} need grades</a>,
+                     <a onClick={()=>setFilters({needsAssessment:true})}>{needAssessment}
+                       {needAssessment==1 && ' needs ' || ' need '}
+                       grades</a>,
                      <a onClick={()=>setFilters({isAssessed:true})}>{graded} graded</a>
                    </span>;
         }
