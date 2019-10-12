@@ -7,14 +7,14 @@ function Button (props) {
     if (props.className) {className += ' '+props.className}
     if (props.useButton || props.disabled) {
         return (<button className={className} onClick={props.onClick} disabled={props.disabled}>
-                  {props.icon && <Icon icon={props.icon}/>}
-                  <span>{props.children}</span>
+                {props.customIcon || props.icon && <Icon icon={props.icon}/>}
+                {props.children && <span>{props.children}</span>}
                 </button>)
     }
     else {
         return (<a className={className} onClick={props.onClick} disabled={props.disabled}>
-                  {props.icon && <Icon icon={props.icon}/>}
-                  <span>{props.children}</span>
+                  {props.customIcon || props.icon && <Icon icon={props.icon}/>}
+                  {props.children && <span>{props.children}</span>}
                 </a>)
     }
 }
