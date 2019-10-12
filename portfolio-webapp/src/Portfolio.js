@@ -286,7 +286,7 @@ function PortfolioComponent (props) {
                    </Button>
                  </Navbar.Item>
                </React.Fragment>}
-              <Navbar.Item>{busy && <em><Icon icon={Icon.spinner}/><span className="has-warning-text">Communicating with the google...</span></em>}</Navbar.Item>
+              <Navbar.Item>{busy && <div classname="has-warning-text" style={{'background-color':'white'}}><Icon icon={Icon.spinner}/><em>Communicating with the google...</em></div>}</Navbar.Item>
               <Navbar.Item>{
                   !saved &&
                       <span>
