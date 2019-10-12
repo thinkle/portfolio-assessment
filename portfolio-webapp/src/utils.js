@@ -59,6 +59,7 @@ function objProp (obj, setObj) {
 
 function arrayProp (arr, setArr) {
     var o = {
+        arr : arr,
         remove (itm) {
             var copy = arr.slice();
             copy.splice(copy.indexOf(itm),1);
@@ -74,6 +75,9 @@ function arrayProp (arr, setArr) {
             var copy = arr.slice();
             replaceItemInArray(copy,val,idprop,pushIfNoMatch);
             setArr(copy);
+        },
+        indexOf (val) {
+            return arr.indexOf(val);
         }
     }
 
