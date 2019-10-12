@@ -41,7 +41,11 @@ function assignmentStateToIcon (state) {
 
 function GradeBox (props) {
     /* To do: make fancy */
-    return (<input className="grade input" type="text" onChange={(event)=>props.onChange(event.target.value)} value={props.value}/>)
+    return (
+        <div className="control">
+          <input className="grade input" type="text" onChange={(event)=>props.onChange(event.target.value)} value={props.value}/>
+        </div>    
+    )
 }
 
 function StandAloneExemplarEditor (props) {
@@ -608,7 +612,11 @@ function ExemplarSkillEditor (props) {
               <h.h6>Assessment:</h.h6>
               {props.mode=='teacher' &&
                <div>
-                 <label className="is-bold">Grade: <GradeBox onChange={setScore} value={score}/></label>
+                 <div className="label">
+                   <label className="is-bold">Grade:
+                     <GradeBox onChange={setScore} value={score}/>
+                   </label>
+                 </div>
                  <Editor editorHtml={assessment}
                          onChange={setAssessment}
                          placeholder={`Type your comments of ${selectedSkill.skill ||'?'} here...`}
