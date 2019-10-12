@@ -18,23 +18,23 @@ class Editor extends React.Component {
         }
         this.formats = [];
         this.propTypes = {placeholder:'string'}
-        this.formats = ['bold','italic','link']
+        this.formats = ['bold','italic','link','code-block','code']
         if (props.barebones) {
             this.toolbar = []
         }
         else if (props.basics) {
             this.toolbar = [
-                [],
+                ['code-block'],
                 ['bold','italic'],
                 ['link']
             ]
         }
         else {
             this.toolbar = [
-                [],
+                ['code-block'],
                 ['bold','italic','blockquote'],
-                [{list:'ordered'},{list:'bullet'},{indent:'-1'},{indent:'+1'}],
-                ['link'],
+                [{list:'ordered'},{list:'bullet'},{indent:'-1'},{indent:'+1'},],
+                ['link','code'],
                 [{header:[]}]
             ]
             this.formats = [...this.formats, 'list','bullet','indent']
@@ -63,14 +63,15 @@ class Editor extends React.Component {
     
     
     render () {
+        console.log('Rendering formats:',this.formats);
         return (
-                <div className='noheader' {...this.props}> {/* Hack to remove stupid headers */}
+                <div className='noheaderbroken' {...this.props}> {/* Hack to remove stupid headers */}
                 <ReactQuill 
             theme="snow"
             onChange={this.handleChange}
             value={this.state.editorHtml}
-            modules={Editor.modules}
-            formats={Editor.formats}
+                  modules={{toolbar:this.toolbar}}
+            formats={this.formats}
             id={this.props.id}
             placeholder={this.props.placeholder}
                 />
