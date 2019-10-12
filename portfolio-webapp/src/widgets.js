@@ -54,6 +54,14 @@ for (let i=1; i<=6; i++) {
     h['sh'+i] = makeComponent(['subtitle','is-'+i])
 }
 
+const Panel = makeComponent(['panel'])
+Panel.Block = makeComponent(['panel-block'])
+Panel.Tabs = makeComponent(['panel-block'])
+Panel.Tab = makeComponent([],'a')
+Panel.Tab = makeComponent([],'a')
+Panel.Label = makeComponent(['panel-block'],'label');
+
+
 export {Viewport,
         InputWithEnter,
         Modal,
@@ -63,5 +71,6 @@ export {Viewport,
         Control,Field,
         Menu,SelectableItem,CustomSelectableItem,Dropdown,
         Navbar,Tabs,
+        Panel,
         h,
         Progress,Loader}
