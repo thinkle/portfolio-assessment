@@ -164,7 +164,7 @@ function PortfolioModel (course) {
 
     function toAspen (skillsList, params) {
 
-        var aspenList = Exporters.Aspen.skillsToAspenAssignments(skillsList,params);
+        var aspenList = Exporters.Aspen().skillsToAspenAssignments(skillsList,params);
 
         return new Promise((resolve,reject)=>{
             Api.set_aspen_assignments(aspenList,course)
