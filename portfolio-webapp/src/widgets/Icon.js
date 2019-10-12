@@ -5,6 +5,7 @@ import {faSave,faExternalLinkAlt,faCheck,faUndo,
         faClipboardCheck,faChalkboardTeacher,faHiking,faFolderOpen,
         faPenSquare,
         faPlus,
+        faSpinner,
         faExclamation,
         faWindowClose} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -16,9 +17,11 @@ function Icon (props) {
             ...props.classNames,
             icon:true,
             button:props.onClick,
+            'fa-pulse':props.icon==faSpinner,
             /*'is-white':props.onClick,*/
         })}
-              onClick={props.onClick}
+        onClick={props.onClick}
+        
         >
           <FontAwesomeIcon icon={props.icon}/>
         </span>
@@ -43,5 +46,5 @@ Icon.undo = faUndo;
 Icon.work = faHiking;
 Icon.plus = faPlus;
 Icon.bang = faExclamation;
-
+Icon.spinner = faSpinner;
 export default Icon;
