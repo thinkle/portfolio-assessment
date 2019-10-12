@@ -171,8 +171,8 @@ TO DO...
 
 - Get student view working and URLs so we can share URL to assessed items etc.
   --> Fix sharing of portfolio doc and test two-way communication (x)
-  --> Set up sharing with class
-      -> shareFileWithClass (TEST THIS OUT)
+  --> Set up sharing with class (x)
+      -> shareFileWithClass (TEST THIS OUT) (NOT NEEDED)
       -> Retroactively share...
       -> Add share to creation step...
          ~~ ACK -- even a shared file seems unsearchable by properties until it is opened first.
@@ -184,7 +184,14 @@ TO DO...
                - We grab the config file
                - We parse the config file and use its settings
                
-              
+- Get grade export working (x)
+- Allow selecting specific students for grade export ( )
+- Create mobile layout... (~started)
+- Lift state into TeacherCourseView so that we keep one copy of all portfolio data (x)
+  -> share state between portfolio view (TODO) and assignment view (x)
+  -> Build handy metrics once we have all the data about how many we have etc. (X)a
+
+
 - Get emails working?
 - Save sidebar state of exemplar editor in assignment view [ ]
 - extend caching system for google docs/sheets fetching so we don't fetch new data if there is no new data 
