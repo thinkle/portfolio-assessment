@@ -7,10 +7,11 @@ import TeacherPortfolioView from './TeacherPortfolioView.js';
 import TeacherAssignmentView from './TeacherAssignmentView.js';
 import PortfolioCreator from './PortfolioCreator.js';
 import AssignmentMapper from './AssignmentMapper.js';
+import GradeExporter from './GradeExporter.js';
 import Api from './gapi/gapi.js';
 import {useTeacherCoursesApi} from './gapi/hooks.js';
 import Brand from './brand.js';
-import {Container,Menu,Navbar,Tabs,Button,Modal,Icon,Card,Viewport,h} from './widgets.js';
+import {Container,Menu,Navbar,Tabs,Button,Modal,Icon,Card,Viewport,h,Buttons} from './widgets.js';
 import history from './history.js';
 import {inspect} from 'util';
 import {useStudents,useStudentWork,useCoursework,useStudentPortfolioManager} from './gapi/hooks.js';
@@ -94,12 +95,20 @@ function TeacherCourseView (props) {
 
 
     const [message,setMessage] = useState('');
-
+    const [gotDataAndStuff,setGotDataAndStuff] = useState(0)
     const students = useStudents(props)
     const skillHookProps = usePortfolioSkillHook(props);
     const allStudentWork = useStudentWork({...props,teacherMode:true});
     const coursework = useCoursework(props);
     const portfolioManager = useStudentPortfolioManager(props);
+
+
+    useEffect(()=>{
+        console.log('TCV: Got data&stuff effect triggered: let us update our state!');
+        const n = gotDataAndStuff + 1
+        setGotDataAndStuff(n);
+    },[students,coursework,allStudentWork,skillHookProps.key]
+             )
 
     const propsToPassDown = {
         students,
@@ -108,6 +117,111 @@ function TeacherCourseView (props) {
         coursework,
         portfolioManager
     }
+
+    const tabList = [
+        {routeName:'home',
+         label:props.course.name,
+         element:<TeacherHome
+                   key={gotDataAndStuff}
+                   {...props}
+                   {...propsToPassDown}
+                   dataKey={gotDataAndStuff}
+                 />
+        },
+        {routeName:'assignment',
+         label:'Assess By Assignments',
+         element:<TeacherAssignmentView key={gotDataAndStuff} course={props.course} {...props} {...propsToPassDown}/>
+        },
+        {routeName:'portfolio',
+         label:'Assess Portfolios',
+         element:<TeacherPortfolioView
+                   key={gotDataAndStuff}
+                   course={props.course}
+                   {...props}
+                   {...propsToPassDown}
+                   onSelected={()=>updateRoute('portfolio')}
+                 />},
+        {routeName:'build',
+         label:'Build Skill Portfolio',
+         element:<PortfolioBuilder
+                   key={gotDataAndStuff}
+                   {...props}
+                   {...propsToPassDown}
+                   onSelected={()=>updateRoute('build')}
+                 />,
+        },
+        {routeName:'map',
+         label:'Map Skills to Assignments',
+         element:<AssignmentMapper
+                   key={gotDataAndStuff}
+                   {...props}
+                   {...propsToPassDown}
+                   onSelected={()=>updateRoute('map')}/>
+        },
+    ]
+    var initialTabIndex=undefined;
+    if (props.task) {
+        for (var i=0; i<tabList.length; i++) {
+            if (tabList[i].routeName==props.task) {
+                initialTabIndex=i;
+            }
+        }
+        if (!initialTabIndex) {
+            console.log('Did not find routeName ',props.task,tabList.map((t)=>t.routeName));
+        }
+    }
+
+    
+
+
+    function updateRoute (routeName) {
+        history.push(`/teacher/${props.course.id}/${routeName}/`);
+    }
+
+    return (
+        <div className='body'>
+          <div style={{height:'100%'}}>
+            <Viewport.Two>
+              <Tabs className="is-centered" groupedMode={true}
+                    initialTab={initialTabIndex}
+                    key={gotDataAndStuff}
+              >
+                <>{tabList.map(
+                    (tabInfo)=><span>{tabInfo.label}</span>
+                )}
+                </>
+                <>
+                  {tabList.map(
+                      (tabInfo)=>(
+                          <div onSelected={()=>updateRoute(tabInfo.routeName)}>
+                            {tabInfo.element}
+                          </div>
+                      ))}
+                </>
+              </Tabs>
+            </Viewport.Two>
+              <Modal active={message} onClose={()=>setMessage('')}>
+                <Card>
+                  <p>Complex processes at work...</p>
+                  <p>{message}</p>
+                  <Button icon={Icon.close} onClick={()=>setMessage('')}>Close</Button>
+                </Card>
+              </Modal>
+          </div>
+        </div>
+    );
+
+}
+
+function TeacherHome (props) {
+
+    const EXPORTA = 'exportA'
+    const EXPORTG = 'exportG'
+    const CREATE = 'createP'
+    const SHAREP = 'shareP'
+    
+    const [tool,setTool] = useState('');
+    const [message,setMessage] = useState('');
 
     async function sharePortfolio () {
         setMessage('Sharing portfolio with class... ');
@@ -141,94 +255,41 @@ function TeacherCourseView (props) {
         }
     }
 
-    const tabList = [
-        {routeName:'home',
-         label:props.course.name,
-         element:home(),
-        },
-        {routeName:'assignment',
-         label:'Assess By Assignments',
-         element:<TeacherAssignmentView course={props.course} {...props} {...propsToPassDown}/>
-        },
-        {routeName:'portfolio',
-         label:'Assess Portfolios',
-         element:<TeacherPortfolioView course={props.course} {...props} {...propsToPassDown}
-                                      onSelected={()=>updateRoute('portfolio')}
-                 />},
-        {routeName:'build',
-         label:'Build Skill Portfolio',
-         element:<PortfolioBuilder course={props.course} {...props} {...propsToPassDown}
-                                  onSelected={()=>updateRoute('build')}
-                 />,
-        },
-        {routeName:'map',
-         label:'Map Skills to Assignments',
-         element:<AssignmentMapper course={props.course} {...props} {...propsToPassDown}
-                                   onSelected={()=>updateRoute('map')}/>
-        },
-    ]
-    var initialTabIndex=undefined;
-    if (props.task) {
-        for (var i=0; i<tabList.length; i++) {
-            if (tabList[i].routeName==props.task) {
-                initialTabIndex=i;
-            }
-        }
-        if (!initialTabIndex) {
-            console.log('Did not find routeName ',props.task,tabList.map((t)=>t.routeName));
-        }
-    }
 
-    
-
-    function home () {
-        return (
-            <Container>
-              <Card>
-                <h.h2>Stuff we can do...</h.h2>
-                <Button onClick={()=>sharePortfolio()}>Share Portfolio w/ Class</Button>
-              </Card>
-              <PortfolioCreator {...props} students={students} portfolioManager={portfolioManager}/>
-            </Container>
-        )
-    }
-
-    function updateRoute (routeName) {
-        history.push(`/teacher/${props.course.id}/${routeName}/`);
-    }
 
     return (
-        <div className='body'>
-          <div style={{height:'100%'}}>
-            <Viewport.Two>
-              <Tabs className="is-centered" groupedMode={true}
-                    initialTab={initialTabIndex}
-              >
-                <>{tabList.map(
-                    (tabInfo)=><span>{tabInfo.label}</span>
-                )}
-                </>
-                <>
-                  {tabList.map(
-                      (tabInfo)=>(
-                          <div onSelected={()=>updateRoute(tabInfo.routeName)}>
-                            {tabInfo.element}
-                          </div>
-                      ))}
-                </>
-              </Tabs>
-            </Viewport.Two>
-              <Modal active={message} onClose={()=>setMessage('')}>
-                <Card>
-                  <p>Complex processes at work...</p>
-                  <p>{message}</p>
-                  <Button icon={Icon.close} onClick={()=>setMessage('')}>Close</Button>
-                </Card>
-              </Modal>
-          </div>
-        </div>
-    );
-
+        <Container>
+          <Card>
+            <h.h3>Tools...</h.h3>
+            <Buttons>
+              <Button onClick={()=>setTool(CREATE)}>Create Portfolios for Students</Button>
+              <Button onClick={()=>sharePortfolio()}>Share Portfolio w/ Class</Button>
+              <Button onClick={()=>setTool(EXPORTA)}>Export Assignments</Button>
+              <Button onClick={()=>setTool(EXPORTG)}>Export Grades</Button>
+             </Buttons>
+          </Card>
+          {message && <Card>
+                        <h.h6>Status Update...</h.h6>
+                        <p>{message}</p>
+                      </Card>}
+          {tool==EXPORTG && 
+           <GradeExporter
+             {...props}
+             {...props.skillHookProps}
+             key={props.dataKey}
+             active={EXPORTA}
+             onClose={()=>setTool('')}
+             />}
+          {tool==CREATE && 
+           <PortfolioCreator key={props.dataKey} {...props}/>
+          }
+          {tool==EXPORTA &&
+           <p>Refactoring coming soon... for now this is under Build Skill Portfolio</p>
+          }
+        </Container>
+    )
+    
+        
 }
 
 export default TeacherView;
