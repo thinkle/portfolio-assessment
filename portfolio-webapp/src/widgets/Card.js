@@ -17,7 +17,8 @@ function Card (props) {
     else {
         console.log('ERROR Card called with %s children?',arrayChildren.length)
         console.log('Use 1 child for Body, 2 for Head+Body or 3 for Head+Body+Footer');
-        throw 'Card must have 1, 2 or 3 children';
+        return <div>BAD PROGRAMMER: CARD MUST HAVE 1, 2 or 3 CHILDREN!</div>
+        //throw 'Card must have 1, 2 or 3 children';
     }
 
     return (
