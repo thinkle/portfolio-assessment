@@ -1,7 +1,8 @@
 import Shortener from './shortener.js';
 import {gradeToNum} from './utils.js';
 
-var Aspen = {
+const Aspen = function ()  {
+    return {
 
     getShorteners () {
         if (!this.gbShortener || !this.assignmentShortener) {
@@ -135,7 +136,7 @@ var Aspen = {
     },
 
     
-
+    }
     
 }
 
