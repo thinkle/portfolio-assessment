@@ -5,7 +5,7 @@ import Modal from './widgets/Modal.js';
 import makeComponent from './widgets/QuickComponents.js';
 import Card from './widgets/Card.js';
 import Button from './widgets/Button.js';
-import Menu,{SelectableItem,CustomSelectableItem} from './widgets/Menu.js';
+import Menu,{SelectableItem,CustomSelectableItem,Dropdown} from './widgets/Menu.js';
 import Navbar from './widgets/Navbar.js';
 import Tabs from './widgets/Tabs.js';
 const InputWithEnter = React.forwardRef( (props, ref) => {
@@ -28,6 +28,8 @@ const Buttons = makeComponent(['buttons']);
 const Content = makeComponent(['content']);
 const Container = makeComponent(['container']);
 const Progress = makeComponent(['progress'],'progress')
+const Control = makeComponent(['control'])
+const Field = makeComponent(['field'])
 
 function Loader (props) {
     return <Card {...props}>
@@ -52,4 +54,14 @@ for (let i=1; i<=6; i++) {
     h['sh'+i] = makeComponent(['subtitle','is-'+i])
 }
 
-export {Viewport,InputWithEnter,Modal,Card,Button,Buttons,Content,Icon,Container,Menu,SelectableItem,CustomSelectableItem,Navbar,h,Box,Tabs,Progress,Loader}
+export {Viewport,
+        InputWithEnter,
+        Modal,
+        Card,Box,Content,Container,
+        Button,
+        Buttons,Icon,
+        Control,Field,
+        Menu,SelectableItem,CustomSelectableItem,Dropdown,
+        Navbar,Tabs,
+        h,
+        Progress,Loader}
