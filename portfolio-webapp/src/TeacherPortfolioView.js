@@ -4,21 +4,7 @@ import {useStudents,useStudentWork,useCoursework,useStudentPortfolio} from './ga
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import {Container,Menu,SelectableItem,h,Button,Icon,Navbar} from './widgets.js';
 import {getProp} from './utils.js';
-
-function StudentPicker (props) {
-
-    return (
-          <SelectableItem
-              items={props.students}
-              onSelected={props.onSelected}
-              title='Select Student'
-              renderItem={
-                  (student)=><span>{student.profile.name.fullName}</span>
-              }
-          />
-    )
-}
-
+import StudentPicker from './StudentPicker.js';
 
 
 function TeacherPortfolioView (props) {
@@ -31,12 +17,10 @@ function TeacherPortfolioView (props) {
     
     return (
         <Container>
-          <Navbar>
+          <Navbar className="navbar2">
             <Navbar.QuickBrand>Portfolio (Teacher View)</Navbar.QuickBrand>
             <Navbar.Item>
-
-              <StudentPicker students={students} onSelected={setSelectedStudent}/>
-
+              <StudentPicker students={students} onSelected={setSelectedStudent} selected={selectedStudent}/>
             </Navbar.Item>
           </Navbar>
           {students.map(
