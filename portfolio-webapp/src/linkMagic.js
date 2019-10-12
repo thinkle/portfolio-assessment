@@ -20,6 +20,9 @@ const gdrive = {
 const standaloneMatcher = /\/\/([^.]*)[.-][-]?([^.-]*)[.]repl.co.*/;
 const projectMatcher = /\/\/repl.it\/@([^\/]+)\/([^\/]+)/;
 const words = ['Assignment','Exercise','CSS','Your','Own','Adventure','Choose']
+
+// <iframe height="400px" width="100%" src="https://repl.it/@DawsonCatton/class?lite=true" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true" sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-modals"></iframe>
+
 const repl = {
     isProject (url) {return url.match(projectMatcher)},
     isStandalone (url) {return url.match(standaloneMatcher)},
@@ -40,11 +43,18 @@ const repl = {
     },
     makeIframable (url) {
         if (this.isProject(url)) {
-            return this.toStandalone(url);
+            return url + '?lite=true'
         }
         else {
-            return url;
+            return url; // leave standalone url alone for web students
         }
+
+        // if (this.isProject(url)) {
+        //     return this.toStandalone(url);
+        // }
+        // else {
+        //     return url;
+        // }
     },
     linkExtras (href) {
         return (
