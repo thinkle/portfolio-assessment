@@ -54,7 +54,7 @@ var Aspen = {
             console.log(`Called studentPortfolioToAspenGrades without valid student object (needs profile with .name attr). Expected {profile:{name:{familyname...}}, got`,student)
             throw `Called studentPortfolioToAspenGrades without valid student object (needs profile with .name attr). Expected {profile:{name:{familyname...}}, got ${student}`
         }
-        const studentName = student.profile.name.familyName+', '+student.profile.name.givenName;
+        const studentName = fixName(student.profile.name);
         const assignmentsBySkill = {}
         portfolio.forEach(
             (exemplar) => {
@@ -90,7 +90,7 @@ var Aspen = {
                             'Student Name':studentName,
                             'Assignment Name':assignment,
                             'Grade':exemplar.assessment.score,
-                            'Comment':exemplar.assessment.comment,
+                            'Comment':makeComment(exemplar),
                         }
                     );
                 }
@@ -101,7 +101,37 @@ var Aspen = {
         console.log('EXP: Began with portf, exporting: ',portfolio, gradeExport);
         return gradeExport;
 
-        
+        function fixName (name) {
+            // FIX ME!
+            var out;
+            if (name.familyName && name.givenName) {
+                out = name.familyName+', '+name.givenName;
+            }
+            else {
+                out = name.fullName
+            }
+            if (out=='Landry, Jess') {  
+                return 'Landry, Jessica' // REFACTOR INTO DATA SOON :)
+            }
+            if (out=='daphne') {
+                return 'Osorio, Daphne'
+            }
+            return out;
+        }
+
+        function makeComment (exemplar) {
+            var comment = ''
+            if (exemplar.permalink) {
+                comment += 'Link to work: '+exemplar.permalink;
+            }
+            if (exemplar.assessment.comment) {
+                comment += '\nTeacher Comment: '+exemplar.assessment.comment
+            }
+            if (exemplar.reflection) {
+                comment += '\nStudent Reflection: '+exemplar.reflection
+            }
+            return comment
+        }
     },
 
     
