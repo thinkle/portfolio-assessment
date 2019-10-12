@@ -8,6 +8,7 @@ import ExemplarEditor from './ExemplarEditor.js';
 import history from './history.js';
 import AssignmentExporter from './AssignmentExporter.js';
 import {inspect} from 'util';
+import StudentPicker from './StudentPicker.js';
 
 function PortfolioCreator (props) {
     const [message,setMessage] = useState('');
@@ -216,26 +217,6 @@ function TeacherAssignmentView (props) {
                [currentPortfolio,selectedCoursework]
              )
 
-    function nextStudent () {
-        var n = students.indexOf(selectedStudent);
-        if (n == (students.length-1)) {
-            n = -1;
-        }
-        if (students.length) {
-            doChangeStudent(students[n+1]);
-        }
-    }
-
-    function prevStudent () {
-        var n = students.indexOf(selectedStudent);
-        if (n <= 0) {
-            n = students.length - 1
-        }
-        if (n >= 0 ) {
-            doChangeStudent(students[n-1]);
-        }
-    }
-
     function saveExemplars (exemplars) {
         setCurrentPortfolio(portfolioManager.updateExemplarsForStudent(exemplars,selectedStudent));
     }
@@ -253,22 +234,11 @@ function TeacherAssignmentView (props) {
                 key={`${getProp(selectedCoursework,'id')}-${getProp(coursework,'length')}`}
               />
             </Navbar.Item>
-            <Navbar.Item className="has-addons">
-              <Button
-                icon={Icon.left}
-                onClick={prevStudent}
-              />
-              <Dropdown
-                className="student-name-picker"
-                initialValue={selectedStudent}
-                items={students}
-                title="Choose student"
-                renderItem={(itm)=><span>{getProp(itm,'profile.name.fullName')}</span>}
+            <Navbar.Item>
+              <StudentPicker
+                   students={students}
+                selected={selectedStudent}
                 onSelected={doChangeStudent}
-              />
-              <Button
-                icon={Icon.right}
-                onClick={nextStudent}
               />
             </Navbar.Item>
             <Navbar.End>
