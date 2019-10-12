@@ -59,7 +59,7 @@ function ClassList (props) {
                      </span>
                      <span className="brand">Google Classroom classes</span>
                    </h3>
-                   <div className="level">
+                   <div className="buttons">
                      {
                          CourseFetcher.value.map((c)=>(
                              <a key={c.id} className='button is-medium level-item space-right classroom-green-button'
