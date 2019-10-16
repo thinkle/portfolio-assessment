@@ -111,7 +111,14 @@ var Sheets = {
 
     jsonToRowData (jsonArray, headers=undefined) {
         if (!headers) {
-            headers = Object.keys(jsonArray[0]);
+            headers = []
+            for (var row of jsonArray) {
+                for (var key in row) {
+                    if (headers.indexOf(key)==-1) {
+                        headers.push(key);
+                    }
+                }
+            }
             headers.sort(); // alphabetical!
         }
         const rowData = [getRowData(headers)]
