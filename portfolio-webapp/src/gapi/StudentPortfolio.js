@@ -21,6 +21,7 @@ function StudentPortfolio (course, student, studentMode=false) {
         var fetchedTimes = {...portData.updatedTimes};
         const latestGoogleTimes = await get_updated_time();
         const [portfolio,assessments] = splitPortfolioAndAssessmentData(portfolioEntries);
+        debugger;
         console.log('SP:Check times: latest vs fetched',latestGoogleTimes,fetchedTimes);
         // Exemplars...
         if (!force && latestGoogleTimes.exemplars > fetchedTimes.exemplars) {
@@ -37,7 +38,7 @@ function StudentPortfolio (course, student, studentMode=false) {
         }
         if (!studentMode) {
             // Assessments... (fix me - don't try for students).
-            if (latestGoogleTimes.assessments > fetchedTimes.assessments) {
+            if (!force && latestGoogleTimes.assessments > fetchedTimes.assessments) {
                 console.log('SP:Crap, assessments updated while we were playing - bad bad bad');
                 throw 'assessments file updated while we were working - merge not implemeneted';
             }
