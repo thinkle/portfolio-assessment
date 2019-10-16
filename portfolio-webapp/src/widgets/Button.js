@@ -2,6 +2,7 @@ import React, {useEffect,useState} from 'react';
 import Icon from './Icon.js';
 import {classNames} from '../utils.js';
 
+
 function Button (props) {
     var className = classNames({...props.classNames, button:true})
     if (props.className) {className += ' '+props.className}
@@ -18,4 +19,16 @@ function Button (props) {
                 </a>)
     }
 }
+
+function Toggle (props) {
+    const classNames = {
+        ...props.classNames,        
+    }
+    return <Button {...props}
+                   icon={props.active && Icon.toggleOn || Icon.toggleOff}
+                   classNames={classNames}>{props.children}</Button>
+}
+
+Button.Toggle = Toggle;
+
 export default Button;
