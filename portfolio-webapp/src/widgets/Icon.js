@@ -5,6 +5,8 @@ import {faSave,faExternalLinkAlt,faCheck,faUndo,
         faClipboardCheck,faChalkboardTeacher,faHiking,faFolderOpen,
         faPenSquare,
         faPlus,
+        faToggleOff,
+        faToggleOn,
         faSpinner,
         faExclamation,
         faWindowClose} from '@fortawesome/free-solid-svg-icons'
@@ -47,4 +49,6 @@ Icon.work = faHiking;
 Icon.plus = faPlus;
 Icon.bang = faExclamation;
 Icon.spinner = faSpinner;
+Icon.toggleOn = faToggleOn;
+Icon.toggleOff = faToggleOff;
 export default Icon;
