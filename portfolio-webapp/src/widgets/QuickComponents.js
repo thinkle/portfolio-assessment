@@ -1,10 +1,10 @@
 import React from 'react';
 import {classNames} from '../utils.js';
 
-function mergeClassNames (myClassNames, props) {
+function mergeClassNames (myClassNames, props, classDict) {
     var myClassNameDic = {}
     myClassNames.forEach((i)=>myClassNameDic[i]=true);
-    var className = classNames({...props.classNames, ...myClassNameDic})
+    var className = classNames({...myClassNameDic, ...classDict,...props.classNames})
     if (props.className) {className += ' '+props.className}
     return className
 }
