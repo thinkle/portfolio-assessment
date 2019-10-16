@@ -2,8 +2,6 @@ import {useState,useEffect} from 'react';
 import Api from './gapi.js';
 import {timestamp,getProp,objProp,arrayProp,replaceItemInArray} from '../utils.js';
 
-
-
 function useStudentPortfolioManager (params) {
     var defaultCourse
     if (params.course) {
@@ -158,9 +156,9 @@ function useStudentPortfolioManager (params) {
 
     function fetchPortfolio (student, course=defaultCourse, callback) {
         const id = makeID(course,student);
-        busyMap.updateKey(makeID(course,student),true)
-        spObjectMap.updateKey(makeID(course,student),Api.StudentPortfolio(course,student));
-        doFetchNowMap.updateKey(makeID(course,student),{doIt:true,callback:callback});
+        busyMap.updateKey(id,true)
+        spObjectMap.updateKey(id,Api.StudentPortfolio(course,student));
+        doFetchNowMap.updateKey(id,{doIt:true,callback:callback});
     }
 
     function setPortfolio (student, portfolio, course=defaultCourse) {
@@ -180,7 +178,8 @@ function useStudentPortfolioManager (params) {
         busyMap.updateKey(key,true)
         var sp = spObjectMap.map[key];
         if (!sp) {
-            throw 'WTF? No object';
+            console.log( 'WTF? No object');
+            sp = Api.StudentPortfolio(course,student);
         }
         try {
             await sp.set_portfolio_and_assessments(
@@ -199,14 +198,15 @@ function useStudentPortfolioManager (params) {
         }
         catch (err) {
             errorMap.updateKey(key,err);
-            console.log('PH:ERROR!');
+            console.log('PH:ERROR!',err);
         }
         console.log('PH:Set key not busy',key);
         busyMap.updateKey(key,false)
     }
 
     function getPortfolio (student, course=defaultCourse, callback) {
-        var result = portfolioMap.map[makeID(course,student)]
+        const id = makeID(course,student)
+        var result = portfolioMap.map[id]
         if (!result) {
             console.log('PH:getPortfolio comes up empty -- fetch it!');
             fetchPortfolio(student,course,callback);
@@ -214,6 +214,8 @@ function useStudentPortfolioManager (params) {
         }
         else {
             console.log('PH:We have a result already!');
+            // set our sp in case we want to save...
+            spObjectMap.updateKey(id,Api.StudentPortfolio(course,student));
             if (callback) {callback(result)}
             return result
         }
@@ -259,6 +261,7 @@ function useStudentPortfolioManager (params) {
         getError,
         getAllErrors,
         isBusy,
+        spObjectMap,
 
         getId (student, course=defaultCourse) {
             return makeID(course,student);
@@ -276,10 +279,7 @@ function useStudentPortfolioManager (params) {
         busyState:busyMap,
         errorState:errorMap,
     }
-
 }
-
-
 
 function useStudentPortfolio (params) {
     console.log('PH:useStudentPortfolio got params: ',params);
