@@ -16,10 +16,11 @@ function Tabs (props) {
 
     const [activeTab,setActiveTab] = useState(props.noInitialTab && -1 || props.initialTab || 0);
     const [fresh,setFresh] = useState(0)
-    const rendered = arrayProp(...useState(!props.noInitialTab && [0] || []));
-    var tabs = [];
-    var contents = [];
-    
+    const [myTabs,setMyTabs] = useState([])
+    const [myContents,setMyContents] = useState([]);
+
+    useEffect( () => {
+        var tabs = []; var contents = []
     if (props.groupedMode) {
         const children = React.Children.toArray(props.children);
         if (children.length != 2) {
@@ -48,8 +49,10 @@ function Tabs (props) {
             }
         }
     }
+        setMyContents(contents);
+        setMyTabs(tabs);
+    },[props.children])
 
-    const [myContents,setMyContents] = useState(contents);
 
     useEffect(()=>{
         if (!fresh) {
@@ -58,15 +61,15 @@ function Tabs (props) {
             if (props.onChange) {
                 props.onChange({
                     tabNumber:activeTab,
-                    contents:contents[activeTab],
-                    tab:tabs[activeTab]
+                    contents:myContents[activeTab],
+                    tab:myTabs[activeTab]
                 });
             }
-            if (contents[activeTab].props.onSelected) {
-                contents[activeTab].props.onSelected()
+            if (myContents[activeTab] && myContents[activeTab].props.onSelected) {
+                myContents[activeTab].props.onSelected()
             }
-            if (!rendered.indexOf(activeTab)>-1) {
-                rendered.push(activeTab);
+            else {
+                console.log('Bad selectioN?',activeTab)
             }
         }
         else {
@@ -80,7 +83,7 @@ function Tabs (props) {
         <React.Fragment>
           <TabsTop {...props}>
             <ul>
-              {tabs.map((tab,i)=>
+              {myTabs.map((tab,i)=>
                         <TopTab key={i} className={i==activeTab ? 'is-active' : undefined} onClick={()=>setActiveTab(i)}>
                           {tab}
                         </TopTab>
@@ -88,12 +91,17 @@ function Tabs (props) {
             </ul>
           </TabsTop>
           <div className="tab-content" key={fresh}>
-            {myContents.map((c,i)=>{
-                return (
-                    <div key={i} style={{display:i==activeTab&&'block'||'none'}}>
-                      {c}
-                    </div>
-                )})}
+            {props.preload &&
+             myContents.map((c,i)=>{
+                 return (
+                     <div key={i} style={{display:i==activeTab&&'block'||'none'}}>
+                       {c}
+                     </div>
+                 )
+             })
+             ||
+             myContents[activeTab]
+            }
           </div>
         </React.Fragment>
     );
