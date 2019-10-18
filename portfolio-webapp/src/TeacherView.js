@@ -180,10 +180,11 @@ function TeacherCourseView (props) {
 
     return (
         <div className='body'>
-          <div style={{height:'100%'}}>
+          <Viewport.Wrap>
             <Viewport.Two>
               <Tabs className="is-centered" groupedMode={true}
                     initialTab={initialTabIndex}
+                    preload={true}
                     key={gotDataAndStuff}
               >
                 <>{tabList.map(
@@ -193,9 +194,9 @@ function TeacherCourseView (props) {
                 <>
                   {tabList.map(
                       (tabInfo)=>(
-                          <div onSelected={()=>updateRoute(tabInfo.routeName)}>
+                          <Viewport.Wrap onSelected={()=>updateRoute(tabInfo.routeName)}>
                             {tabInfo.element}
-                          </div>
+                          </Viewport.Wrap>
                       ))}
                 </>
               </Tabs>
@@ -207,7 +208,7 @@ function TeacherCourseView (props) {
                   <Button icon={Icon.close} onClick={()=>setMessage('')}>Close</Button>
                 </Card>
               </Modal>
-          </div>
+          </Viewport.Wrap>
         </div>
     );
 
