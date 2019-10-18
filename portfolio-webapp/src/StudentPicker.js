@@ -11,11 +11,9 @@ function StudentPicker (props) {
     function prevStudent () {
         var n = props.students.indexOf(props.selected);
         if (n <= 0) {
-            n = props.students.length - 1
+            n = props.students.length // we'll subtract one in a sec
         }
-        if (n >= 0 ) {
-            doChangeStudent(props.students[n-1]);
-        }
+        doChangeStudent(props.students[n-1]);
     }
 
     function nextStudent () {
@@ -30,11 +28,14 @@ function StudentPicker (props) {
 
 
     return (
-            <Field className="has-add-ons">
+        <Field className="has-addons">
+          <Control>
               <Button
                 icon={Icon.left}
                 onClick={prevStudent}
               />
+          </Control>
+          <Control>
               <Dropdown
                 className="student-name-picker"
                 initialValue={props.selected}
@@ -43,11 +44,14 @@ function StudentPicker (props) {
                 renderItem={(itm)=><span>{getProp(itm,'profile.name.fullName')}</span>}
                 onSelected={doChangeStudent}
               />
+          </Control>
+          <Control>
               <Button
                 icon={Icon.right}
                 onClick={nextStudent}
               />
-            </Field>
+          </Control>
+        </Field>
     );
 }
 
