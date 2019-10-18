@@ -94,7 +94,7 @@ function Tabs (props) {
             {props.preload &&
              myContents.map((c,i)=>{
                  return (
-                     <div key={i} style={{display:i==activeTab&&'block'||'none'}}>
+                     <div key={i} style={{display:i==activeTab&&'block'||'none',height:'100%'}}>
                        {c}
                      </div>
                  )
