@@ -5,13 +5,13 @@
   @return $string;
 
 
-@function gridLine ($start, $end, $prepend, $append)
+@function gridLine ($word, $start, $end, $prepend, $append)
     $list : ()
     @if $prepend
         $list : append($list,$prepend)
     @for $i from $start through $end
-        $list : append($list,cell+$i)
+        $list : append($list,$word+$i)
     @if $append
         $list : append($list,$append)
     @return str-replace(quote($list),DOT,".")
-        
+       
