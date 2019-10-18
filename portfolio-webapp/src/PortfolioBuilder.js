@@ -358,41 +358,41 @@ function PortfolioBuilder (props) {
           </nav>
           <hr/>
           <TreeView
+            className='portfolio-builder-tree'
             data={treeData}
             onDataChange={saveTree}
-            headers={['Skill','Strand','Assigned','Due','Points','Description']}
-            widths={
-                [
-                    '250px','80px','160px','160px','100px','200px'
-                ]
-            }
+            headers={['Strand','Skill','Assigned','Due','Points','Description']}
+            /* widths={ */
+            /*     [ */
+            /*         '250px','80px','160px','160px','100px','200px' */
+            /*     ] */
+            /* } */
             onChangeHook={TreeView.CascadeHook(['skill','strand'])}
             getNewRowData={getNewRowData}
             maxNesting={2}
-            cols={5}
+            cols={6}
             key={latestDataCount}
             getRenderers={
             (params)=>{
                 if (params.level==0) {
-                    return [TreeView.HeaderCol('strand',{colSpan:4,editable:true}),
-                            TreeView.SumCol('points'),
-                            TreeView.BlankCol()];
+                    return [TreeView.HeaderCol('strand',{col:1,colSpan:4,colSpanClasses:['start1','end4'],editable:true}),
+                            TreeView.SumCol('points',{col:5}),
+                            TreeView.BlankCol({col:6})];
                 }
                 if (params.level==1) {
-                    return [TreeView.TextCol('skill',{editable:true}),
-                            TreeView.TagCol('strand'),
-                            TreeView.BlankCol(),
-                            TreeView.BlankCol(),
-                            TreeView.SumCol('points'),
+                    return [TreeView.TagCol('strand',{col:1}),
+                            TreeView.TextCol('skill',{col:2,editable:true,colSpan:3}),
+                            TreeView.SumCol('points',{col:5}),
                             TreeView.RichTextCol(
                                 'descriptor',
-                                {makeHeader : (data) => `${data.skill} (${data.strand}) Description`}
+                                {makeHeader : (data) => `${data.skill} (${data.strand}) Description`,
+                                 col:6}
                             )
                            ]
                 }
                 if (params.level==2) {
-                    return [TreeView.TextCol('skill'),
-                            TreeView.TagCol('strand'),
+                    return [TreeView.TagCol('strand'),
+                            TreeView.TextCol('skill'),
                             TreeView.DateCol('assignedDate',{editable:true}),
                             TreeView.DateCol('dueDate',{editable:true}),
                             TreeView.NumCol('points',{editable:true}),
@@ -469,7 +469,7 @@ function AspenProps (props) {
         <label>Semester <input defaultValue="S1" className="input" ref={(n)=>refs['semester']=n}/></label>
         <label>Extra Credit Points <input defaultValue={0} type="number" className="input" ref={(n)=>refs['extraCredit']=n}/></label>
         <label>Grading Scale <input defaultValue="High School Grading Scale" type="text" className="input" ref={(n)=>refs['gradingScale']=n}/></label>
-        <input type="submit" value={props.submitButtonText||"Push Aspen Headers to Spreadsheet"} className="button space-top is-primary"/>
+        <input type="submit" value={props.submitButtonText||"Send Assignments to Spreadsheet"} className="button space-top is-primary"/>
       </form>
     );
     
