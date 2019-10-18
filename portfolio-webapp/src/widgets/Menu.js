@@ -80,8 +80,8 @@ function SelectableItem (props) {
                         if (box.height > maxHeight) maxHeight = box.height;
                     }
                 });
-            setElWidth(maxWidth+30);
-            setElHeight(maxHeight+5);
+            setElWidth(maxWidth);
+            setElHeight(maxHeight);
         },200);
     }, [selected, props]);
     
