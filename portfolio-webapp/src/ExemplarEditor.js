@@ -1,6 +1,6 @@
 import React,{useState,useEffect} from 'react';
 import {useCoursework,useStudentWork,useStudentPortfolio} from './gapi/hooks.js';
-import {Box,CustomSelectableItem,SelectableItem,Container,Icon,Button,Navbar,h} from './widgets.js';
+import {Box,CustomSelectableItem,SelectableItem,Container,Icon,Button,Navbar,h,Viewport} from './widgets.js';
 import {SkillPicker,usePortfolioSkillHook} from './AssignmentMapper.js';
 import {arrayProp,classNames,getById,getProp} from './utils.js';
 import Material from './Material.js';
@@ -170,8 +170,9 @@ function ExemplarEditor (props) {
     }
 
     return (
-        <div>
+        <Viewport.Two>
           {makeNavbar()}
+          <div>
           <div className={classNames({
             ExemplarEditor:true,
             sidebarMode:sidebarMode
@@ -186,7 +187,8 @@ function ExemplarEditor (props) {
             <SheetWidget url={permalink}/>
           </div>
           </div>
-        </div>
+          </div>
+        </Viewport.Two>
     );
     
     function skillAssessmentBoxes () {
@@ -274,8 +276,8 @@ function ExemplarEditor (props) {
             <Navbar className="navbar2">
               <Navbar.Start>
                 <Navbar.QuickBrand>
-                  {props.mode=='student' && 'Student Mode'}
-                  {props.mode=='teacher' && 'Teacher Mode'}
+                  {/* props.mode=='student' && 'Student Mode'} */
+                  /* {props.mode=='teacher' && 'Teacher Mode' */}
                   {/* selectedSubmission && selectedSubmission.courseWorkId */}
                   {/* selectedSkill && selectedSkill.skill */}
                 </Navbar.QuickBrand>                
@@ -499,13 +501,20 @@ function ExemplarSkillEditor (props) {
         }
     }
 
+    function isNew () {
+        return !(props.revisionCount > 0 || props.assessmentCount > 0)
+    }
+
     return (
         <Box className={classNames({
+            isNew:isNew(),
             skillEditor:true,
             teacher:props.mode=='teacher',
             student:props.mode=='student',
-        })}>
+        })}> assessment & rev {assessmentCount} {revisionCount} {revisionCount > 0 || assessmentCount > 0}
           <div className="skillTitle">
+            <Navbar className="navbar3 skillControl">
+              <Navbar.Item>
                 <CustomSelectableItem
                   unselect={()=>setSelectedSkill()}
                   selected={selectedSkill}
@@ -515,24 +524,25 @@ function ExemplarSkillEditor (props) {
                       {selectedSkill && selectedSkill.skill}
                     </h.h5>
                     <span className='tag'>{selectedSkill && selectedSkill.strand}</span>
+                    <div className="skillDetail">
+                      {selectedSkill && selectedSkill.exemplars && 
+                       <div className="is-small">{selectedSkill.exemplars.length} {selectedSkill.exemplars.length==1 && 'exemplar' || 'exemplars'}
+                         <br/>due&nbsp;
+                         {selectedSkill.exemplars.map((ex,i)=><span>{ex.dueDate && ex.dueDate.toLocaleDateString()}{i<(selectedSkill.exemplars.length-1)&&','}</span>)}
+                       </div>}
+                    </div>
                   </div>
                   <div className="side-by-side">
                     <h.h5>Skill:</h.h5>
-                    <SkillPicker
-                      key={selectedSubmission && selectedSubmission.courseWorkId}
-                      customMenu={getCustomSkillPickerMenu()}
-                      strands={strands}
-                      skills={skills}
-                      onSelected={setSelectedSkill}/>
+                <SkillPicker
+                  key={selectedSubmission && selectedSubmission.courseWorkId}
+                  customMenu={getCustomSkillPickerMenu()}
+                  strands={strands}
+                  skills={skills}
+                  onSelected={setSelectedSkill}/>
                   </div>
                 </CustomSelectableItem>
-            <div className="skillDetail">
-              {selectedSkill && selectedSkill.exemplars && 
-              <div className="is-small">{selectedSkill.exemplars.length} {selectedSkill.exemplars.length==1 && 'exemplar' || 'exemplars'}, due&nbsp;
-                {selectedSkill.exemplars.map((ex,i)=><span>{ex.dueDate && ex.dueDate.toLocaleDateString()}{i<(selectedSkill.exemplars.length-1)&&','}</span>)}
-              </div>}
-            </div>
-            <Navbar className="navbar3 skillControl">
+              </Navbar.Item>
               {props.mode=='student' &&
                <Navbar.Item>
                  {assessmentCount < revisionCount &&
@@ -567,7 +577,7 @@ function ExemplarSkillEditor (props) {
               }
               <Navbar.End>
                 <Navbar.Item>
-                  {props.onRemove && <Button onClick={props.onRemove} icon={Icon.delete}>Remove Skill</Button>}
+                  {props.onRemove && <Button onClick={props.onRemove} icon={Icon.delete}>Remove</Button>}
                 </Navbar.Item>
               </Navbar.End>
             </Navbar>
@@ -637,4 +647,67 @@ function ExemplarSkillEditor (props) {
 
 }
 
+function useEEProps ({selectedStudent,selectedCoursework,currentPortfolio,assignments,allStudentWork}) {
+
+    const [exemplarEditorProps,setEEProps] = useState({});
+    const [exemplarRenderCount,setERC] = useState(1);
+
+    useEffect( ()=>{
+        console.log('recalc our exemplarEditorProps...');
+        var submission;
+        if (selectedCoursework && selectedStudent) {
+            console.log('TAV: Filter submissions for ',selectedStudent,selectedCoursework);
+            var submissions = allStudentWork.filter(
+                (submission) => {
+                    if (submission.courseWorkId==selectedCoursework.id) {
+                        if (submission.userId == selectedStudent.userId) {
+                            return true;
+                        }
+                        if (submission.submissionHistory) {
+                            for (var i=0; i<submission.submissionHistory.length; i++) {
+                                if (getProp(submission.submissionHistory[i],'stateHistory.actorUserId') == selectedStudent.userId) {
+                                    return true
+                                }
+                            }
+                        }
+                    }
+                });
+            if (submissions.length) {
+                submission = submissions[0]
+            }
+        }
+        var eepProps = {
+            selectedCoursework : selectedCoursework,
+            selectedSubmission : submission,
+            selectedSkills : currentPortfolio.filter((item)=>selectedCoursework && item.courseworkId==selectedCoursework.id),
+        };
+        if (selectedCoursework && assignments && assignments[selectedCoursework.id]) {
+            console.log('TAV: Assignment has skills mapped, let\'s check on them...');
+            var skillsToAdd = assignments[selectedCoursework.id].slice();
+            // Remove ones the student already has...
+            eepProps.selectedSkills.forEach(
+                (skill)=>{
+                    var idx = skillsToAdd.indexOf(skill.skill);
+                    if (idx > -1) {
+                        skillsToAdd.splice(idx,1);
+                    }
+                });
+            skillsToAdd.forEach((sk)=>eepProps.selectedSkills.push({skill:sk}));
+        }
+        // Now set it...
+        setEEProps(eepProps)
+        setERC(exemplarRenderCount+1);
+    },
+               [currentPortfolio,selectedCoursework]
+             )
+
+    return {
+        exemplarRenderCount,
+        exemplarEditorProps
+    }
+}
+
+
+
 export default ExemplarEditor;
+export {useEEProps}
