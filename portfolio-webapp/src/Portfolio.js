@@ -2,9 +2,10 @@ import React, {useEffect, useState} from 'react';
 import TreeView from './TreeView.js';
 import {Container,Button,Icon,Modal,Navbar,Menu,Viewport} from './widgets.js';
 import {useStudentPortfolio,useCoursework,useStudentWork} from './gapi/hooks.js';
-import {getItemById,replaceItemInArray,getProp} from './utils.js';
+import {getItemById,replaceItemInArray,getProp,classNames} from './utils.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import ExemplarEditor from './ExemplarEditor.js';
+import SavePortfolioButtons from './SavePortfolioButtons.js';
 import {inspect} from 'util';
 
 const C = TreeView.Cell;
@@ -106,6 +107,8 @@ function LazyPortfolioComponent (props) {
                               /> || <div>{props.student && props.student.userId}</div>);
 }
 
+
+
 function PortfolioComponent (props) {
 
     // needs props:
@@ -179,14 +182,15 @@ function PortfolioComponent (props) {
             }
             if (filters.needsAssessment) {
                 filterBasedOnWork((skill)=>(exemplar)=>{
-                    const notAssessed = (!(exemplar.assessment&&exemplar.assessment.score))
+                    const notAssessed = (!(exemplar.assessment&&(exemplar.assessment.score||exemplar.assessment.count)))
                     return (notAssessed || exemplar.assessment.count < exemplar.revisionCount);
                 })
                 keepOnlyWithWork();
             }
             if (filters.isAssessed) {
                 filterBasedOnWork((skill)=>(exemplar)=>{
-                    return exemplar.assessment && exemplar.assessment.count >= exemplar.revisionCount
+                    return exemplar.assessment && (exemplar.assessment.count >= exemplar.revisionCount ||
+                                                   exemplar.assessment.score && !exemplar.revisionCount)
                 });
                 keepOnlyWithWork();
             }
@@ -256,7 +260,7 @@ function PortfolioComponent (props) {
         setShowExemplar(false);
     }
 
-    var treeState = TreeView.NapTime(1); // state manager for toggled state of tree
+    var treeState = TreeView.NapTime(2); // state manager for toggled state of tree
 
     return (
         <Viewport>
@@ -286,46 +290,39 @@ function PortfolioComponent (props) {
                    </Button>
                  </Navbar.Item>
                </React.Fragment>}
-              <Navbar.Item>{busy && <div classname="has-warning-text" style={{'background-color':'white'}}><Icon icon={Icon.spinner}/><em>Communicating with the google...</em></div>}</Navbar.Item>
-              <Navbar.Item>{
-                  !saved &&
-                      <span>
-                        <Button className="is-primary" icon={Icon.save} onClick={()=>savePortfolio()}>Save Changes to Google</Button>
-                        <span className="has-text-danger is-bold">Work not saved yet!</span>
-                      </span>
-                      ||
-                      <div className="is-success">
-                        <a target='_blank' href={urls && urls.exemplars}>Exemplars</a>
-                        &amp;
-                        <a target='_blank' href={urls && urls.assessments}>Assessments</a>
-                        &nbsp;Synced to Google
-                      </div>
-              }
-              </Navbar.Item>
+              <SavePortfolioButtons
+                busy={busy}
+                urls={urls}
+                savePortfolio={savePortfolio}
+                saveOverPortfolio={saveOverPortfolio}
+              />
             </Navbar.End>
           </Navbar>
           {true && 
            <TreeView
+             className="portfolio-tree-view"
              getShowChildrenState={treeState.getShowChildrenState}
              onSetShowChildren={treeState.onSetShowChildren}
              noDelete={true}
              key={dataCount}
              data={treeData}
              headers={[
-                 'Strand','Skill','Points','Exemplars','Due','Assessment'
+                 'Strand',
+                 'Skill',
+                 'Points',
+                 'Exemplars',
+                 'Due'
              ]}
-             widths = {[
-                 '6em','15em','12em','15em','8em','15em'
-             ]}
-            cols={5}
+             cols={6}
+             /* widths = {[ */
+             /*     '6em','15em','12em','15em','8em','15em' */
+             /* ]} */
             getRenderers={(params)=>{
                 if (params.level==0) {
                     return [TreeView.HeaderCol('strand',{colSpan:2}),
                             StrandPointsTotalCol,
                             StrandExemplarCountCol,
-                            TreeView.BlankCol(),
-                            TreeView.BlankCol(),
-                            TreeView.BlankCol()]
+                            ]
                 }
                 else if (params.level==1) {
                     return [TreeView.TagCol('strand'),
@@ -468,9 +465,13 @@ function PortfolioComponent (props) {
             return <Menu
                      title="Filter"
                      items={filterNames}
+                     className={classNames({
+                         filter : true,
+                         active : Object.values(filters).indexOf(true)>-1,
+                     })}
                      renderItem={
                          ([name,prop])=>(
-                             <label className='control'>
+                             <label className={classNames({control:true,active:!!filters[prop]})}>
                                <input type="checkbox"
                                       className='checkbox'
                                       checked={!!filters[prop]}
@@ -496,9 +497,10 @@ function PortfolioComponent (props) {
 
 
     
-}
+    }
 
-function StrandExemplarCountCol ({data,children}) {
+function StrandExemplarCountCol (props) {
+    const {data,children} = props;
     var exemplars = 0;
     var work = 0;
     children.forEach(
@@ -507,10 +509,11 @@ function StrandExemplarCountCol ({data,children}) {
             work += skill.children.length;
         }
     );
-    return <C><b>{work||0} of {exemplars||0}</b></C>
+    return <C {...props}><b>{work||0} of {exemplars||0}</b></C>
 }
 
-function StrandPointsTotalCol ({data,children}) {
+function StrandPointsTotalCol (props) {
+    const {data,children} = props;
     var tot = 0;
     children.forEach(
         (skill)=>{
@@ -518,16 +521,16 @@ function StrandPointsTotalCol ({data,children}) {
                 (ex)=>tot+=ex.points
             )
         });
-    return <C><b>{tot}</b></C>
+    return <C {...props}><b>{tot}</b></C>
 }
 
-function ExemplarCountCol ({data,children}) {
-    return data.exemplars && <C>{children&&children.length||0} of {data.exemplars.length}</C>
+function ExemplarCountCol (props) {
+    return props.data.exemplars && <C {...props}>{props.children&&props.children.length||0} of {props.data.exemplars.length}</C>
 }
-function DueDateCol ({data,children}) {
-    return data.exemplars &&
-        <C>
-          {data.exemplars
+function DueDateCol (props) {
+    return props.data.exemplars &&
+        <C {...props}>
+          {props.data.exemplars
            .map(
                (child)=>child.dueDate && child.dueDate.toLocaleDateString([],{day:'numeric',month:'short'})||''
            )
@@ -537,28 +540,28 @@ function DueDateCol ({data,children}) {
         </C>
 }
 
-function PointsTotalCol ({data}) {
-    if (data.exemplars) {
+function PointsTotalCol (props) {
+    if (props.data.exemplars) {
         var tot = 0;
-        data.exemplars.forEach((ex)=>tot+=ex.points);
-        return <C>{tot}</C>
+        props.data.exemplars.forEach((ex)=>tot+=ex.points);
+        return <C {...props}>{tot}</C>
     }
     else {
-        return <C>'-'</C>
+        return <C {...props}>'-'</C>
     }
 }
 
-function StatusCol ({data}) {
-    var revCount = data.revisionCount || 0;
-    var assCount = data.assessment && data.assessment.count || 0;    
+function StatusCol (props) {
+    var revCount = props.data.revisionCount || 0;
+    var assCount = props.data.assessment && props.data.assessment.count || 0;    
     if (assCount >= revCount) {
-        return <C><Icon icon={Icon.teacher}/><span className='tag'>{assCount}</span></C>
+        return <C {...props}><Icon icon={Icon.teacher}/><span className='tag'>{assCount}</span></C>
     }
     else if (revCount == 0) {
-        return <C><Icon icon={Icon.bang}/><span className='tag'>Not in</span></C>
+        return <C {...props}><Icon icon={Icon.bang}/><span className='tag'>Not in</span></C>
     }
     else {
-        return <C><Icon icon={Icon.check}/><span className='tag'>{revCount}</span></C>
+        return <C {...props}><Icon icon={Icon.check}/><span className='tag'>{revCount}</span></C>
     }
 }
 
