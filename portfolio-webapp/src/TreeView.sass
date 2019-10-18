@@ -5,6 +5,8 @@
 @import "../node_modules/bulma/sass/form/_all.sass";
 @import "../node_modules/bulma/sass/layout/_all.sass";
 @import "./chooseContrast.sass"
+@import "./gridMagic.sass"
+
 
 .button.is-outlined
   background-color: transparent
@@ -36,43 +38,45 @@
 .treecell .button:hover
   background-color: white;
 
-+desktop
-  .treeView 
-    min-width: 1024px
-  .treerow 
-    display: grid
-    grid-column-gap: 3px
+/* +desktop
+/*   /* .treeView 
+/*   /*   min-width: 1024px
+
+.treerow 
+  display: grid
+  grid-column-gap: 3px
 
 $step : 1rem
 
-+touch
-  .treerow
-    display: block
-    position: relative
-  .treehead
-    display: none
-  .treecell.controls:first-child
-    position: absolute
-    left: 2px
-  .treerow
-    padding-left: $step + 5rem
-  .nested1
-    padding-left: 2 * $step
-  .nested2
-    padding-left: 3 * $step
-  .nested3
-    padding-left: 4 * $step
-  .treecell.blank
-    display: none
-  .treecell
-    display: inline-block
-    margin-right: 1em;
-  .treecell:last-child
-    margin-right: 0
-  .treecell.mobile-break
-    display: block
-  .treecell.break-after+.treecell
-    display: block
+/* +mobile
+
+/*   .treerow
+/*     display: block
+/*     position: relative
+/*   .treehead
+/*     display: none
+/*   .treecell.controls:first-child
+/*     position: absolute
+/*     left: 2px
+/*   .treerow
+/*     padding-left: $step + 5rem
+/*   .nested1
+/*     padding-left: 2 * $step
+/*   .nested2
+/*     padding-left: 3 * $step
+/*   .nested3
+/*     padding-left: 4 * $step
+/*   .treecell.blank
+/*     display: none
+/*   .treecell
+/*     display: inline-block
+/*     margin-right: 1em;
+/*   .treecell:last-child
+/*     margin-right: 0
+/*   .treecell.mobile-break
+/*     display: block
+/*   .treecell.break-after+.treecell
+/*     display: block
     
     
 $row-types: even odd
@@ -93,14 +97,90 @@ $colors: #659dbd #BC986A
     background-color: scale-color($baseColor,$lightness: 50%)
     @include text-contrast(scale-color($baseColor,$lightness: 50%))
   
+  .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd) .nested2,.table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd) .nested2
+    border-top: 1px solid scale-color($baseColor,$lightness: 60%)
+
   .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even),.table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even) .treePopover div
     background-color: scale-color($baseColor,$lightness: 80%)
     @include text-contrast(scale-color($baseColor,$lightness: 80%))
+
+  .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even) .nested2,.table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even) .nested2
+    border-top: 1px solid scale-color($baseColor,$lightness: 90%)
+
+
+.lcontrol
+  grid-area: lcontrol
+.rcontrol
+  grid-area: rcontrol
+
+@for $cols from 1 through 20
+
+  $rowMinusOne : $cols - 1
+
+  .treecell:nth-child(#{$cols})
+    grid-area: cell+$rowMinusOne
+  .treecell.start#{$cols}
+    grid-column-start: cell+$cols
+  .treecell.end#{$cols}
+    grid-column-end: cell+$cols
+  .treecell.cell#{$cols}
+    grid-area: cell+$cols
+
+  .cell#{$cols}
+    grid-area: cell+$cols
+  /* $matrix : append($matrix,quote($list),space)
+  /* $matrix1 : append($matrix,quote($list1),space)
+  /* $matrix2 : append($matrix,quote($list2),space)
+  .treeView-#{$cols}-1 .treerow .treecell:nth-child(1)
+    grid-area: lcontrol
+
+  .treeView-#{$cols}-2 .treerow .treecell:nth-child(1)
+    grid-area: lcontrol
+
+  .treeView-#{$cols}-2 .treerow .treecell:last-child
+    grid-area: rcontrol
+
+  .treeView-#{$cols}-2 .treehead .treerow .treecell:last-child
+    grid-area: cell+$cols
+   
+  
+  .treeView-#{$cols} .treerow
+    grid-template-columns: repeat($cols,1fr)
+    grid-template-areas: gridLine(cell,1,$cols,null,null)
+
+  .treeView-#{$cols}-1 .treerow
+    grid-template-columns: 60px repeat($cols,1fr)
+    grid-template-areas: gridLine(cell,1,$cols,lcontrol,null)
+
+  .treeView-#{$cols}-2 .treerow
+    grid-template-columns: 60px repeat($cols,1fr) 60px
+    grid-template-areas: gridLine(cell,1,$cols,lcontrol,rcontrol)
+
+  +touch
+    $half : ceil($cols/2)
+    
+    .treeView-#{$cols}-1 .treerow
+      grid-template-columns: 60px repeat(ceil($cols/2),1fr)
+      grid-template-areas : gridLine(cell,1,$half,lcontrol,null) gridLine(cell,$half+1,$cols,DOT,null)
+
+    .treeView-#{$cols}-2 .treerow
+      grid-template-columns: 60px repeat(ceil($cols/2),1fr) 60px
+      grid-template-areas : gridLine(cell,1,$half,lcontrol,DOT) gridLine(cell,$half+1,$cols,DOT,rcontrol)
+
+
+    .treeView-#{$cols} .treerow
+      grid-template-columns: repeat(ceil($cols/2),1fr)
+      grid-template-areas : gridLine(cell,1,$half,null,null) gridLine(cell,$half+1,$cols,null,null)
+
+
+    
 
 
 @for $span from 2 through 20
   .colSpan#{$span}
     grid-column: span $span
+
+
   
 $spacer : 0.5em
 
@@ -205,3 +285,27 @@ $spacer : 0.5em
 .treePoppable:hover
   cursor: pointer
   color: $blue
+
++desktop
+  .portfolio-builder-tree .treerow
+    grid-template-columns: 60fr 80fr 250fr 170fr 170fr 100fr 200fr 60fr
+    grid-column-gap: 3px;
+
+  .portfolio-tree-view .treerow
+    grid-template-columns: 60px 50fr 250fr 250fr 250fr 100fr 160px
+
++touch
+  .portfolio-builder-tree .treerow
+    grid-template-columns: 60px 1fr 2fr 2fr 60px
+    grid-template-areas: "lcontrol cell1 cell2 cell6 ." ". cell5 cell3 cell4 rcontrol"
+
+  .portfolio-tree-view .treerow
+    grid-template-columns: 60px 50fr 250fr 250fr;
+    grid-template-areas: "lcontrol cell1 cell2 cell4" ". cell3 cell5 cell6";
+
+  .portfolio-tree-view .nested2.treerow
+    grid-template-columns: 60px 50fr 250fr 250fr;
+    grid-template-areas: "lcontrol cell1 cell3 cell2" ". cell5 cell4 cell6";
+    //grid-template-areas: "lcontrol cell1 cell4 cell6" ". . cell3 cell5";
+  
+  
