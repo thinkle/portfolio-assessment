@@ -511,7 +511,7 @@ function ExemplarSkillEditor (props) {
             skillEditor:true,
             teacher:props.mode=='teacher',
             student:props.mode=='student',
-        })}> assessment & rev {assessmentCount} {revisionCount} {revisionCount > 0 || assessmentCount > 0}
+        })}> 
           <div className="skillTitle">
             <Navbar className="navbar3 skillControl">
               <Navbar.Item>
