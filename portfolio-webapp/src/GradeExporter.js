@@ -5,8 +5,7 @@ import DocumentManager from './gapi/DocumentManager.js';
 import Sheets from './gapi/SheetBasics.js';
 import SheetManager from './gapi/SheetManager.js';
 import StudentPicker from './StudentPicker.js';
-import {arrayProp} from './utils.js';
-
+import {arrayProp,classNames} from './utils.js';
 
 function GradeExporter (props) {
 
@@ -112,8 +111,11 @@ function GradeExporter (props) {
                 </div>
                 {message && <div>{message}</div>}
                 {url && <a target="_BLANK" href={url}>Click here to see export</a>}
-                {showSelectStudents &&
-                 <div>
+                <div className={classNames({
+                    fadeIn : true,
+                    active : showSelectStudents,
+                })}
+                >
                    <StudentPicker.Multi
                      students={props.students}
                      selected={selectedStudents}
@@ -124,14 +126,19 @@ function GradeExporter (props) {
                      /* } */}
                      onRemove={(student)=>selectedStudentAP.remove(student)}
                    />
-                 </div>}
+                 </div>
               </div>
               <div>
                 <Buttons>
                   <Button icon={Icon.close} onClick={props.onClose}>Close</Button>
-                  <Button icon={Icon.student} onClick={()=>{setShowSelectStudents(true)}}>Select Students</Button>
+                  <Button.Toggle
+                    icon={Icon.student}
+                    active={showSelectStudents}
+                    onClick={()=>{setShowSelectStudents(!showSelectStudents)}}>
+                    Select Students
+                  </Button.Toggle>
                   {selectedStudents.length>0 &&
-                   <Button icon={Icon.export} onClick={()=>{exportSelected()}}>
+                   <Button icon={Icon.export} onClick={()=>{setShowSelectStudents(false);exportSelected()}}>
                      Export for {selectedStudents.length} selected
                      Students</Button>
                   }
