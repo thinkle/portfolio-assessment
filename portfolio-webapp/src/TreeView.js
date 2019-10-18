@@ -1,14 +1,13 @@
 import React, {useEffect,useState} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {classNames,getProp} from './utils.js';
+import {classNames,getProp,sanitize} from './utils.js';
 import {TransitionGroup,CSSTransition} from 'react-transition-group';
 import { inspect } from 'util'; // or directly
-import {sanitize} from './utils.js';
 import Editor from './RichText.js';
 import {Icon,Modal,Button} from './widgets.js';
 import makeComponent,{mergeClassNames} from './widgets/QuickComponents.js';
 import './TreeView.sass';
-/*import hash from 'object-hash';*/
+
 
 // Nevermind -- let's abstract the treeview out into a widget.
 
@@ -19,9 +18,9 @@ function TreeHead (props) {
     return (
         <div className='treehead'>
           <div className='treerow'
-            style={
-                {'grid-template-columns':props.template}
-            }
+            /* style={ */
+            /*     {'grid-template-columns':props.template} */
+            /* } */
           ><div className='treecell'></div>
         {props.headers.map((h)=>(
             <div key={h} className='treecell'>{h}</div>
@@ -92,6 +91,8 @@ function TreeRow (props) {
         return null;
     }
 
+    const columnCount = {} // handy counter... ugh -- globalish variable -- long story.
+
     return (
         <div className={
             classNames({
@@ -131,11 +132,14 @@ function TreeRow (props) {
             {props.getRenderers({
                 data:props.data,
                 level:nlevel
-            }).map((renderer)=>{
+            }).map((renderer,i)=>
+                   {
                 try {
                     return renderer(
                         {...props.data,
                          rowId:props.id,
+                         number:i,
+                         columnCount:columnCount,
                          rowProps:props,
                          onPropChange:(p,v)=>props.onChange(props.id,p,v)
                         }
@@ -187,7 +191,7 @@ function TreeRow (props) {
                 props.getNewRowData && (
                    <AddRowRow
                      nlevel={nlevel+1}
-                     template={props.template}
+                     /* template={props.template} */
                      onAddRow={props.onAddRow}
                      parent={props.data}
                      parentId={props.id}
@@ -249,9 +253,18 @@ function TreeView (props) {
     const [data,setData] = useState(props.data);
 
     const noDelete = props.noDelete
-    var widths = ['60px',...props.widths]
-    if (!noDelete) {widths.push('60px');}
-    var template = widths.join(' ');
+    // var widths = ['60px',...props.widths]
+    // if (!noDelete) {widths.push('60px');}
+    // var template = widths.join(' ');
+    const baseClass = `treeView-${props.cols}-${!noDelete&&2||1}`;
+    const tvClassNames = {
+        [baseClass] : true,
+        control1 : noDelete,
+        control2 : !noDelete,
+        table : true,
+        treeView : true,
+        ...props.classNames
+    }
     
     // useEffect(
     //     ()=>{
@@ -315,8 +328,10 @@ function TreeView (props) {
 
     return (
         <TransitionGroup>
-        <div className="table treeView is-striped">
-          <TreeHead key={props.headers.join('')} headers={props.headers} template={template}/>
+          <div className={props.className + ' ' + classNames(tvClassNames)}>
+          <TreeHead key={props.headers.join('')} headers={props.headers}
+        /* template={template} */
+          />
           
 
         {data.map(
@@ -324,7 +339,7 @@ function TreeView (props) {
                             {...props}
                             /* key={hash(row.data)} */
                             id={''+count}
-                            template={template}
+                            /* template={template} */
                             level={0}
                             data={row}
                             onChange={onDataChange}
@@ -341,21 +356,50 @@ function TreeView (props) {
             parentId=''
             getNewRowData={props.getNewRowData}
             colsToSkip={props.cols+2}
-            template={template}
+                                  /* template={template} */
                                 />}
         </div>
         </TransitionGroup>
     )
 }
 
-
-
-TreeView.LinkCol = (field, params = {}) => ({data,onPropChange}) => {
-    const classes = ['treecell','text-col','link-col']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
+function tcClass (special, {params, data, number, columnCount, extraClasses}) {
+    if (!params) {params = {}}
+    const classes = ['treecell',...special]
+    // if (number==0) {
+    //     columnCount.count = 1;
+    // }
+    // if (number > columnCount.count) {
+    //     console.log('oops, column counting appears to be off -- maybe not every column is calling tcClass?');
+    //     columnCount.count = number+ 1;
+    // }
+    // classes.push('count'+columnCount.count)
+    // if (params.colSpan) {
+    //     classes.push('colSpan'+params.colSpan);
+    //     classes.push('start'+columnCount.count);
+    //     classes.push('end'+(columnCount.count+params.colSpan));
+    //     columnCount.count += params.colSpan
+    // }
+    // else {
+    //     classes.push('cell'+columnCount.count);
+    //     columnCount.count += 1;
+    // }
+    console.log('tcClass got ',special,params);
+    if (params.col) {
+        if (params.colSpan) {
+            classes.push('start'+params.col)
+            classes.push('end'+(params.col+params.colSpan-1))
+        }
+        else {
+            classes.push('cell'+params.col);
+        }
     }
-    const cn = mergeClassNames(classes,params)
+    return mergeClassNames(classes,{...params,...extraClasses})
+}
+
+TreeView.LinkCol = (field, params = {}) => ({data,onPropChange,number,columnCount}) => {
+    const cn = tcClass(['treecell','text-col','link-col'],
+                       {params,data,number,columnCount})
     return (<div className={cn}>
               <a href={getProp(data,field)} target="_blank">
                 {params.getText && params.getText(data)
@@ -366,7 +410,7 @@ TreeView.LinkCol = (field, params = {}) => ({data,onPropChange}) => {
             </div>);
 }
 
-TreeView.TextCol = (field,params = {}) => ({data,onPropChange}) => {
+TreeView.TextCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
     var value = getProp(data,field)
     if (!value) {
         value = ''
@@ -375,11 +419,7 @@ TreeView.TextCol = (field,params = {}) => ({data,onPropChange}) => {
         value = ''+value;
     }
 
-    const classes = ['treecell','text-col']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-    const cn = mergeClassNames(classes,params)
+    const cn = tcClass(['treecell','text-col'],{params,data,number,columnCount});
 
     return (<div className={cn}>              
               {params.editable &&
@@ -396,20 +436,15 @@ TreeView.TextCol = (field,params = {}) => ({data,onPropChange}) => {
             </div>
            )
 }
-TreeView.TagCol = (field,params = {}) => ({data,onPropChange}) => {
+TreeView.TagCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
     
-    const classes = ['treecell','tag-col']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-    const cn = mergeClassNames(classes,params)
-
+    const cn = tcClass(['treecell','tag-col'],{params,data,number,columnCount});
 
     return (<div className={cn}>
               <span className="tag">{getProp(data,field)+''}</span>
             </div>)
 }
-TreeView.DateCol = (field,params = {}) => ({data,onPropChange}) => {
+TreeView.DateCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
     var v = getProp(data,field);
     var inputVal = undefined;
     if (v && v.toLocaleDateString) {
@@ -427,11 +462,8 @@ TreeView.DateCol = (field,params = {}) => ({data,onPropChange}) => {
         }
     }
 
-    const classes = ['treecell','date-col']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-    const cn = mergeClassNames(classes,params)
+    
+    const cn = tcClass(['treecell','date-col'],{params,data,number,columnCount})
 
     return (<div className={cn}>
 
@@ -448,22 +480,14 @@ TreeView.DateCol = (field,params = {}) => ({data,onPropChange}) => {
               
             </div>)
 }
-TreeView.BlankCol = (params = {}) => ({data}) => {
-    const classes = ['treecell','blank']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-    const cn = mergeClassNames(classes,params)
+TreeView.BlankCol = (params = {}) => ({data,number,columnCount}) => {
+    const cn = tcClass(['treecell','blank'],{params,data,number,columnCount});
     return (<div
               className={cn}
                 >&nbsp;</div>)
 }
-TreeView.HeaderCol = (field,params = {}) => ({data,onPropChange}) => {    
-    const classes = ['treecell','is-head','is-bold']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-    const cn = mergeClassNames(classes,params)
+TreeView.HeaderCol = (field,params = {}) => ({data,onPropChange,number,columnCount,}) => {    
+    const cn = tcClass(['treecell','is-head','is-bold'],{data,number,columnCount,params})
 
     return (<div className={cn}>              
               {params.editable && <input className="input" value={getProp(data,field)}
@@ -480,7 +504,7 @@ TreeView.HeaderCol = (field,params = {}) => ({data,onPropChange}) => {
             </div>)
 }
 
-TreeView.SumCol = (field,params = {}) => ({data,children}) => {
+TreeView.SumCol = (field,params = {}) => ({data,children,number,columnCount}) => {
     var tot = 0;
     function crawl (node) {
         if (getProp(node,`data.${field}`)) {
@@ -492,22 +516,18 @@ TreeView.SumCol = (field,params = {}) => ({data,children}) => {
     }
     children.forEach(crawl);
 
-    const classes = ['treecell','sum-col']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-    const cn = mergeClassNames(classes,params)
+    const cn = tcClass(['treecell','sum-col'],{params,data,number,columnCount});
+    // if (params.colSpanClasses) {
+    //     classes.push(params.colSpanClasses);
+    // }
+    // const cn = mergeClassNames(classes,params)
 
     return <div className={cn}>
              {tot}
            </div>
 }
-TreeView.NumCol = (field,params = {}) => ({data,onPropChange}) => {
-    const classes = ['treecell','text-col']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-    const cn = mergeClassNames(classes,params)
+TreeView.NumCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
+    const cn = tcClass(['treecell','text-col'],{data,params,number,columnCount})
     return <div className={cn}>
              {
                  params.editable &&
@@ -522,26 +542,14 @@ TreeView.NumCol = (field,params = {}) => ({data,onPropChange}) => {
            </div>
 }
 
-TreeView.PopupCol = (field,params = {snippetMode:true}) => ({data}) => { // read only
+TreeView.PopupCol = (field,params = {snippetMode:true}) => ({data,number,columnCount}) => { // read only
     
     const [showText,setShowText] = useState(false);
 
     var value = getProp(data,field);
 
-    const classes = ['treecell','text-col']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-
-    const cn = mergeClassNames(classes,{
-        classNames:{...params.classNames,
-                    treecell : true,
-                    treePopover : showText,
-                    treePoppable : !showText && value,
-                   },
-        ...params
-    }
-                              );
+    const cn = tcClass(['treecell','text-col'],{params,data,number,columnCount,
+                                                extraClasses:{treePopover: showText, treePoppable : !showText && value}});
     
     return (<div className={cn}>
               {renderLabel()}
@@ -579,7 +587,7 @@ TreeView.PopupCol = (field,params = {snippetMode:true}) => ({data}) => { // read
     
 }
 
-TreeView.ButtonCol = (params = {}) => ({data, rowId, onPropChange}) => {
+TreeView.ButtonCol = (params = {}) => ({data, rowId, onPropChange,number,columnCount}) => {
     var onClickCallback
     if (params.generateOnClick) {
         onClickCallback = params.generateOnClick({data,onPropChange,rowId})
@@ -587,11 +595,11 @@ TreeView.ButtonCol = (params = {}) => ({data, rowId, onPropChange}) => {
     else {
         onClickCallback = params.onClick
     }
-    const classes = ['treecell','button-col']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-    const cn = mergeClassNames(classes,params)
+    const cn = tcClass(['treecell','button-col'],{params,data,number,columnCount});
+    // if (params.colSpanClasses) {
+    //     classes.push(params.colSpanClasses);
+    // }
+    // const cn = mergeClassNames(classes,params)
 
     
     return (<div className={cn}>
@@ -603,13 +611,9 @@ TreeView.ButtonCol = (params = {}) => ({data, rowId, onPropChange}) => {
             </div>)
 }
 
-TreeView.RichTextCol = (field,params = {}) => ({data,onPropChange}) => {
+TreeView.RichTextCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
     const [showEditor,setShowEditor] = useState(false);
-    const classes = ['treecell','text-col','rich-text-col']
-    if (params.colSpan) {
-        classes.push('colSpan'+params.colSpan);
-    }
-    const cn = mergeClassNames(classes,params)
+    const cn = tcClass(['treecell','text-col','rich-text-col'],{params,data,number,columnCount});
     return(
         <div className={cn}>
           <div>
@@ -654,7 +658,12 @@ TreeView.RichTextCol = (field,params = {}) => ({data,onPropChange}) => {
 
 }
 
-TreeView.Cell = makeComponent(['treecell']);
+TreeView.Cell = function (props) {
+    const cn = tcClass([],props)
+    return <div className={cn}>
+             {props.children}
+           </div>
+}
 
 TreeView.CascadeHook = (props) => (data,node,prop,val) => {
     if (props.indexOf(prop) > -1) {
@@ -712,5 +721,5 @@ function snippet (htmlVal) {
 
 
 TreeView.NapTime = NapTime;
-
+TreeView.tcc = tcClass
 export default TreeView
