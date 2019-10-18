@@ -63,7 +63,6 @@ class Editor extends React.Component {
     
     
     render () {
-        console.log('Rendering formats:',this.formats);
         return (
                 <div className='noheaderbroken' {...this.props}> {/* Hack to remove stupid headers */}
                 <ReactQuill 
