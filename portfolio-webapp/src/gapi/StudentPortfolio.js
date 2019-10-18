@@ -15,13 +15,12 @@ function StudentPortfolio (course, student, studentMode=false) {
 
     var updatedTimes = {}
 
-    async function set_portfolio_and_assessments (portData, studentMode=studentMode, force=false) {
+    async function set_portfolio_and_assessments (portData, studentMode=false, force=false) {
         console.log('SP:set_portfolio_and_assessments',portData);
         var portfolioEntries = portData.data;
         var fetchedTimes = {...portData.updatedTimes};
         const latestGoogleTimes = await get_updated_time();
         const [portfolio,assessments] = splitPortfolioAndAssessmentData(portfolioEntries);
-        debugger;
         console.log('SP:Check times: latest vs fetched',latestGoogleTimes,fetchedTimes);
         // Exemplars...
         if (!force && latestGoogleTimes.exemplars > fetchedTimes.exemplars) {
