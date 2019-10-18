@@ -8,6 +8,7 @@ import Button from './widgets/Button.js';
 import Menu,{SelectableItem,CustomSelectableItem,Dropdown} from './widgets/Menu.js';
 import Navbar from './widgets/Navbar.js';
 import Tabs from './widgets/Tabs.js';
+import Viewport from './widgets/Viewport.js';
 const InputWithEnter = React.forwardRef( (props, ref) => {
     return (
         <input onKeyDown={
@@ -42,10 +43,6 @@ function Loader (props) {
 }
 
 
-const Viewport = makeComponent(['viewport2','top'])
-Viewport.Three = makeComponent(['viewport3'])
-Viewport.Two = Viewport;
-Viewport.Bottom = makeComponent(['viewport2','bottom']);
 
 
 const h = {};
