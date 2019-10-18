@@ -4,7 +4,7 @@ import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import {getProp,classNames,getById} from './utils.js';
 import {Viewport,Card,Container,Navbar,Button,Icon,Modal,Loader,h} from './widgets.js';
 import {SelectableItem,Menu,Dropdown} from './widgets/Menu.js';
-import ExemplarEditor from './ExemplarEditor.js';
+import ExemplarEditor,{useEEProps} from './ExemplarEditor.js';
 import history from './history.js';
 import {inspect} from 'util';
 import StudentPicker from './StudentPicker.js';
@@ -16,13 +16,13 @@ function TeacherAssignmentView (props) {
     const allStudentWork = props.allStudentWork
     const coursework = props.coursework
     const portfolioManager = props.portfolioManager
+    //const portfolioManager = useStudentPortfolioManager(props);    
     
     const [currentPortfolio,setCurrentPortfolio] = useState([]);
     const [selectedStudent,setSelectedStudent] = useState();
     const [selectedCoursework,setSelectedCoursework] = useState();
-    const [exemplarEditorProps,setEEProps] = useState({});
-    const [exemplarRenderCount,setERC] = useState(1);
     const [initialStateReady,setInitialStateReady] = useState(false);
+
     // const [showExporter,setShowExporter] = useState(false);
     // const [showCreator,setShowCreator] = useState(false);
     
@@ -45,11 +45,26 @@ function TeacherAssignmentView (props) {
 
     useEffect( ()=>{
         if (selectedStudent) {
-            console.log('tav: update currentPortfolio');
+            console.log('tav: student changed update currentPortfolio');
             portfolioManager.getPortfolio(selectedStudent,props.course,setCurrentPortfolio)
         }
     },[selectedStudent]
              );
+
+    useEffect( () => {
+        console.log('portfolio manager map changed!');
+    }, [portfolioManager.portfolioState.map]);
+
+    const {exemplarEditorProps,
+           exemplarRenderCount} = useEEProps(
+               {selectedStudent,
+                selectedCoursework,
+                currentPortfolio,
+                ...skillHookProps,
+                ...props}
+           );
+
+
 
     function updateUrl ({student,coursework}) {
         if ((student||selectedStudent) && (coursework||selectedCoursework)) {
@@ -79,57 +94,8 @@ function TeacherAssignmentView (props) {
         
         // map grades for each student
     }
-    
-    useEffect( ()=>{
-        console.log('recalc our exemplarEditorProps...');
-        var submission;
-        if (selectedCoursework && selectedStudent) {
-            console.log('TAV: Filter submissions for ',selectedStudent,selectedCoursework);
-            var submissions = allStudentWork.filter(
-                (submission) => {
-                    if (submission.courseWorkId==selectedCoursework.id) {
-                        if (submission.userId == selectedStudent.userId) {
-                            return true;
-                        }
-                        if (submission.submissionHistory) {
-                            for (var i=0; i<submission.submissionHistory.length; i++) {
-                                if (getProp(submission.submissionHistory[i],'stateHistory.actorUserId') == selectedStudent.userId) {
-                                    return true
-                                }
-                            }
-                        }
-                    }
-                });
-            if (submissions.length) {
-                submission = submissions[0]
-            }
-        }
-        var eepProps = {
-            selectedCoursework : selectedCoursework,
-            selectedSubmission : submission,
-            selectedSkills : currentPortfolio.filter((item)=>selectedCoursework && item.courseworkId==selectedCoursework.id),
-        };
-        if (selectedCoursework && skillHookProps.assignments && skillHookProps.assignments[selectedCoursework.id]) {
-            console.log('TAV: Assignment has skills mapped, let\'s check on them...');
-            var skillsToAdd = skillHookProps.assignments[selectedCoursework.id].slice();
-            // Remove ones the student already has...
-            eepProps.selectedSkills.forEach(
-                (skill)=>{
-                    var idx = skillsToAdd.indexOf(skill.skill);
-                    if (idx > -1) {
-                        skillsToAdd.splice(idx,1);
-                    }
-                });
-            skillsToAdd.forEach((sk)=>eepProps.selectedSkills.push({skill:sk}));
-        }
-        // Now set it...
-        setEEProps(eepProps)
-        setERC(exemplarRenderCount+1);
-    },
-               [currentPortfolio,selectedCoursework]
-             )
 
-    function saveExemplars (exemplars) {
+    const saveExemplars = (exemplars) => {
         setCurrentPortfolio(portfolioManager.updateExemplarsForStudent(exemplars,selectedStudent));
     }
 
@@ -189,7 +155,7 @@ function TeacherAssignmentView (props) {
 
             </Navbar.End>
           </Navbar>
-          <div>
+          <Viewport.Wrap>
             <ExemplarEditor
               {...props}
               {...skillHookProps}
@@ -198,7 +164,8 @@ function TeacherAssignmentView (props) {
               mode={'teacher'}
               key={exemplarRenderCount}
               onChange={saveExemplars}
-            /></div>
+            />
+          </Viewport.Wrap>
         </Viewport.Two>
     );
 
