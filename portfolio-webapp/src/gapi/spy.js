@@ -1,8 +1,8 @@
-// Nevermind - just stop it. Way too much data comes out of this thing to be useful.
-// Maybe rewrite to only trace callbacks?
-
-// Rewrite using proxy you dumbass
 import {inspect} from 'util';
+
+function inspectDeep (obj) {
+    return inspect(obj,{depth:null})
+}
 
 function Spy (object, spyName=null, parent=null) {
 
@@ -167,7 +167,7 @@ function Spy (object, spyName=null, parent=null) {
                 (call,i)=>{
                     out += '\n'
                     out += indent('\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/ ')
-                    out+= indent(`${i}: ${call.name}(${inspect(call.args)})`);
+                    out+= indent(`${i}: ${call.name}(${inspectDeep(call.args)})`);
                     if (call.spyPromise) {
                         for (var key in call.returnSpies) {
                             if (key.indexOf(call.name)>-1) {
@@ -176,10 +176,10 @@ function Spy (object, spyName=null, parent=null) {
                                 out+=indent('!ASYNC! .then(~~callback~~)')
                                 indentLevel += 1;
                                 if (!callbacks) {
-                                    out += indent(`no callback? ${inspect(call.returnSpies[key])}`);
+                                    out += indent(`no callback? ${inspectDeep(call.returnSpies[key])}`);
                                 }
                                 else {
-                                    out += indent(`!! callback(${inspect(Object.values(callbacks)[0].args)})`);
+                                    out += indent(`!! callback(${inspectDeep(Object.values(callbacks)[0].args)})`);
                                 }
                                 out += indent('.........................................')
                                 indentLevel -= 1;
@@ -187,7 +187,7 @@ function Spy (object, spyName=null, parent=null) {
                         }
                     }
                     else {
-                        out += indent(`  =>${inspect(call.retVal)}`);
+                        out += indent(`  =>${inspectDeep(call.retVal)}`);
                     }
                                  
                 }
@@ -265,7 +265,7 @@ function Spy (object, spyName=null, parent=null) {
                                 return `return ${describeNode(call.retVal)}`
                             }
                             else {
-                                return `return ${inspect(call.retVal)}`
+                                return `return ${inspectDeep(call.retVal)}`
                             }
                         }
                         function makeMatcher (argnum,arg) {
