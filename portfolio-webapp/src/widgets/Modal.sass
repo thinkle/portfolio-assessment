@@ -2,3 +2,36 @@
   width : calc(100% - 100px)
   height: calc(100vh - 60px)
   
+.fade-enter-start
+  opacity: 0
+
+.fade-enter-active
+  opacity: 1
+  transition: opacity 300ms
+
+.fade-done,.fade-exit
+  opacity: 1
+
+.fade-exit-active
+  opacity: 1
+  transition: opacity 300ms
+
+.fade-exit-done
+  opacity: 0
+
+/* .fade-enter-start .modal-content
+/*   transform: translateY(-150vh)
+
+/* .fade-exit-active .modal-content
+/*   transform: translateY(-150vh)
+/*   transition: transform 300ms
+
+/* .fade-enter-done .modal-content
+/*   transform: translateY(0)
+  
+/* .fade-start-active .modal-content,
+/*   transform: translateY(0)
+/*   transition: transform 300ms
+
+/* .fade-exit .modal-content
+/*   transform: translateY(0)
