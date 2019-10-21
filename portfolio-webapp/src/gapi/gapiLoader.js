@@ -1,6 +1,9 @@
 import React,{useEffect,useState} from 'react';
 import Brand from '../brand.js';
 import {Navbar,Button} from '../widgets.js';
+
+import Spy from './spy.js';
+
 // LOCAL MODE 
 //import apiInfo from './secrets.js'; // comment out before committing
 //const localMode = true; // comment out before committing
@@ -8,13 +11,6 @@ import {Navbar,Button} from '../widgets.js';
 var apiInfo // comment to work local
 const localMode = false; // comment to work local
 
-
-
-/* Note: to use this, you need to include the following <script> tag in your index.html
-
-    <script src="https://apis.google.com/js/client.js"></script>
-
-*/
 
 const GOOGLESCOPES = {
 }
@@ -98,17 +94,52 @@ const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/classroom/
                         "https://sheets.googleapis.com/$discovery/rest?version=v4"
                        ]
 console.log('scopes are ',SCOPES);
+
+const awaitGapi = (spy)=> new Promise((resolve,reject)=>{
+
+    const maxAttempts = 10;
+    const attempts = []
+    console.log('Start waiting for gapi...');
+    
+    function checkForGapi () {
+        attempts.push(new Date())
+        if (window.gapi) {
+            console.log('Got it!');
+            if (spy) {
+                window.origGapi = window.gapi;
+                window.gapi = Spy(window.gapi,'gapi');
+            }
+            resolve(window.gapi);
+        }
+        else {
+            console.log('Try again... attempts #',attempts.length);
+            if (attempts.length > maxAttempts) {
+                reject({
+                    message:'Waited too long...',
+                    attempts}
+                      )
+            }
+            else {
+                console.log('timeout...')
+                setTimeout(checkForGapi,1000)
+            }
+        }
+    }
+
+    checkForGapi()
+});
+
 function Gapi (props) {
     const [authorized,setAuthorized] = useState(false);
     const [signedIn,setSignedIn] = useState(false);
-
-    var gapi = window.gapi;
+    const [gapi,setGapi] = useState(window.gapi);
+    const [insertedGapiScript,setInsertedGapiScript] = useState(false);
     console.log('Got gapi? %s',gapi);
-    
     const [courses,setCourses] = useState([]);
     function initClient () {
         console.log('initClient!');
-        gapi.client.init({
+        if (gapi) {
+            gapi.client.init({
             apiKey : apiInfo.API_KEY,
             clientId : apiInfo.CLIENT_ID,
             discoveryDocs : DISCOVERY_DOCS,
@@ -139,6 +170,10 @@ function Gapi (props) {
                 console.log('client init failed :(');
                 console.log(err);
             });
+        }
+        else {
+            console.log('No gapi :(');
+        }
     }
 
     function handleAuthClick (event) {
@@ -153,6 +188,24 @@ function Gapi (props) {
 
     
     useEffect( ()=>{
+        if (!gapi && !window.gapi && !insertedGapiScript) {
+            console.log('Load gapi script into document')
+            const script = document.createElement('script');
+            script.src = ''
+            script.setAttribute('src','https://apis.google.com/js/client.js');
+            script.setAttribute('crossorigin','');
+            script.async = true;
+            document.body.appendChild(script);
+            setInsertedGapiScript(true);
+            console.log('Done attaching gapi script into document')
+            awaitGapi(props.spy).then((mygapi)=>setGapi(mygapi))
+            return;
+        }
+        if (window.gapi && !gapi) {
+            console.log('window.gapi defined -- set gapi to point to it :)');
+            setGapi(window.gapi);
+        }
+        
         if (localMode) {handleClientLoad();}
         else {
             fetch('https://portfolio-assessment.netlify.com/.netlify/functions/apiInfo/')
@@ -167,12 +220,12 @@ function Gapi (props) {
                 })
                 .catch((err)=>console.log('oops?'));
         }
-    },[]);
+    },[gapi]);
 
 
     function handleClientLoad () {
         console.log('load auth2!');
-        gapi.load('client:auth2',initClient)
+        gapi && gapi.load('client:auth2',initClient)
     }
 
     return (
