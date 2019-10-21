@@ -1,7 +1,7 @@
 import Exporters from './Exporters.js';
 
 it('some name',()=>{
-    const Aspen = Exporters.Aspen;
+    const Aspen = Exporters.Aspen();
     const skills = [{
         skill:'knife skills',
         points:100,
