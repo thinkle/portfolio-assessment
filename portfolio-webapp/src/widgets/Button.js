@@ -4,7 +4,7 @@ import {classNames} from '../utils.js';
 
 
 function Button (props) {
-    var className = classNames({...props.classNames, button:true})
+    var className = classNames({...props.classNames, button:!props.linkStyle})
     if (props.className) {className += ' '+props.className}
     if (props.useButton || props.disabled) {
         return (<button className={className} onClick={props.onClick} disabled={props.disabled}>
