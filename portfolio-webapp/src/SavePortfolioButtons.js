@@ -10,7 +10,7 @@ function SavePortfolioButtons (props) {
 
     return (
         <>
-          <Navbar.Item>{busy && <div classname="has-warning-text" style={{'background-color':'white'}}><Icon icon={Icon.spinner}/><em>Communicating with the google...</em></div>}</Navbar.Item>
+          <Navbar.Item>{busy && <div classname="has-warning-text" style={{backgroundColor:'white'}}><Icon icon={Icon.spinner}/><em>Communicating with the google...</em></div>}</Navbar.Item>
               <Navbar.Item>{
                   !saved &&
                       <span>
