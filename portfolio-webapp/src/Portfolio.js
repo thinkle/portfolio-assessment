@@ -293,6 +293,7 @@ function PortfolioComponent (props) {
               <SavePortfolioButtons
                 busy={busy}
                 urls={urls}
+                saved={saved}
                 savePortfolio={savePortfolio}
                 saveOverPortfolio={saveOverPortfolio}
               />
@@ -319,14 +320,14 @@ function PortfolioComponent (props) {
              /* ]} */
             getRenderers={(params)=>{
                 if (params.level==0) {
-                    return [TreeView.HeaderCol('strand',{colSpan:2}),
+                    return [TreeView.HeaderCol({field:'strand',colSpan:2}),
                             StrandPointsTotalCol,
                             StrandExemplarCountCol,
                             ]
                 }
                 else if (params.level==1) {
-                    return [TreeView.TagCol('strand'),
-                            TreeView.PopupCol('descriptor',{labelField:'skill',snippetMode:false,className:'break-after'}),
+                    return [TreeView.TagCol({field:'strand'}),
+                            TreeView.PopupCol({field:'descriptor',labelField:'skill',snippetMode:false,className:'break-after'}),
                             PointsTotalCol,
                             ExemplarCountCol,
                             DueDateCol,
@@ -335,9 +336,10 @@ function PortfolioComponent (props) {
                 }
                 else {
                     return [StatusCol,
-                            TreeView.LinkCol('permalink',{linkField:'coursework.title',className:'break-after'}),
-                            TreeView.PopupCol('reflection',{label:'Reflection',tagMode:true,snippetMode:true,className:'break-after'}),
-                            TreeView.PopupCol('assessment.comment',{labelField:'assessment.score',tagMode:true,snippetMode:true,className:'break-after'}),
+                            TreeView.ButtonCol({field:'coursework.title',className:'break-after',linkStyle:true,
+                                                generateOnClick:editExemplarCallback}),
+                            TreeView.PopupCol({field:'reflection',label:'Reflection',tagMode:true,snippetMode:true,className:'break-after'}),
+                            TreeView.PopupCol({field:'assessment.comment',labelField:'assessment.score',tagMode:true,snippetMode:true,className:'break-after'}),
                             TreeView.BlankCol({className:'break-after'}),
                             TreeView.ButtonCol({icon:Icon.edit,content:'Edit Exemplar',generateOnClick:editExemplarCallback})
                            ];
