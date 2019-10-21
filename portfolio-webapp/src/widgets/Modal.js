@@ -1,7 +1,17 @@
 import React, {useEffect,useState} from 'react';
 import {classNames} from '../utils.js';
 import './Modal.sass';
+import {CSSTransition} from 'react-transition-group';
 
+const animationNames = {
+    enter : 'is-active fade-enter-start',
+    enterActive : 'is-active fade-enter-active',
+    enterDone : 'is-active fade-enter-done',
+    exit : 'is-active fade-exit',
+    exitActive : 'is-active fade-exit-active',
+    exitDone : 'fade-exit-done',
+}
+    
 function Modal (props) {
     var body, footer;
     var arrayChildren = React.Children.toArray(props.children);
@@ -20,15 +30,27 @@ function Modal (props) {
         className += ' '+props.className;
     }
     return (
-        <div className={classNames({modal:true,'is-active':props.active})}>
+          <CSSTransition
+            timeout={400}
+            classNames={animationNames} 
+            transitionLeaveTimeout={500}
+            transitionEnterTimeout={500}
+            transitionAppear={true}
+            in={props.active}
+          >
+            <div className={classNames({modal:true,})}>
+
           <div className='modal-background'/>
-          <div className={className}>
-            {props.title && <h2 className='title'>{props.title}</h2>}
-            {body}
-            {footer}
-          </div>
+            <div className={className}>
+              {props.title && <h2 className='title'>{props.title}</h2>}
+              {body}
+              {footer}
+            </div>
+
           <button className='modal-close is-large' aria-label='close' onClick={props.onClose}/>
         </div>
+          </CSSTransition>
+
     );
 }
 
@@ -43,9 +65,14 @@ function ModalCard (props) {
         body = props.children
     }
     return (
+          <CSSTransition
+            timeout={400}
+            classNames={animationNames}
+            in={props.active}
+          >
             <div className={classNames(
                 {modal:true,
-                 'is-active':props.active}
+                }
             )}>
               <div className='modal-background'/>
               <div className='modal-content modal-card'>
@@ -60,7 +87,8 @@ function ModalCard (props) {
               <button className="modal-close is-large"
                       aria-label="close" onClick={props.onClose}
               />
-            </div>
+        </div>
+        </CSSTransition>
     );
 }
 
