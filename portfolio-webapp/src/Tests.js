@@ -15,11 +15,10 @@ import SheetManager from './gapi/SheetManager.js';
 import Prefs from './gapi/Prefs.js';
 import AssignmentMapper from './AssignmentMapper.js';
 import Portfolio from './Portfolio.js';
-import {Button,Buttons,SelectableItem,Box,h,Container} from './widgets.js';
+import {Modal,Button,Navbar,Buttons,SelectableItem,Box,h,Container} from './widgets.js';
 import Menu from './widgets/Menu.js';
 import Tabs from './widgets/Tabs.js';
 import TeacherAssignmentView from './TeacherAssignmentView.js';
-
 
 function TestView () {
     const [page,setPage] = useState('gapi')
@@ -110,12 +109,14 @@ function TestView () {
 
     return (
         <div>
-          <h.h2>Tests</h.h2>
-          {widgets()}
-          {buttons()}
-          {data()}
-        </div>
+           <div>
+             <h.h2>Tests</h.h2>
+             {widgets()}
+             {buttons()}
+             {data()}
+           </div>
 
+        </div>
     );
 
     function buttons () {
@@ -378,7 +379,8 @@ function TestView () {
     function widgets () {
         return (
           <Tabs>
-
+            <span>Modals</span>
+            <ModalTest/>
             <span>Widgets!</span>
             <div>
               <div style={{height:100}}/>
@@ -479,6 +481,44 @@ function TestView () {
     }
 }
 
+function ModalTest () {
+    const [modal1,setModal1] = useState(false)
+    const [modal2,setModal2] = useState(false)
+
+    
+    return (
+        <div>
+          <Navbar>
+            <Navbar.Item>
+              <Button onClick={()=>setModal1(true)}>Show Modal Card</Button>
+            </Navbar.Item>
+            <Navbar.Item>
+              <Button onClick={()=>setModal2(true)}>Show Modal</Button>
+            </Navbar.Item>
+
+          </Navbar>
+          <Modal.ModalCard active={modal1} onClose={()=>setModal1(false)}>
+            <div>
+              This is the body of a modal!
+            </div>
+            <div>
+              This is a footer
+            </div>
+          </Modal.ModalCard>
+          <Modal active={modal2} onClose={()=>setModal2(false)}>
+            <div>
+              This is the body of a big modal!
+                            This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!              This is the body of a big modal!
+            </div>
+            <div>
+              This is a footer
+            </div>
+          </Modal>
+        
+        </div>
+    )
+
+}
 
 
 export default TestView;
