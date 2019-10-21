@@ -1,4 +1,6 @@
 import {inspect} from 'util';
+import download from 'downloadjs';
+import Flatted from 'flatted';
 
 function inspectDeep (obj) {
     return inspect(obj,{depth:null})
@@ -38,7 +40,7 @@ function Spy (object, spyName=null, parent=null) {
         }
         parent[spyName] = {
             accessed,calls,children,spyName,
-            parent,
+            parent,dumpCalls,
         }
     }
 
@@ -47,7 +49,7 @@ function Spy (object, spyName=null, parent=null) {
         get (target, prop, receiver) {
 
             if (prop=='__spy') {
-                return {spyName,accessed,calls,children,dump,dumpCalls,dumpCallbacks}
+                return {spyName,accessed,calls,children,dump,dumpCalls,dumpCallbacks,printCalls,flatten}
             }
 
             var baseVal = target[prop]
@@ -101,6 +103,7 @@ function Spy (object, spyName=null, parent=null) {
         }
     }
 
+
     function dumpCallbacks () {
 
         return listCallbacks({children,calls})
@@ -112,6 +115,7 @@ function Spy (object, spyName=null, parent=null) {
                     (call) => {
                         if (call.spyName.match(/[.]\w\w[.]/)) {
                             console.log('Skip google weirdo',call.spyName);
+                            return;
                         }
                         if (call.callbacks) {
                             list.push(call);
@@ -145,57 +149,138 @@ function Spy (object, spyName=null, parent=null) {
         }
     }
 
+    function dumpAll () {
+        
+    }
+
     function dumpCalls () {
-        var indentLevel = 0
-
-        function indent (s) {
-            
-            for (var i=0; i<indentLevel; i++) {
-                s = '\t'+s
-            }
-            return '\n'+s;
-        }
-
-        var out = ''
-        for (let method in calls) {
-            out += '\n\n'
-            out += indent('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-            out += indent(`method ${method} called ${calls[method].length} times`);
-            const methodCalls = calls[method]
-            indentLevel += 1;
-            methodCalls.forEach(
-                (call,i)=>{
-                    out += '\n'
-                    out += indent('\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/ ')
-                    out+= indent(`${i}: ${call.name}(${inspectDeep(call.args)})`);
+        const dump = [];
+        
+        
+        for (let fname in calls) {
+            var callArray = calls[fname];
+            callArray = calls[fname];
+            callArray.forEach(
+                (call,i) => {
+                    if (call.spyName.match(/[.]\w\w[.]/)) {
+                        console.log('Skip google weirdness',call.spyName);
+                        return
+                    }
+                    const callObj = {
+                        name : call.spyName,
+                        args : call.args,
+                    }
                     if (call.spyPromise) {
                         for (var key in call.returnSpies) {
                             if (key.indexOf(call.name)>-1) {
-                                const callbacks = call.returnSpies[key].calls.then[0].callbacks;
-                                out += indent('.........................................')
-                                out+=indent('!ASYNC! .then(~~callback~~)')
-                                indentLevel += 1;
-                                if (!callbacks) {
-                                    out += indent(`no callback? ${inspectDeep(call.returnSpies[key])}`);
+                                try {
+                                    const callbacks = call.returnSpies[key].calls.then[0].callbacks;
+                                    if (!callbacks) {
+                                        callObj.response = undefined;
+                                    }
+                                    else {
+                                        callObj.response = Object.values(callbacks)[0].args
+                                    }
                                 }
-                                else {
-                                    out += indent(`!! callback(${inspectDeep(Object.values(callbacks)[0].args)})`);
+                                catch (err) {
+                                    console.log('SPY ERROR Uh oh: trouble getting promise for ',call);
                                 }
-                                out += indent('.........................................')
-                                indentLevel -= 1;
                             }
                         }
                     }
                     else {
-                        out += indent(`  =>${inspectDeep(call.retVal)}`);
+                        callObj.retVal = call.retVal;
                     }
-                                 
+                    dump.push(callObj);
                 }
             );
-            indentLevel -= 1;
+
+        } // end for fname in calls
+
+        for (let child of Object.values(children)) {
+            let childCalls = child.dumpCalls();
+            for (let call of childCalls) {
+                dump.push(call);
+            }
         }
-        return out;
+        
+        return dump;
     }
+
+
+    function flatten (obj) {
+        return Flatted.stringify(obj);
+    }
+
+    function printCalls () {
+        const allTheCalls = dumpCalls();
+        var out = []
+        allTheCalls.forEach(
+            (call)=>{
+                try {
+                    out.push(JSON.stringify(call))
+                }
+                catch (err) {
+                    console.log('Unable ot stringify ',call,err);
+                }
+            }
+        );
+        out = `[${out.join(',\n\t')}]`
+        //console.log(out);
+        download(out,'output.json','text/plain');
+        return out
+    }
+    //     //return Flatted.stringify(dumpCalls())
+    //     var indentLevel = 0
+
+    //     function indent (s) {
+            
+    //         for (var i=0; i<indentLevel; i++) {
+    //             s = '\t'+s
+    //         }
+    //         return '\n'+s;
+    //     }
+
+    //     var out = ''
+    //     for (let method in calls) {
+    //         out += '\n\n'
+    //         out += indent('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+    //         out += indent(`method ${method} called ${calls[method].length} times`);
+    //         const methodCalls = calls[method]
+    //         indentLevel += 1;
+    //         methodCalls.forEach(
+    //             (call,i)=>{
+    //                 out += '\n'
+    //                 out += indent('\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/ ')
+    //                 out+= indent(`${i}: ${call.name}(${inspectDeep(call.args)})`);
+    //                 if (call.spyPromise) {
+    //                     for (var key in call.returnSpies) {
+    //                         if (key.indexOf(call.name)>-1) {
+    //                             const callbacks = call.returnSpies[key].calls.then[0].callbacks;
+    //                             out += indent('.........................................')
+    //                             out+=indent('!ASYNC! .then(~~callback~~)')
+    //                             indentLevel += 1;
+    //                             if (!callbacks) {
+    //                                 out += indent(`no callback? ${inspectDeep(call.returnSpies[key])}`);
+    //                             }
+    //                             else {
+    //                                 out += indent(`!! callback(${inspectDeep(Object.values(callbacks)[0].args)})`);
+    //                             }
+    //                             out += indent('.........................................')
+    //                             indentLevel -= 1;
+    //                         }
+    //                     }
+    //                 }
+    //                 else {
+    //                     out += indent(`  =>${inspectDeep(call.retVal)}`);
+    //                 }
+                                 
+    //             }
+    //         );
+    //         indentLevel -= 1;
+    //     }
+    //     return out;
+    // }
 
     function dump () {
 
