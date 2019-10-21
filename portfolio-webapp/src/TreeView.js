@@ -384,7 +384,6 @@ function tcClass (special, {params, data, number, columnCount, extraClasses}) {
     //     classes.push('cell'+columnCount.count);
     //     columnCount.count += 1;
     // }
-    console.log('tcClass got ',special,params);
     if (params.col) {
         if (params.colSpan) {
             classes.push('start'+params.col)
@@ -397,21 +396,23 @@ function tcClass (special, {params, data, number, columnCount, extraClasses}) {
     return mergeClassNames(classes,{...params,...extraClasses})
 }
 
-TreeView.LinkCol = (field, params = {}) => ({data,onPropChange,number,columnCount}) => {
+TreeView.LinkCol = (params = {}) => ({data,onPropChange,number,columnCount}) => {
     const cn = tcClass(['treecell','text-col','link-col'],
                        {params,data,number,columnCount})
     return (<div className={cn}>
-              <a href={getProp(data,field)} target="_blank">
+              <a href={getProp(data,params.field)} target="_blank"
+                 onClick={params.generateOnClick && params.generateOnClick(data) || params.onClick}
+              >
                 {params.getText && params.getText(data)
                  || getProp(data,params.linkField)
                  || params.linkText
-                 || data[field]}
+                 || data[params.field]}
               </a>
             </div>);
 }
 
-TreeView.TextCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
-    var value = getProp(data,field)
+TreeView.TextCol = (params = {}) => ({data,onPropChange,number,columnCount}) => {
+    var value = getProp(data,params.field)
     if (!value) {
         value = ''
     }
@@ -426,7 +427,7 @@ TreeView.TextCol = (field,params = {}) => ({data,onPropChange,number,columnCount
                <input className="input" value={value}
                       onChange={
                           (event)=>{
-                              onPropChange(field,event.target.value)
+                              onPropChange(params.field,event.target.value)
                           }
                       }
                />
@@ -436,16 +437,16 @@ TreeView.TextCol = (field,params = {}) => ({data,onPropChange,number,columnCount
             </div>
            )
 }
-TreeView.TagCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
+TreeView.TagCol = (params = {}) => ({data,onPropChange,number,columnCount}) => {
     
     const cn = tcClass(['treecell','tag-col'],{params,data,number,columnCount});
 
     return (<div className={cn}>
-              <span className="tag">{getProp(data,field)+''}</span>
+              <span className="tag">{getProp(data,params.field)+''}</span>
             </div>)
 }
-TreeView.DateCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
-    var v = getProp(data,field);
+TreeView.DateCol = (params = {}) => ({data,onPropChange,number,columnCount}) => {
+    var v = getProp(data,params.field);
     var inputVal = undefined;
     if (v && v.toLocaleDateString) {
         inputVal = v.toISOString().substring(0,10);
@@ -472,7 +473,7 @@ TreeView.DateCol = (field,params = {}) => ({data,onPropChange,number,columnCount
                  className="input"
                  value={inputVal}
                  type='date'
-                 onChange={(event)=>{onPropChange(field,new Date(event.target.value))}}
+                 onChange={(event)=>{onPropChange(params.field,new Date(event.target.value))}}
                />
                ||
                v
@@ -486,29 +487,29 @@ TreeView.BlankCol = (params = {}) => ({data,number,columnCount}) => {
               className={cn}
                 >&nbsp;</div>)
 }
-TreeView.HeaderCol = (field,params = {}) => ({data,onPropChange,number,columnCount,}) => {    
+TreeView.HeaderCol = (params = {}) => ({data,onPropChange,number,columnCount,}) => {    
     const cn = tcClass(['treecell','is-head','is-bold'],{data,number,columnCount,params})
 
     return (<div className={cn}>              
-              {params.editable && <input className="input" value={getProp(data,field)}
+              {params.editable && <input className="input" value={getProp(data,params.field)}
                      onChange={
                          (event)=>{
-                             onPropChange(field,event.target.value)
+                             onPropChange(params.field,event.target.value)
                          }
                      }
                                   />
 
                ||
-               getProp(data,field)
+               getProp(data,params.field)
               }
             </div>)
 }
 
-TreeView.SumCol = (field,params = {}) => ({data,children,number,columnCount}) => {
+TreeView.SumCol = (params = {}) => ({data,children,number,columnCount}) => {
     var tot = 0;
     function crawl (node) {
-        if (getProp(node,`data.${field}`)) {
-            tot += getProp(node,`data.${field}`)
+        if (getProp(node,`data.${params.field}`)) {
+            tot += getProp(node,`data.${params.field}`)
         }
         if (node.children) {
             node.children.forEach(crawl);
@@ -526,29 +527,29 @@ TreeView.SumCol = (field,params = {}) => ({data,children,number,columnCount}) =>
              {tot}
            </div>
 }
-TreeView.NumCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
+TreeView.NumCol = (params = {}) => ({data,onPropChange,number,columnCount}) => {
     const cn = tcClass(['treecell','text-col'],{data,params,number,columnCount})
     return <div className={cn}>
              {
                  params.editable &&
                      <input className="input"
-                            value={getProp(data,field)}
+                            value={getProp(data,params.field)}
                             type='number'
-                            onChange={(event)=>{onPropChange(field,Number(event.target.value))}}
+                            onChange={(event)=>{onPropChange(params.field,Number(event.target.value))}}
                      />
                  ||
-                 Number(getProp(data,field))
+                 Number(getProp(data,params.field))
              }
            </div>
 }
 
-TreeView.PopupCol = (field,params = {snippetMode:true}) => ({data,number,columnCount}) => { // read only
+TreeView.PopupCol = (params = {snippetMode:true}) => ({data,number,columnCount}) => { // read only
     
     const [showText,setShowText] = useState(false);
 
-    var value = getProp(data,field);
+    var value = getProp(data,params.field);
 
-    const cn = tcClass(['treecell','text-col'],{params,data,number,columnCount,
+    const cn = tcClass(['treecell','text-col','treePopover'],{params,data,number,columnCount,
                                                 extraClasses:{treePopover: showText, treePoppable : !showText && value}});
     
     return (<div className={cn}>
@@ -606,18 +607,20 @@ TreeView.ButtonCol = (params = {}) => ({data, rowId, onPropChange,number,columnC
               <Button classNames={{}}
                   /*{'is-inverted':true,'is-outlined':true,'is-white':true}*/
                       onClick={onClickCallback} {...params}>
-               {params.content}
+                {params.field && getProp(data,params.field) ||
+                 params.getText && params.getText(data) ||
+                 params.content}
              </Button>
             </div>)
 }
 
-TreeView.RichTextCol = (field,params = {}) => ({data,onPropChange,number,columnCount}) => {
+TreeView.RichTextCol = (params = {}) => ({data,onPropChange,number,columnCount}) => {
     const [showEditor,setShowEditor] = useState(false);
     const cn = tcClass(['treecell','text-col','rich-text-col'],{params,data,number,columnCount});
     return(
         <div className={cn}>
           <div>
-            <span>{snippet(getProp(data,field))}</span>
+            <span>{snippet(getProp(data,params.field))}</span>
             <Icon
               onClick={()=>setShowEditor(!showEditor)}
               icon={Icon.edit}
@@ -627,9 +630,9 @@ TreeView.RichTextCol = (field,params = {}) => ({data,onPropChange,number,columnC
             >
               <div>
               {showEditor &&
-                <Editor editorHtml={getProp(data,field)}
+                <Editor editorHtml={getProp(data,params.field)}
                      onChange={(v)=>{
-                         onPropChange(field,v)
+                         onPropChange(params.field,v)
                      }}
                 />
               }
@@ -647,9 +650,9 @@ TreeView.RichTextCol = (field,params = {}) => ({data,onPropChange,number,columnC
     function popupEditor () {
         return (
             <div className="textEditorCell spring-tree-enter-done">
-                <Editor editorHtml={getProp(data,field)}
+                <Editor editorHtml={getProp(data,params.field)}
                      onChange={(v)=>{
-                         onPropChange(field,v)
+                         onPropChange(params.field,v)
                      }}
                 />
             </div>
