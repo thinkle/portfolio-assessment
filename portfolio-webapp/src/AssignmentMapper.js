@@ -108,7 +108,6 @@ function usePortfolioSkillHook (props, updatedCallback) {
         }
         portfolioData && portfolioData.skills && portfolioData.skills.forEach(
             (skill)=>{
-                console.log('Parse skill',skill);
                 if (!skill.skill) {return}
                 if (uniqueStrands.indexOf(skill.strand)==-1) {
                     uniqueStrands.push(skill.strand)
