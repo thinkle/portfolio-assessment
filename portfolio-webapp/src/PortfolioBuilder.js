@@ -375,27 +375,27 @@ function PortfolioBuilder (props) {
             getRenderers={
             (params)=>{
                 if (params.level==0) {
-                    return [TreeView.HeaderCol('strand',{col:1,colSpan:4,colSpanClasses:['start1','end4'],editable:true}),
-                            TreeView.SumCol('points',{col:5}),
+                    return [TreeView.HeaderCol({field:'strand',col:1,colSpan:4,colSpanClasses:['start1','end4'],editable:true}),
+                            TreeView.SumCol({field:'points',col:5}),
                             TreeView.BlankCol({col:6})];
                 }
                 if (params.level==1) {
-                    return [TreeView.TagCol('strand',{col:1}),
-                            TreeView.TextCol('skill',{col:2,editable:true,colSpan:3}),
-                            TreeView.SumCol('points',{col:5}),
+                    return [TreeView.TagCol({field:'strand',col:1}),
+                            TreeView.TextCol({field:'skill',col:2,editable:true,colSpan:3}),
+                            TreeView.SumCol({field:'points',col:5}),
                             TreeView.RichTextCol(
-                                'descriptor',
-                                {makeHeader : (data) => `${data.skill} (${data.strand}) Description`,
+                                {field:'descriptor',
+                                 makeHeader : (data) => `${data.skill} (${data.strand}) Description`,
                                  col:6}
                             )
                            ]
                 }
                 if (params.level==2) {
-                    return [TreeView.TagCol('strand'),
-                            TreeView.TextCol('skill'),
-                            TreeView.DateCol('assignedDate',{editable:true}),
-                            TreeView.DateCol('dueDate',{editable:true}),
-                            TreeView.NumCol('points',{editable:true}),
+                    return [TreeView.TagCol({field:'strand'}),
+                            TreeView.TextCol({field:'skill'}),
+                            TreeView.DateCol({field:'assignedDate',editable:true}),
+                            TreeView.DateCol({field:'dueDate',editable:true}),
+                            TreeView.NumCol({field:'points',editable:true}),
                             TreeView.BlankCol()
                            ]
                 }
