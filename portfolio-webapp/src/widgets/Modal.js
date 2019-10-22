@@ -70,10 +70,7 @@ function ModalCard (props) {
             classNames={animationNames}
             in={props.active}
           >
-            <div className={classNames(
-                {modal:true,
-                }
-            )}>
+            <div className='modal'> 
               <div className='modal-background'/>
               <div className='modal-content modal-card'>
                 {props.title &&
