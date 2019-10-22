@@ -215,25 +215,27 @@ $spacer : 0.5em
 
 .spring-tree-exit
   transform: scaleY(1);
-  transform-origin: top;
-  max-height: 500px;
-  transition : transform 300ms;
+  transform-origin: top
+  max-height: 300px
+  transition : transform 300ms, min-height 200ms
   
 .spring-tree-exit-active
   transform : scaleY(0);
   transform-origin: top
   max-height: 0px;
-  transition : transform 300ms, max-height 600ms;
+  transition : transform 300ms, max-height 200ms
 
 .spring-tree-enter
-  transform : scaleY(0);
+  transform : scaleY(0)
   transform-origin: top
-  transition : transform 300ms;
+  max-height: 0px
+  transition : transform 300ms, max-height 300ms
 
 .spring-tree-enter-active
-  transform: scaleY(1);
-  transform-origin: top;
-  transition : transform 300ms;
+  transform: scaleY(1)
+  transform-origin: top
+  max-height: 300px
+  transition : transform 300ms, max-height 300ms
   
 .hidden 
   color : #7a7a7a;
