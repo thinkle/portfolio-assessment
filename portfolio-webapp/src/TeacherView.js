@@ -273,14 +273,14 @@ function TeacherHome (props) {
                         <h.h6>Status Update...</h.h6>
                         <p>{message}</p>
                       </Card>}
-          {tool==EXPORTG && 
+
            <GradeExporter
              {...props}
              {...props.skillHookProps}
              key={props.dataKey}
-             active={EXPORTA}
+             active={tool==EXPORTG}
              onClose={()=>setTool('')}
-             />}
+             />
           {tool==CREATE && 
            <PortfolioCreator key={props.dataKey} {...props}/>
           }
