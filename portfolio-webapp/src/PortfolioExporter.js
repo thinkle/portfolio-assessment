@@ -2,39 +2,63 @@ import React,{useState} from 'react';
 import ReactDOMServer from 'react-dom/server';
 import {useStudentPortfolio,useCoursework,useStudentWork} from './gapi/hooks.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
-import {h,Button} from './widgets.js';
+import {h,Button,Buttons,Modal,Icon,ProgressOverlay} from './widgets.js';
 import {sanitize} from './utils.js';
 import DocWriter from './gapi/docWriter.js';
+import Brand from './brand.js'
+import DocumentManager from './gapi/DocumentManager.js';
 // Export portfolio as something pretty
 
-
 function RenderedPortfolio (props) {
-    //101 + 236
-    //541.5 + 173.2
     const head = {
-        fontWeight:900,
         fontFamily: 'Raleway',
     }
+    const TWIDTH = 468
+    const pad = '10pt'
+    const borderColor = '#e09f3e'
+    
     const s = {
-        header : {backgroundColor:'#000063',color:'white'},
-        s1 : {fontSize:'36pt',...head,color:'#ff9800'},
-        s2 : {fontSize:'22pt',...head,color:'#311b92'},
-        s3 : {fontSize:'18pt',...head,color:'#6746c3'},
-        s4 : {fontSize:'14pt',...head,color:'#c66900'},
-        s5 : {fontSize:'11pt',...head,color:'#c66900'},
-        s6 : {fontSize:'10pt',...head,color:'#6746c3'},
-        oddRow : {backgroundColor: '#eaeaea',color:'black'},
-        evenRow : {backgroundColor: '#ffffff',color:'#222'},
-        left : {width: '265pt'},
-        right : {width: '1451pt'},
-        lsmall : {width: '167pt'},
-        rsmall : {width: '284pt'},
-        extraSpacer : {
-            paddingTop : '10pt',
+        header : {backgroundColor:'#002290',color:'#fff3b0'},
+        s1 : {fontSize:'36pt',...head,color:'#6e0e0a'},
+        s2 : {fontSize:'22pt',...head,color:'#335c67'},
+        s3 : {fontSize:'18pt',...head,color:'#335c67'},
+        s4 : {fontSize:'14pt',...head,color:'#335c67'},
+        s5 : {fontSize:'11pt',...head,color:'#335c67'},
+        s6 : {fontSize:'10pt',...head,color:'#335c67'},
+        oddRow : {backgroundColor: '#fff8d1',color:'#222'},
+        evenRow : {backgroundColor: '#fff8d1',color:'#222'},
+        grade : {color: '#6e0e0a'},
+        // Note: google tables are a maximum of 468pt (6.5") wide on import
+        // seems to be an insurpassable barrier in their import for unexplained reasons
+        left : {width: `${TWIDTH * 0.37}pt`},
+        right : {width: `${TWIDTH * 0.63}pt`},
+        lsmall : {width: `${TWIDTH * 0.63 * 0.37}pt`},
+        rsmall : {width: `${TWIDTH * 0.63 * 0.63}pt`},
+        small : {fontSize: '8pt', color: '#3F717F'},
+        extraSpacerTop : {
+            // google docs requires a paragraph before a table -- this
+            // spacer makes the paragraph line up with the table
+            paddingTop : pad, 
+        },
+        extraSpacerSides : {
+            marginLeft : pad,
+            marginRight: pad
         },
         cell : {
-            padding : '10pt',
-            border : '1px solid #fcfcfc',
+            padding : pad,
+            //border : `1px solid ${borderColor}`,
+        },
+        bbottom : {
+            borderBottom : `1px solid ${borderColor}`
+        },
+        bleft : {
+            borderLeft : `1px solid ${borderColor}`
+        },
+        bright : {
+            borderRight : `1px solid ${borderColor}`
+        },
+        cellTight : {
+            //border: `1px solid ${borderColor}`
         },
         minimal: {
             border : '0px solid #fff',
@@ -42,38 +66,46 @@ function RenderedPortfolio (props) {
         },
         tableStyle : {
             borderCollapse:  true,
-            width: '1715pt',
+            //width: '540pt',
         },
         baseStyle : {
             fontSize : '10pt',
-            fontFamily : 'Cantarell',
+            fontFamily : 'Basic',
+            color: '#101d21'
         },
     }
 
     return <div style={s.baseStyle}>
+             <p style={s.s3}>{props.student.profile.name.fullName}</p>
+             <p style={s.s2}>{props.course.name} Portfolio</p>
+             <p style={s.s3}>as of {new Date().toLocaleDateString()}</p>
+             <p style={s.small}>
+               This portfolio was created with the <a href={Brand.url}>{Brand.name}</a>. To update reflections and assessments, please use the tool.
+               This document may be overwritten by future exports.
+             </p>
              <table className="export" style={s.tableStyle} >
                {props.strands
                 .map((strand)=>
                      <>
                        <tr className="thead" style={{...s.s1,...s.header}}>
-                         <th colspan="2" style={s.cell}>
+                         <td colspan="2" style={{...s.cell}}>
                            {strand}
-                         </th>
+                         </td>
                        </tr>
                        {props.skills.filter((sk)=>sk.strand==strand).map(
                            (skill,i)=>(
                                <>
                                  <tr style={(i % 2) && s.oddRow || s.evenRow}>
-                                   <td style={s.cell} colSpan={2}>
-                                     <span style={s.s2}>{skill.skill}</span>
+                                   <td style={{...s.cellTight,...s.bleft,...s.bright}} colSpan={2}>
+                                     <p style={s.extraSpacerSides}><span style={s.s2}>{skill.skill}</span></p>
                                    </td>
                                  </tr>
-                                 <tr style={(i % 2) && s.oddRow || s.evenRow}>
-                                   <td style={{...s.cell,...s.left}}>
+                                 <tr>
+                                   <td style={{...s.cell,...s.left,...s.bleft,...s.bbottom}}>
                                      <p style={{fontSize:'4pt',...s.extraSpacer}}>&nbsp;</p>
                                      <div dangerouslySetInnerHTML={sanitize(skill.descriptor)}/>
                                    </td>
-                                   <td style={{...s.cell,...s.right}}>
+                                   <td style={{...s.cell,...s.right,...s.bright,...s.bbottom}}>
                                      <p style={{fontSize:'4pt'}}>&nbsp;</p>
                                      {props.portfolio
                                          .filter((ex)=>ex.skill==skill.skill).length > 0 && 
@@ -126,7 +158,7 @@ function Exemplar (props) {
               <tr>
                 <td style={{...s.minimal,...s.s6,...s.lsmall}}>Assessment</td>
                 <td style={{...s.minimal,...s.rsmall}}>
-                  {props.ex.assessment.score && <h6 style={s.s6}>{props.ex.assessment.score}</h6>}
+                  {props.ex.assessment.score && <h6 style={{...s.s6,...s.grade}}>{props.ex.assessment.score}</h6>}
                   <div dangerouslySetInnerHTML={sanitize(props.ex.assessment.comment)}/>
                 </td>
               </tr>
@@ -137,46 +169,85 @@ function Exemplar (props) {
 
 function PortfolioExporter (props) {
 
-
     const [showRendered,setShowRendered] = useState(false)
     const [link,setLink] = useState()
+    const [status,setStatus] = useState()
 
-
-    function doExport () {
+    async function doExport () {
+        setStatus('Writing portfolio...')
         var body = ReactDOMServer.renderToString(<html>
                                                    <head>
                                                      <title>Portfolio</title>
                                                    </head>
-                                                   <body
-                                                     // 1/2 inch margins
-                                                     style={{
-                                                         maxWidth:'540pt',
-                                                         padding:'36pt 36pt 36pt 36pt',
-                                                     }}
-                                                   >
+                                                   <body>                                                     
                                                      <RenderedPortfolio {...props}/>
                                                    </body>
                                                 </html>);
         
-        DocWriter.updateFile('1TH8QBKLtjPm9ARizhOF5q17MqweAtDyvO6PtP5yfYWQ',
-                             {description:'A smple portfolio',
-                              body:body}).then((id)=>setLink(id))
-        // DocWriter.createFile({title:'Test Portfolio Export',
-         //                       description:'A sample portfolio',
-         //                       body:body}).then(
-         //                           (id)=>setLink(id)
-         //                       );
+        setStatus('Looking to see if a document exists already...');
+        var dm = DocumentManager();
+        var existingId = await dm.getSheetId(props.course.id,
+                                       'full-portfolio-export',
+                                       props.student.userId);
+        var result;
+        if (existingId) {
+            setStatus('Found document. Updating document with new portfolio.');
+            try {
+                result = await DocWriter.updateFile(existingId,
+                                                    {description:'A sample portfolio',
+                                                     body:body}
+                                                   )
+            }
+            catch (err) {
+                console.log('ERROR: ',err);
+                setStatus('Error!');
+                window.setTimeout(()=>setStatus(),1000)
+                return;
+            }
+        }
+        else {
+            setStatus('Exporting portfolio to docs...')
+            try {
+                result = await  DocWriter.createFile(
+                    {title:'Test Portfolio Export',
+                     description:'A sample portfolio',
+                     body:body}
+                );
+                setStatus('Saving file info for future reference...')
+                await dm.addMetadataToFile(
+                    result.id,
+                    props.course,
+                    'full-portfolio-export',
+                    props.student
+                );
+            }
+            catch (err) {
+                console.log('ERROR: ',err);
+                setStatus('Error!');
+                window.setTimeout(()=>setStatus(),1000)
+                return;
+            }
+        }
+        setStatus()        
+        setLink(result.url)
     }
     
     
-    return <div>
-             <Button onClick={doExport}>Export!</Button>
-             {link && <div>Exported to {JSON.stringify(link)}</div>}
-             <h.h3 onClick={()=>setShowRendered(!showRendered)}>Preview</h.h3>
-             {showRendered && 
-              <RenderedPortfolio {...props}/>
-             }
-        </div>
+    return <ProgressOverlay active={status}>
+               <Buttons>
+                 <Button className="is-secondary" onClick={()=>setShowRendered(!showRendered)}>Preview Doc</Button>
+                 <Button className="is-primary" onClick={doExport}>Export to Doc</Button>
+                 {link && <Button href={link} target="_BLANK" icon={Icon.external}>See Export</Button>}
+                 <Modal className='full' active={showRendered} onClose={()=>setShowRendered(false)}>
+                   <div style={{margin:'auto',
+                                width:'468pt'}}>
+                     <RenderedPortfolio {...props}/>
+                   </div>
+                 </Modal>
+               </Buttons>
+               <p>{status}</p>
+             </ProgressOverlay>
+
 }
 
 function StandalonePortfolioExporter (props) {
