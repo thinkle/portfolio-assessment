@@ -1,18 +1,20 @@
 import React,{useState,useEffect} from 'react';
 import Brand from './brand.js';
 import './App.sass';
-import {Container,Navbar,Card,Progress,h} from './widgets.js';
+import {Container,Navbar,Card,Progress,h,Loader,Buttons,Button} from './widgets.js';
 import TestView from './Tests.js';
 import TeacherView from './TeacherView.js';
 import StudentView from './StudentView.js';
 import Api from './gapi/gapi.js';
 import Gapi from './gapi/gapiLoader.js';
 import history from './history.js';
+//import gapi from './gapi/__mocks__/gapi.js';
 
 function MainView (props) {
+    console.log('Rerender MainView',props)
     const userTypeProp = 'user-type='+props.user
     const [user,setUser] = useState('');
-    const [userType,setUserType] = useState(Api.getLocalCachedProp(userTypeProp));
+    const [userType,setUserType] = useState(props.userType||Api.getLocalCachedProp(userTypeProp));
 
     function doSetUserType (type) {
         setUserType(type);
@@ -61,15 +63,15 @@ function MainView (props) {
                   }
           </div>
           {!userType && (
-              <div className="card">
-                <div className="card-header">Are you a teacher or a student?</div>
-                <div className="card-body">
-                  <div className="buttons">
-                    <button onClick={()=>setAndSaveUserType('teacher')} className="button is-large">Teacher</button>
-                    <button onClick={()=>setAndSaveUserType('student')} className="button is-large">Student</button>
-                  </div>
-                </div>
-              </div>
+              <Container>
+                <Card>
+                  <div>Are you a teacher or a student?</div>
+                  <Buttons>
+                    <Button onClick={()=>setAndSaveUserType('teacher')} className="button is-large">Teacher</Button>
+                    <Button onClick={()=>setAndSaveUserType('student')} className="button is-large">Student</Button>
+                  </Buttons>
+                </Card>
+              </Container>
           )}
           {!user && 'No user? Please log in ^^^'}
           {userType=='teacher' && user && <TeacherView user={user} {...props}/>}
@@ -81,21 +83,38 @@ function MainView (props) {
 
 function App(props) {
     //const [page,setPage] = useState('register')
-    const [page,setPage] = useState('test')
+
+    // useEffect( () => {
+    //     if (props.mode=='test') {
+    //         console.log('Test mode! Fake GAPI');
+    //         console.log('Set up our mock!');
+    //         window.gapi = gapi;
+    //     }
+    // });
+    console.log('Rerender App',props)
     const [apiReady,setApiReady] = useState();
+    const [loggedIn,setLoggedIn] = useState(false);
+    
     function onApiLoaded () {
+        setApiReady(true)
         Api.getUser().then(
             ()=>{
-                setApiReady(true)
+                setLoggedIn(true);
             }
         );
     }
     
     return (
-        <React.Fragment>{!apiReady && 
+        <React.Fragment>
+        <div className="App viewport3 shrinky">
+          {!loggedIn && <div>Placeholder</div>}
+          <div>
+            <Gapi onReady={onApiLoaded} onLoggedOut={()=>console.log('logged out?')}/>
+          </div>
+          {!apiReady && <Loader>One moment while we connect you with Google Apps...</Loader>}
+          {apiReady && !loggedIn && 
            <Container>
              <Card>
-               <h.h2>{Brand.name}</h.h2>
                <div>
                  <p>Welcome to a tool for keeping a portfolio of your work.</p>
                  <p>This tool is still in beta, so I&rsquo;ll be improving it throughout the semester.</p>
@@ -108,24 +127,13 @@ function App(props) {
                    your stuff anyway. Also, I already have access to everyone&rsquo;s google
                    drive files anyway, so hacking you with this program would really be a stupid
                    use of my time :)</p>
-                 <Gapi onReady={onApiLoaded} onLoggedOut={()=>console.log('logged out?')}/>
                </div>
-               
              </Card>
-           </Container>
-          ||
-           <div className="App viewport3 shrinky">
-          <div><Gapi onReady={onApiLoaded} onLoggedOut={()=>console.log('logged out?')}/></div>
+           </Container>}
           {props.mode=='test'&& apiReady && <TestView {...props}/>}
           {props.mode!='test'&& apiReady && <MainView  {...props}/>}
-          {/* <div className="bottom"> */}
-          {/*   <div className="buttons"> */}
-          {/*     <button className="button" onClick={()=>setPage('test')}>Run Tests</button> */}
-          {/*     <button className="button" onClick={()=>setPage('main')}>Main View</button> */}
-          {/*   </div> */}
-          {/* </div> */}
-           </div>
-          }</React.Fragment>
+        </div>
+    }</React.Fragment>
     );
 }
 
