@@ -240,12 +240,24 @@ function DocumentManager () {
             const fullprop = propname(course.id,prop);
             await Api.setProp(fullprop,response.result.spreadsheetId)
             var courseFolder = await this.getCourseFolder(course);
-            FileUpdater(response.result.spreadsheetId)
+            await FileUpdater(response.result.spreadsheetId)
                 .addToFolder(courseFolder)
                 .addCourse(course.id)
                 .addAppProp('prop',fullprop)
                 .execute()
             return response.result;
+        },
+
+        async addMetadataToFile (id, course, prop, student) {
+            const fullprop = propname(course.id, prop, student.userId);
+            await Api.setProp(fullprop,id);
+            var courseFolder = await this.getCourseFolder(course);
+            await FileUpdater(id)
+                .addToFolder(courseFolder)
+                .addCourse(course.id)
+                .addAppProp('prop',fullprop)
+                .execute();
+            return {id:id}
         },
 
         async getUpdateTime (courseId, prop, studentId) {
@@ -261,7 +273,7 @@ function DocumentManager () {
                 return response.result.modifiedTime;
             }
         },
-
+        
         async getSheetId (courseId, prop, studentId) {
             const fullprop = propname(courseId,prop,studentId)
             var id = await Api.getProp(fullprop) // is a promise
