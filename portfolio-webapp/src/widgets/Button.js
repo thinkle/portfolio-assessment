@@ -7,13 +7,13 @@ function Button (props) {
     var className = classNames({...props.classNames, button:!props.linkStyle})
     if (props.className) {className += ' '+props.className}
     if (props.useButton || props.disabled) {
-        return (<button className={className} onClick={props.onClick} disabled={props.disabled}>
+        return (<button  {...props} className={className} onClick={props.onClick} disabled={props.disabled}>
                 {props.customIcon || props.icon && <Icon icon={props.icon}/>}
                 {props.children && <span>{props.children}</span>}
                 </button>)
     }
     else {
-        return (<a className={className} onClick={props.onClick} disabled={props.disabled}>
+        return (<a  {...props} className={className} onClick={props.onClick} disabled={props.disabled}>
                   {props.customIcon || props.icon && <Icon icon={props.icon}/>}
                   {props.children && <span>{props.children}</span>}
                 </a>)
