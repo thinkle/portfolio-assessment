@@ -5,6 +5,7 @@ import {SkillPicker,usePortfolioSkillHook} from './AssignmentMapper.js';
 import {arrayProp,classNames,getById,getProp} from './utils.js';
 import Material from './Material.js';
 import SheetWidget from './SheetWidget.js';
+import RubricExporter from './RubricExporter.js';
 import Editor from './RichText.js';
 import {classnames, sanitize} from './utils.js';
 import MagicLink from './linkMagic.js';
@@ -301,6 +302,13 @@ function ExemplarEditor (props) {
                     </Button>
                  )}
                 </Navbar.Item>               
+                <Navbar.Item>
+                  {props.selectedCoursework && props.selectedSkills && <RubricExporter
+                    {...props}
+                    permalink={permalink}
+                                                                       />}
+                </Navbar.Item>
+
               </Navbar.Start>
               {/* https://github.com/jgthms/bulma/issues/1604 */}
               <Navbar.Center>
@@ -542,7 +550,8 @@ function ExemplarSkillEditor (props) {
                   onSelected={setSelectedSkill}/>
                   </div>
                 </CustomSelectableItem>
-              </Navbar.Item>
+              </Navbar.Item>              
+              
               {props.mode=='student' &&
                <Navbar.Item>
                  {assessmentCount < revisionCount &&
@@ -677,6 +686,7 @@ function useEEProps ({selectedStudent,selectedCoursework,currentPortfolio,assign
             }
         }
         var eepProps = {
+            student : selectedStudent,
             selectedCoursework : selectedCoursework,
             selectedSubmission : submission,
             selectedSkills : currentPortfolio.filter((item)=>selectedCoursework && item.courseworkId==selectedCoursework.id),
