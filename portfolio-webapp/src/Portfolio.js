@@ -5,6 +5,7 @@ import {useStudentPortfolio,useCoursework,useStudentWork} from './gapi/hooks.js'
 import {getItemById,replaceItemInArray,getProp,classNames} from './utils.js';
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import ExemplarEditor from './ExemplarEditor.js';
+import PortfolioExporter from './PortfolioExporter.js';
 import SavePortfolioButtons from './SavePortfolioButtons.js';
 import {inspect} from 'util';
 
@@ -114,7 +115,7 @@ function PortfolioComponent (props) {
     // needs props:
     // course =
     // student =
-
+    console.log('Rerender PortfolioComponent',props);
     const {skills, strands, assignments,
            urls, busy, error, portfolio, setPortfolio, savePortfolio, saveOverPortfolio, saved, updateExemplars,
            coursework, studentwork, 
@@ -275,25 +276,27 @@ function PortfolioComponent (props) {
               <Navbar.Item>
                 {assessmentInfo()}                   
               </Navbar.Item>
+              <Navbar.Item>
+                <PortfolioExporter {...props}
+                />
+              </Navbar.Item>
             </Navbar.Start>
             <Navbar.End>                         
-              {error &&
-               <React.Fragment>
-                 <Navbar.Item className="has-danger-text">Error :( 
-                   <span>{inspect(error)}</span>
-                 </Navbar.Item>             
-                 <Navbar.Item>
-                   <Button className="is-danger"
-                           icon={Icon.save}
-                           onClick={()=>saveOverPortfolio()}>
-                     Force Save (save over any other changes)
-                   </Button>
-                 </Navbar.Item>
-               </React.Fragment>}
+              {/* {error && */}
+              {/*  <React.Fragment> */}
+              {/*    <Navbar.Item> */}
+              {/*      <Button className="is-danger" */}
+              {/*              icon={Icon.save} */}
+              {/*              onClick={()=>saveOverPortfolio()}> */}
+              {/*        Force Save (save over any other changes) */}
+              {/*      </Button> */}
+              {/*    </Navbar.Item> */}
+              {/*  </React.Fragment>} */}
               <SavePortfolioButtons
                 busy={busy}
                 urls={urls}
                 saved={saved}
+                error={error}
                 savePortfolio={savePortfolio}
                 saveOverPortfolio={saveOverPortfolio}
               />
