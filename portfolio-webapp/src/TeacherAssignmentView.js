@@ -8,6 +8,7 @@ import ExemplarEditor,{useEEProps} from './ExemplarEditor.js';
 import history from './history.js';
 import {inspect} from 'util';
 import StudentPicker from './StudentPicker.js';
+import SavePortfolioButtons from './SavePortfolioButtons';
 
 function TeacherAssignmentView (props) {
 
@@ -35,7 +36,7 @@ function TeacherAssignmentView (props) {
                     setSelectedStudent(getById(students,props.studentId,'userId'));
                 }
                 if (props.courseworkId) {
-                    doChangeCoursework(getById(coursework,props.courseworkId));
+                    setSelectedCoursework(getById(coursework,props.courseworkId));
                 }
                 setInitialStateReady(true);
             }
@@ -67,6 +68,7 @@ function TeacherAssignmentView (props) {
 
 
     function updateUrl ({student,coursework}) {
+        debugger;
         if ((student||selectedStudent) && (coursework||selectedCoursework)) {
             history.push(`/teacher/${props.course.id}/assignment/${coursework&&coursework.id||selectedCoursework.id}/${student&&student.userId||selectedStudent.userId}/`);
         }
@@ -77,6 +79,7 @@ function TeacherAssignmentView (props) {
 
     function doChangeStudent (student) {
         setSelectedStudent(student);
+        debugger;
         updateUrl({student});
     }
     function doChangeCoursework (coursework) {
@@ -100,6 +103,9 @@ function TeacherAssignmentView (props) {
     }
 
     return (
+        !initialStateReady &&
+         <Loader>Fetching assignment information...</Loader>
+         ||
         <Viewport.Two>
           <Navbar className="navbar1">
             <Navbar.Item>
@@ -125,30 +131,40 @@ function TeacherAssignmentView (props) {
               {/*   <Button onClick={setShowExporter}>Export Grades</Button> */}
               {/* </Navbar.Item> */}
               <Navbar.Item>
-            {selectedStudent &&
-             <React.Fragment>
+                {/*<React.Fragment>*/}
+                {selectedStudent &&
+                 <SavePortfolioButtons
+                 busy = {portfolioManager.busyState.map[portfolioManager.getId(selectedStudent)]}
+                 saved = {portfolioManager.savedState.map[portfolioManager.getId(selectedStudent)]}
+                 savePortfolio = {()=>portfolioManager.savePortfolio(selectedStudent)}
+                 saveOverPortfolio={()=>portfolioManager.saveOverPortfolio(selectedStudent)}
+                 error={portfolioManager.getError(selectedStudent)}
+                 urls={portfolioManager.getUrls(selectedStudent)}
+               />
+                }
                {/* portfolioManager.getId(selectedStudent) */}                                      
-               {portfolioManager.errorState.map[portfolioManager.getId(selectedStudent)] &&
-                <span className="error">Error: {JSON.stringify(
-                    portfolioManager.getError(selectedStudent)
-                )}</span>}
-               <span>{portfolioManager.savedState.map[portfolioManager.getId(selectedStudent)]
-                             && 'SAVED!' ||
-                             'NOT SAVED'}
-               </span>
-               <span>
-                 {portfolioManager.busyState.map[portfolioManager.getId(selectedStudent)] &&
-                  <progress max="100" className="progress">Loading</progress> || 
-                  <Button icon={Icon.save}
-                          disabled={!!portfolioManager.savedState.map[portfolioManager.getId(selectedStudent)]}
-                          onClick={
-                              ()=>{portfolioManager.savePortfolio(selectedStudent)}
-                          }
-                  >Save to Google</Button>
+               {/* {portfolioManager.errorState.map[portfolioManager.getId(selectedStudent)] && */}
+               {/*  <span className="error">Error: {JSON.stringify( */}
+               {/*      portfolioManager.getError(selectedStudent) */}
+               {/*  )}</span>} */}
+               {/* <span>{portfolioManager.savedState.map[portfolioManager.getId(selectedStudent)] */}
+               {/*               && 'SAVED!' || */}
+               {/*               'NOT SAVED'} */}
+               {/* </span> */}
+               {/* <span> */}
+               {/*   {portfolioManager.busyState.map[portfolioManager.getId(selectedStudent)] && */}
+               {/*    <progress max="100" className="progress">Loading</progress> ||  */}
+               {/*    <Button icon={Icon.save} */}
+               {/*            disabled={!!portfolioManager.savedState.map[portfolioManager.getId(selectedStudent)]} */}
+               {/*            onClick={ */}
+               {/*                ()=>{portfolioManager.savePortfolio(selectedStudent)} */}
+               {/*            } */}
+               {/*    >Save to Google</Button> */}
 
-                 }
-               </span>
-             </React.Fragment>}
+               {/*   } */}
+               {/* </span> */}
+             {/* </React.Fragment> */}
+
               </Navbar.Item>
              
 
