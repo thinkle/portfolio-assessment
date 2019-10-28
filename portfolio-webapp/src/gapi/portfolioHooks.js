@@ -15,7 +15,7 @@ function useStudentPortfolioManager (params) {
     const doFetchNowMap = objProp(...useState({}));
     const spObjectMap = objProp(...useState({}));
     const errorMap = objProp(...useState({}));
-    
+    const urlMap = objProp(...useState({}));
 
     const checkForUpdatesToFetch = () => {
         //console.log('PH: Effect triggered!',timestamp())
@@ -32,7 +32,7 @@ function useStudentPortfolioManager (params) {
                 busyMap.updateKey(id,true)
                 console.log('PH:Firing off API Call to get portfolio data',timestamp(),id,callback)
                 var portf = await sp.get_portfolio_data();
-            }
+            }                        
             catch (err) {
                 if (err.error == Api.StudentPortfolio.NO_PORTFOLIO_ERROR) {
                     console.log('PH:No portfolio for student yet',id);
@@ -45,6 +45,14 @@ function useStudentPortfolioManager (params) {
                 }
                 busyMap.updateKey(id,false);
                 return; // we're done if there's no portfolio data
+            }
+            try {
+                const urls = await sp.get_urls()
+                urlMap.updateKey(id,urls)
+            }
+            catch (err) {
+                console.log('PH: ERROR UPDATING URLS');
+                throw err;
             }
             // update original
             origPortfolioMap.updateKey(id,portf.data)
@@ -157,7 +165,8 @@ function useStudentPortfolioManager (params) {
     function fetchPortfolio (student, course=defaultCourse, callback) {
         const id = makeID(course,student);
         busyMap.updateKey(id,true)
-        spObjectMap.updateKey(id,Api.StudentPortfolio(course,student));
+        const sp = Api.StudentPortfolio(course,student)
+        spObjectMap.updateKey(id,sp);
         doFetchNowMap.updateKey(id,{doIt:true,callback:callback});
     }
 
@@ -240,6 +249,10 @@ function useStudentPortfolioManager (params) {
         }
     }
 
+    function getUrls (student, course=defaultCourse) {
+        return urlMap.map[makeID(course,student)]
+    }
+
     function getAllErrors () {
         var errors = []
         for (var id in errorMap.map) {
@@ -262,6 +275,7 @@ function useStudentPortfolioManager (params) {
         getAllErrors,
         isBusy,
         spObjectMap,
+        getUrls,
 
         getId (student, course=defaultCourse) {
             return makeID(course,student);
