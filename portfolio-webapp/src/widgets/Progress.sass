@@ -1,0 +1,21 @@
+@import "../../node_modules/bulma/sass/utilities/_all.sass";
+
+.progress-overlay-container
+  position: relative;
+
+.progress-overlay-container .overlay
+  opacity: 0
+  background-color: #efefefcc;
+  border: 2px solid $info;
+  transition: opacity 300ms;
+  position: absolute;
+  top: -25px
+  left: -25px
+
+.progress-overlay-container .overlay.active
+  opacity: 1
+  transition: opacity 300ms, top 300ms, left 300ms
+  position: absolute
+  top: -5px
+  left: 5px
+  cursor: progress
