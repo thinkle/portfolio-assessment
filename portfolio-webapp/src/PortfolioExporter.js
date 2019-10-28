@@ -4,15 +4,18 @@ import {useStudentPortfolio,useCoursework,useStudentWork} from './gapi/hooks.js'
 import {usePortfolioSkillHook} from './AssignmentMapper.js';
 import {h,Button,Buttons,Modal,Icon,ProgressOverlay} from './widgets.js';
 import {sanitize} from './utils.js';
-import DocWriter from './gapi/docWriter.js';
+import DocExporter from './DocExporter.js'
 import Brand from './brand.js'
-import DocumentManager from './gapi/DocumentManager.js';
+
+
+import GD from './GoogleDoc.js';
 // Export portfolio as something pretty
 
 function RenderedPortfolio (props) {
     const head = {
         fontFamily: 'Raleway',
     }
+    
     const TWIDTH = 468
     const pad = '10pt'
     const borderColor = '#e09f3e'
@@ -76,22 +79,23 @@ function RenderedPortfolio (props) {
     }
 
     return <div style={s.baseStyle}>
-             <p style={s.s3}>{props.student.profile.name.fullName}</p>
-             <p style={s.s2}>{props.course.name} Portfolio</p>
-             <p style={s.s3}>as of {new Date().toLocaleDateString()}</p>
-             <p style={s.small}>
+             <GD.s3.div>{props.student.profile.name.fullName}</GD.s3.div>
+             <GD.s2.div>{props.course.name} Portfolio</GD.s2.div>
+             <GD.s4.div>as of {new Date().toLocaleDateString()}</GD.s4.div>
+             <GD.small.div>
                This portfolio was created with the <a href={Brand.url}>{Brand.name}</a>. To update reflections and assessments, please use the tool.
                This document may be overwritten by future exports.
-             </p>
-             <table className="export" style={s.tableStyle} >
+             </GD.small.div>
+             <GD.tbl>
+               <tbody>
                {props.strands
                 .map((strand)=>
                      <>
-                       <tr className="thead" style={{...s.s1,...s.header}}>
-                         <td colspan="2" style={{...s.cell}}>
+                       <GD.theader>
+                         <GD.cell colSpan="2">
                            {strand}
-                         </td>
-                       </tr>
+                         </GD.cell>
+                       </GD.theader>
                        {props.skills.filter((sk)=>sk.strand==strand).map(
                            (skill,i)=>(
                                <>
@@ -121,8 +125,9 @@ function RenderedPortfolio (props) {
                              )
                        )}
                      </>
-               )}
-             </table>
+                    )}
+               </tbody>
+             </GD.tbl>
            </div>
 
 }
@@ -166,88 +171,16 @@ function Exemplar (props) {
            </table>
 }
 
-
 function PortfolioExporter (props) {
-
-    const [showRendered,setShowRendered] = useState(false)
-    const [link,setLink] = useState()
-    const [status,setStatus] = useState()
-
-    async function doExport () {
-        setStatus('Writing portfolio...')
-        var body = ReactDOMServer.renderToString(<html>
-                                                   <head>
-                                                     <title>Portfolio</title>
-                                                   </head>
-                                                   <body>                                                     
-                                                     <RenderedPortfolio {...props}/>
-                                                   </body>
-                                                </html>);
-        
-        setStatus('Looking to see if a document exists already...');
-        var dm = DocumentManager();
-        var existingId = await dm.getSheetId(props.course.id,
-                                       'full-portfolio-export',
-                                       props.student.userId);
-        var result;
-        if (existingId) {
-            setStatus('Found document. Updating document with new portfolio.');
-            try {
-                result = await DocWriter.updateFile(existingId,
-                                                    {description:'A sample portfolio',
-                                                     body:body}
-                                                   )
-            }
-            catch (err) {
-                console.log('ERROR: ',err);
-                setStatus('Error!');
-                window.setTimeout(()=>setStatus(),1000)
-                return;
-            }
-        }
-        else {
-            setStatus('Exporting portfolio to docs...')
-            try {
-                result = await  DocWriter.createFile(
-                    {title:'Test Portfolio Export',
-                     description:'A sample portfolio',
-                     body:body}
-                );
-                setStatus('Saving file info for future reference...')
-                await dm.addMetadataToFile(
-                    result.id,
-                    props.course,
-                    'full-portfolio-export',
-                    props.student
-                );
-            }
-            catch (err) {
-                console.log('ERROR: ',err);
-                setStatus('Error!');
-                window.setTimeout(()=>setStatus(),1000)
-                return;
-            }
-        }
-        setStatus()        
-        setLink(result.url)
-    }
-    
-    
-    return <ProgressOverlay active={status}>
-               <Buttons>
-                 <Button className="is-secondary" onClick={()=>setShowRendered(!showRendered)}>Preview Doc</Button>
-                 <Button className="is-primary" onClick={doExport}>Export to Doc</Button>
-                 {link && <Button href={link} target="_BLANK" icon={Icon.external}>See Export</Button>}
-                 <Modal className='full' active={showRendered} onClose={()=>setShowRendered(false)}>
-                   <div style={{margin:'auto',
-                                width:'468pt'}}>
-                     <RenderedPortfolio {...props}/>
-                   </div>
-                 </Modal>
-               </Buttons>
-               <p>{status}</p>
-             </ProgressOverlay>
-
+    return <DocExporter
+             {...props}
+             docTitle='Portfolio'
+             docProp='full-portfolio-export'
+             docDescription='Assessment Portfoio'
+             exportText='Export Portfolio to Google Docs'
+           >
+             <RenderedPortfolio {...props}/>
+           </DocExporter>
 }
 
 function StandalonePortfolioExporter (props) {
