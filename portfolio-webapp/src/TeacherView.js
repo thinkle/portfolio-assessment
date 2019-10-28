@@ -11,7 +11,7 @@ import GradeExporter from './GradeExporter.js';
 import Api from './gapi/gapi.js';
 import {useTeacherCoursesApi} from './gapi/hooks.js';
 import Brand from './brand.js';
-import {Container,Menu,Navbar,Tabs,Button,Modal,Icon,Card,Viewport,h,Buttons} from './widgets.js';
+import {Container,Menu,Navbar,Tabs,Button,Modal,Icon,Card,Viewport,h,Loader,Buttons} from './widgets.js';
 import history from './history.js';
 import {inspect} from 'util';
 import {useStudents,useStudentWork,useCoursework,useStudentPortfolioManager} from './gapi/hooks.js';
@@ -23,6 +23,10 @@ function TeacherView (props) {
     // we list portfolioManager state into...
     const [course,setCourse] = useState();    
     const [teacherViewMessage,setTeacherViewMessage] = useState();
+    const [initialStateReady,setInitialStateReady] = useState(false);
+    
+    console.log('Rerender TeacherView',props,course,teacherViewMessage,initialStateReady);
+
     function doSetCourse (course) {
         if (course) {
             history.push(`/teacher/${course.id}/`);
@@ -48,22 +52,34 @@ function TeacherView (props) {
         }
     }
 
+
+
+    function onCoursesReady () {
+        setCourseFromId()
+        setInitialStateReady(true);
+        if (props.onReady) {
+            props.onReady();
+        }
+    }
+
     const CoursesApi = useTeacherCoursesApi({teacher:props.user},
-                                      setCourseFromId
+                                      onCoursesReady
                                      );
 
     return (
         <Viewport.Bottom>
-          {!course && <Container>
+          {!initialStateReady && <Loader>Loading Google Courses...</Loader>}
+          {!course && initialStateReady && <Container>
             <ClassList
               CoursesApi={CoursesApi}
               onCourseSelected={(course)=>{
                   doSetCourse(course);
               }}
             /></Container>
-           ||
+           || course &&
            <TeacherCourseView setTeacherViewMessage={setTeacherViewMessage} course={course} {...props}/>
           }
+        {course &&
           <Navbar>
             <Navbar.QuickBrand>
               {Brand.name}: Teacher Mode
@@ -85,14 +101,14 @@ function TeacherView (props) {
                >Switch course</a>
               }
             </Navbar.Item>
-          </Navbar>
+         </Navbar>
+        }
         </Viewport.Bottom>
     );
 
 }
 
 function TeacherCourseView (props) {
-
 
     const [message,setMessage] = useState('');
     const [gotDataAndStuff,setGotDataAndStuff] = useState(0)
@@ -102,7 +118,8 @@ function TeacherCourseView (props) {
     const coursework = useCoursework(props);
     const portfolioManager = useStudentPortfolioManager(props);
 
-
+    console.log('Rerender TeacherCourseView',props,message,gotDataAndStuff,students,
+                skillHookProps,allStudentWork,coursework,portfolioManager)
     useEffect(()=>{
         console.log('TCV: Got data&stuff effect triggered: let us update our state!');
         const n = gotDataAndStuff + 1
@@ -171,10 +188,8 @@ function TeacherCourseView (props) {
         }
     }
 
-    
-
-
     function updateRoute (routeName) {
+        console.log('TeacherView: updateRoute')
         history.push(`/teacher/${props.course.id}/${routeName}/`);
     }
 
