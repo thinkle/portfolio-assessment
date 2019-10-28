@@ -136,6 +136,7 @@ function Gapi (props) {
     const [insertedGapiScript,setInsertedGapiScript] = useState(false);
     console.log('Got gapi? %s',gapi);
     const [courses,setCourses] = useState([]);
+
     function initClient () {
         console.log('initClient!');
         if (gapi) {
@@ -147,14 +148,20 @@ function Gapi (props) {
         })
             .then(()=>{
                 console.log('client initialized!');
+                if (props.onApiLoaded) {
+                    props.onApiLoaded(true);
+                }
                 gapi.auth2.getAuthInstance().isSignedIn.listen(
                     (isSignedIn)=>{
                         console.log('is signed in? %s',isSignedIn);
                         setAuthorized(isSignedIn)
+                        debugger;
                         if (isSignedIn) {
+                            console.log('Yes logged in - log onready!!')
                             props.onReady && props.onReady();
                         }
                         else {
+                            console.log('Not logged in - log out!')
                             props.onLoggedOut && props.onLoggedOut();
                         }
                     }
@@ -198,7 +205,9 @@ function Gapi (props) {
             document.body.appendChild(script);
             setInsertedGapiScript(true);
             console.log('Done attaching gapi script into document')
-            awaitGapi(props.spy).then((mygapi)=>setGapi(mygapi))
+            awaitGapi(props.spy).then((mygapi)=>{
+                setGapi(mygapi)
+            })
             return;
         }
         if (window.gapi && !gapi) {
