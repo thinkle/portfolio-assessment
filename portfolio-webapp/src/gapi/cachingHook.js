@@ -20,7 +20,7 @@ function makeCachingApiHook ({getter, makeCacheName, defaultVal, dontFetch, alwa
         }
 
         function getLastCacheTime () {
-            return Number(window.localStorage.getItem('time-'+cacheName,new Date().getTime()))
+            return Number(window.localStorage.getItem('time-'+cacheName))
         }
 
         function getCache () {
@@ -74,9 +74,9 @@ function makeCachingApiHook ({getter, makeCacheName, defaultVal, dontFetch, alwa
                 }
                 else {
                     // we have a local, but how long has gone by...
-                    const elapsedTime = getLastCacheTime() - renderTime
+                    const elapsedTime = renderTime - getLastCacheTime()
                     if (elapsedTime < refetchAfter) {
-                        console.log(`hooks: No need to refetch -- still ${(refetchAfter-elapsedTime)/1000} seconds left`,cacheName);
+                        console.log(`hooks: No need to refetch -- still ${t.format(refetchAfter-elapsedTime)}  left`,cacheName);
                     }
                     else {
                         console.log(`hooks: Cache is stale: refetching!`,cacheName);
@@ -112,7 +112,23 @@ t.SECONDS = 1000;
 t.MINUTES = 60*1000;
 t.HOURS = 60*t.MINUTES;
 t.DAYS = 24 * t.HOURS;
-
+t.format = (s) => {
+    var output = '';
+    var remainingTime = s;
+    for (let unit of ['days','hours','minutes','seconds']) {
+        let timeQuantity = t[unit.toUpperCase()]
+        var amt = Math.floor(remainingTime / timeQuantity );
+        remainingTime = remainingTime % timeQuantity; // remainder to be dealt with...
+        if (amt) {
+            if (output) {
+                output += ', ';
+            }
+            output += `${amt} ${unit}`
+        }
+    }
+    return output;
+}
+        
 
 export default makeCachingApiHook;
 export {t}
