@@ -6,6 +6,7 @@ import makeComponent from './widgets/QuickComponents.js';
 import Card from './widgets/Card.js';
 import Button from './widgets/Button.js';
 import Menu,{SelectableItem,CustomSelectableItem,Dropdown} from './widgets/Menu.js';
+import {Progress,Loader,ProgressOverlay} from './widgets/Progress.js';
 import Navbar from './widgets/Navbar.js';
 import Tabs from './widgets/Tabs.js';
 import Viewport from './widgets/Viewport.js';
@@ -28,21 +29,8 @@ const Box = makeComponent(['box']);
 const Buttons = makeComponent(['buttons']);
 const Content = makeComponent(['content']);
 const Container = makeComponent(['container']);
-const Progress = makeComponent(['progress'],'progress')
 const Control = makeComponent(['control'])
 const Field = makeComponent(['field'])
-
-function Loader (props) {
-    return <Card {...props}>
-             <div>{props.children}</div>
-             <div>
-               <p>Just a moment and we'll have your data ready I promise!</p>
-               <Progress/>
-             </div>
-           </Card>
-}
-
-
 
 
 const h = {};
@@ -70,4 +58,4 @@ export {Viewport,
         Navbar,Tabs,
         Panel,
         h,
-        Progress,Loader}
+        Progress,Loader,ProgressOverlay}
