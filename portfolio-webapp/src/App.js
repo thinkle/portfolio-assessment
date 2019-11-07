@@ -133,7 +133,7 @@ function App(props) {
           {props.mode=='test'&& apiReady && <TestView {...props}/>}
           {props.mode!='test'&& apiReady && <MainView  {...props}/>}
         </div>
-    }</React.Fragment>
+    </React.Fragment>
     );
 }
 
