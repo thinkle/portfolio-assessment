@@ -192,12 +192,17 @@ TO DO...
   -> Build handy metrics once we have all the data about how many we have etc. (X)a
 
 
-- Get emails working?
+- Get emails working? (x)
+
+- Fix bug where items from exemplar editor get duplicated when kids hit save multiple times
+- Add timestamps to assessments so we can e.g. limit which assessments we export to aspen
+- Allow filtering exported assessments by assignment
+
 - Save sidebar state of exemplar editor in assignment view [ ]
 - extend caching system for google docs/sheets fetching so we don't fetch new data if there is no new data 
 
 
-- Get working export of google docs / sharing feedback w/ students
+- Get working export of google docs / sharing feedback w/ students (x)
 - Limit which fields we get from API to speed up API access (https://developers.google.com/classroom/guides/performance#partial)
 
 - Centralize color variables and decisions / pick a palette for project
