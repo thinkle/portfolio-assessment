@@ -144,6 +144,19 @@ function DocumentManager () {
             return fileResp.result.id;
         },
 
+        async shareFile (fid, student, {email, studentWrite}) {
+            const permissionParams = {
+                fileId : fid,
+                sendNotificationEmail : !!email,
+                type : 'user',
+                role : studentWrite && 'writer' || 'reader',
+                emailAddress : student.profile.emailAddress,
+                emailMessage : email,
+            }
+            await gdrive.permissions.create(permissionParams);
+            return fid;
+        },
+
         async shareFileWithClass (fid, course) {
             var group = course.courseGroupEmail;
             //console.log('Sharing with ',course.courseGroupEmail);
