@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import {Button,Dropdown,Field,Icon,Control,Panel} from './widgets.js';
+import {Button,Dropdown,Field,Icon,Control,MultiSelector,Panel} from './widgets.js';
 import {getProp,classNames} from './utils.js';
 
 function StudentPicker (props) {
@@ -56,6 +56,16 @@ function StudentPicker (props) {
 }
 
 function StudentMultiPicker (props) {
+    return <MultiSelector
+             items={props.students}
+             selected={props.selected}
+             onSelect={props.onAdd}
+             onUnselect={props.onRemove}
+             renderItem={(s)=>getProp(s,'profile.name.fullName')}
+           />
+}
+
+function StudentMultiPickerOldSchool (props) {
     // props we want are...
     // selected = []
     // students = []
