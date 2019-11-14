@@ -1,10 +1,11 @@
 import React,{useState,useEffect,useRef} from 'react';
 import Exporters from './Exporters';
-import {Modal,Icon,Buttons,Container,Card,h,Button,Progress} from './widgets.js';
+import {Modal,Icon,Buttons,Container,Card,h,Button,Progress,MultiSelector} from './widgets.js';
 import DocumentManager from './gapi/DocumentManager.js';
 import Sheets from './gapi/SheetBasics.js';
 import SheetManager from './gapi/SheetManager.js';
 import StudentPicker from './StudentPicker.js';
+import CourseworkList from './CourseworkList.js';
 import {arrayProp,classNames} from './utils.js';
 
 function GradeExporter (props) {
@@ -16,6 +17,9 @@ function GradeExporter (props) {
     const [selectedStudents,setSelectedStudents] = useState([]);
     const selectedStudentAP = arrayProp(selectedStudents,setSelectedStudents);
     const [showSelectStudents,setShowSelectStudents] = useState(false)
+    const [showSelectAssignments,setShowSelectAssignments] = useState(false)
+    const [selectedAssignments,setSelectedAssignments] = useState([]);
+    const selectedAssignmentsAP = arrayProp(selectedAssignments,setSelectedAssignments);
 
     function setMessage (message) {
         console.log('GradeExporter: '+message)
@@ -23,14 +27,25 @@ function GradeExporter (props) {
     }
 
     function exportSelected () {
-        doExport(selectedStudents)
+        if (selectedAssignments.length > 0) {
+            doExport(selectedStudents,selectedAssignments)
+        }
+        else {
+            doExport(selectedStudents)
+        }
     }
 
     function exportAll () {
-        doExport(props.students);
+        if (selectedAssignments.length > 0) {
+            doExport(props.students,selectedAssignments);
+        }
+        else {
+            doExport(props.students);
+        }
     }
 
-    async function doExport (theStudents) {
+    async function doExport (theStudents, assignments) {
+        const assignmentIDsWeKeep = assignments && assignments.length > 0 && assignments.map((cw)=>cw.id)
         setBusy(true);
         setMessage('Starting export...');
         setMessage('Starting export... pushing each skill');
@@ -48,13 +63,19 @@ function GradeExporter (props) {
         //if (testMode) {students = students.slice(0,3);}
         var portfoliosWeAreFetching = theStudents.slice();
         props.portfolioManager.getMany(
-            theStudents,props.course,  // FIXME - cut down to avoid API overwhelming while we test
+            theStudents,props.course,  
             (portfolio,student) => {
-                setMessage(`EXP: Done fetching portfolio for ${student.profile.name.fullName}, got ${portfolio.length} assignments`);
+                setMessage(`Done fetching portfolio for ${student.profile.name.fullName}, got ${portfolio.length} assignments`);
                 portfoliosWeAreFetching.splice(portfoliosWeAreFetching.indexOf(student),1); // remove
                 var studentGrades = aspen.studentPortfolioToAspenGrades(student,portfolio)
                 if (!studentGrades) {
                     console.log('WHAT???');
+                }
+                if (assignmentIDsWeKeep) {
+                    studentGrades = studentGrades.filter(
+                        (gradeInfo)=>assignmentIDsWeKeep.indexOf(gradeInfo.CourseworkID)>-1
+                    );
+                    setMessage('Keeping ${studentGrades.length} assignments for selected assignment.');
                 }
                 for (var i of studentGrades) {
                     exports.push(i);
@@ -111,6 +132,19 @@ function GradeExporter (props) {
                 </div>
                 {message && <div>{message}</div>}
                 {url && <a target="_BLANK" href={url}>Click here to see export</a>}
+            <div className={classNames({
+                fadeIn : true,
+                active : showSelectAssignments
+            })}>
+              <MultiSelector
+                items={props.coursework}
+                renderItem={(item)=><CourseworkList.CourseworkItem item={item}/>}
+                selected={selectedAssignments}
+                onUnselect={(cw)=>selectedAssignmentsAP.remove(cw)}
+                onSelect={(cw)=>selectedAssignmentsAP.push(cw)}
+                
+              />
+            </div>
                 <div className={classNames({
                     fadeIn : true,
                     active : showSelectStudents,
@@ -137,12 +171,24 @@ function GradeExporter (props) {
                     onClick={()=>{setShowSelectStudents(!showSelectStudents)}}>
                     Select Students
                   </Button.Toggle>
+                  <Button.Toggle
+                    icon={Icon.student}
+                    active={showSelectAssignments}
+                    onClick={()=>{setShowSelectAssignments(!showSelectAssignments)}}>
+                    Select Assignments
+                  </Button.Toggle>
                   {selectedStudents.length>0 &&
                    <Button icon={Icon.export} onClick={()=>{setShowSelectStudents(false);exportSelected()}}>
                      Export for {selectedStudents.length} selected
                      Students</Button>
                   }
-            <Button icon={Icon.export} onClick={()=>{exportAll()}}>Export All Grades</Button>
+                  <Button icon={Icon.export} onClick={()=>{exportAll()}}>
+                    {selectedAssignments
+                     && <span>Export All Grades for {selectedAssignments.length} {selectedAssignments.length==1 && 'assignment' || 'assignment'}</span>
+                    ||  <span>Export All Grades</span>
+                    }
+                    
+                  </Button>
               </Buttons>
             </div>
             </Modal.ModalCard>
