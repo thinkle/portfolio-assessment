@@ -2,14 +2,16 @@ import React, {useEffect,useState} from 'react';
 import {classNames} from './utils.js';
 import Icon from './widgets/Icon.js';
 import Modal from './widgets/Modal.js';
+import Panel from './widgets/Panel.js';
 import makeComponent from './widgets/QuickComponents.js';
 import Card from './widgets/Card.js';
 import Button from './widgets/Button.js';
-import Menu,{SelectableItem,CustomSelectableItem,Dropdown} from './widgets/Menu.js';
+import Menu,{MultiSelector,SelectableItem,CustomSelectableItem,Dropdown} from './widgets/Menu.js';
 import {Progress,Loader,ProgressOverlay} from './widgets/Progress.js';
 import Navbar from './widgets/Navbar.js';
 import Tabs from './widgets/Tabs.js';
 import Viewport from './widgets/Viewport.js';
+import './widgets/animations.sass';
 const InputWithEnter = React.forwardRef( (props, ref) => {
     return (
         <input onKeyDown={
@@ -39,12 +41,6 @@ for (let i=1; i<=6; i++) {
     h['sh'+i] = makeComponent(['subtitle','is-'+i])
 }
 
-const Panel = makeComponent(['panel'])
-Panel.Block = makeComponent(['panel-block'])
-Panel.Tabs = makeComponent(['panel-block'])
-Panel.Tab = makeComponent([],'a')
-Panel.Tab = makeComponent([],'a')
-Panel.Label = makeComponent(['panel-block'],'label');
 
 
 export {Viewport,
@@ -54,7 +50,7 @@ export {Viewport,
         Button,
         Buttons,Icon,
         Control,Field,
-        Menu,SelectableItem,CustomSelectableItem,Dropdown,
+        Menu,MultiSelector,SelectableItem,CustomSelectableItem,Dropdown,
         Navbar,Tabs,
         Panel,
         h,
