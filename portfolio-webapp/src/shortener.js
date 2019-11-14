@@ -65,21 +65,4 @@ function Shortener ({maxLength=5,idDigits=2, enforceUnique=true}) {
     }
 }
 
-
-function test () {
-    
-    const sh = Shortener({maxLength:5,enforceUnique:true})
-    const sh2 = Shortener({maxLength:15})
-    const sh3 = Shortener({maxLength:30,enforceUnique:true})
-    for (var i=0; i<10; i++) {
-        [sh,sh2,sh3].map(
-            (shortener)=>
-                {       console.log('Got: %s',shortener.shorten('hello world, how are we?'))
-                        console.log('Got: %s',shortener.shorten('Design Skills basic assessment'))
-                        console.log('Got: %s',shortener.shorten('Who Knows if we cna shorten this or not: this is really hard? Or maybe it - is!'))
-                }
-        );
-    }
-}
-
 export default Shortener;
