@@ -24,7 +24,7 @@ function SkillPicker (props) {
              <Menu
                {...props.customMenu}
                onSelected={(skill)=>props.onSelected(skill)}
-               renderItem={(sk)=>sk.skill}
+               renderItem={(sk)=>sk && sk.skill}
              />
            </div>}
         {strands.map((strand)=>(
@@ -32,8 +32,8 @@ function SkillPicker (props) {
             <Menu
               title={strand}
               onSelected={(skill)=>props.onSelected(skill)}
-              items={skills.filter((sk)=>sk.strand==strand)}
-              renderItem={(sk)=>sk.skill}
+              items={skills.filter((sk)=>sk&&sk.strand==strand)}
+              renderItem={(sk)=>sk&&sk.skill}
             />
           </div>
         ))}
