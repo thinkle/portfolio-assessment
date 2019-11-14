@@ -16,7 +16,6 @@ async function createFile ({title,description,body}) {
     var file = new Blob([body || 'hello?']);
     var form = new FormData();
     form.append('metadata',new Blob([JSON.stringify(metadata)],
-                                    //{type:'application/vnd.google-apps.document'}));
                                     {type:'application/json'}))
     form.append('file',file);
     const resp = await fetch(
@@ -45,7 +44,6 @@ async function updateFile (id,{description,body}) {
         `https://www.googleapis.com/upload/drive/v2/files/${id}/?uploadType=media`,{
             method : 'PUT',
             headers : new Headers({'Authorization':'Bearer '+getAccessToken()}),
-            //body : form,
             body : new Blob([body])
         })
     const val = await resp.json();
