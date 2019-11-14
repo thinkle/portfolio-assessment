@@ -1,5 +1,5 @@
 import Shortener from './shortener.js';
-import {gradeToNum} from './utils.js';
+import {gradeToNum,getProp} from './utils.js';
 
 const Aspen = function ()  {
     return {
@@ -58,6 +58,9 @@ const Aspen = function ()  {
             }
             
             const studentName = fixName(student.profile.name);
+            
+            // First we sort the portfolio by skill, as we only need so many exemplars per skill in the gradebook and we want to preserve
+            // the top scores.
             const assignmentsBySkill = {}
             portfolio.forEach(
                 (exemplar) => {
@@ -69,11 +72,13 @@ const Aspen = function ()  {
                     }
                 }
             );
-            // Organized by skill
-            console.log('Organized portfolio by skill',assignmentsBySkill);
+            
+            // ***********
+            // Now we go through by skill and export the correct # of exemplars
+            // ***********
             var gradeExport = []
             for (var skill in assignmentsBySkill) {
-                // Sort our items by grade...
+                // Sort our items by grade... top scores first
                 var exemplars = assignmentsBySkill[skill]
                 exemplars.sort(
                     (a,b)=>gradeToNum(a.assessment.score)-gradeToNum(b.assessment.score) // sort by grade
@@ -81,12 +86,12 @@ const Aspen = function ()  {
                 console.log('Sorted by grade!',
                             exemplars.map((ex)=>`${ex.skill} ${ex.assessment.score}`)
                            );
-                //console.log('Working with ',this.skillToAssignmentMap);
-                //console.log('Working with skill',skill);
+                // Assignments are the aspen assignments we have listed -- we will be filling them in with grades from top to bottom
                 var assignments = this.skillToAssignmentMap[skill];
-                //console.log('Working with ',this.skillToAssignmentMap[skill]);
+                // We go through each aspen assignment (one exemplar slot in the portfolio each)...
                 for (var assignment of assignments) {
                     if (exemplars.length > 0) {
+                        // And we consume our sorted exemplars as needed to fill the slot...
                         var exemplar = exemplars.pop();
                         gradeExport.push(
                             {
@@ -94,14 +99,14 @@ const Aspen = function ()  {
                                 'Assignment Name':assignment,
                                 'Grade':exemplar.assessment.score,
                                 'Comment':makeComment(exemplar),
+                                'CourseworkID':getProp(exemplar,'courseworkId'),
                             }
                         );
                     }
                 }
-                
-                
             }
-            console.log('EXP: Began with portf, exporting: ',portfolio, gradeExport);
+            //console.log('EXP: Began with portf, exporting: ',portfolio, gradeExport);
+            // Last step: if we want to filter these, we need to store some info about them
             return gradeExport;
 
             function fixName (name) {
