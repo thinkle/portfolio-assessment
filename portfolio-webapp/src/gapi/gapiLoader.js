@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from 'react';
 import Brand from '../brand.js';
-import {Navbar,Button,Loader} from '../widgets.js';
+import {Navbar,Button,Loader,Error} from '../widgets.js';
 
 import Spy from './spy.js';
 
@@ -133,9 +133,11 @@ function Gapi (props) {
     const [authorized,setAuthorized] = useState(false);
     const [signedIn,setSignedIn] = useState(false);
     const [gapi,setGapi] = useState(window.gapi);
+    const [gapiLoaded,setGapiLoaded] = useState();
     const [insertedGapiScript,setInsertedGapiScript] = useState(false);
     console.log('Got gapi? %s',gapi);
     const [courses,setCourses] = useState([]);
+    const [errorInfo,setErrorInfo] = useState();
 
     function initClient () {
         console.log('initClient!');
@@ -151,6 +153,13 @@ function Gapi (props) {
                 if (props.onApiLoaded) {
                     props.onApiLoaded(true);
                 }
+                if (!gapi.auth2.getAuthInstance()) {
+                    setErrorInfo({
+                        name:'Auth Instance not loaded',
+                        error:'Unable to load auth instance. Perhaps you have not properly set up API keys etc.'});
+                    return;
+                }
+                setGapiLoaded(true);
                 gapi.auth2.getAuthInstance().isSignedIn.listen(
                     (isSignedIn)=>{
                         console.log('is signed in? %s',isSignedIn);
@@ -227,17 +236,22 @@ function Gapi (props) {
                             handleClientLoad();
                         });
                 })
-                .catch((err)=>console.log('oops?'));
+                .catch((err)=>setErrorInfo({
+                    name : 'Error loading API keys',
+                    error:err
+                }))
         }
     },[gapi]);
 
 
     function handleClientLoad () {
         console.log('load auth2!');
-        gapi && gapi.load('client:auth2',initClient)
+        gapi && gapi.load('client:auth2',initClient,setErrorInfo)
     }
 
     return (
+        errorInfo && <Error {...errorInfo}/>
+        ||
             <Navbar>
             <Navbar.Start>
               <Navbar.Item>
@@ -249,7 +263,7 @@ function Gapi (props) {
               </Navbar.Item>
               
               <Navbar.Item>
-                {!gapi && <Loader>Loading google API...</Loader> ||
+                {!gapiLoaded && <Loader>Loading google API...</Loader> ||
                  (authorized &&
                  <Button onClick={handleSignoutClick}>Sign Out</Button>
                  ||

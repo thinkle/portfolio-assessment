@@ -1,6 +1,6 @@
 import React,{useState} from 'react';
 import {inspect} from 'util';
-
+import './Error.sass';
 function Error (props) {
     const [show,setShow] = useState();
     return <div className='error'>
