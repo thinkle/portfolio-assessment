@@ -1,0 +1,24 @@
+.renderError 
+  border: 3px solid red
+  border-radius: 7px
+  font-weight: strong
+  position: relative;
+  padding: 15px;
+  margin-top: 25px
+  
+.renderError::before
+  content: 'Render Error'
+  position: absolute;
+  top: -25px;
+  border-radius: 5px 5px 0px 0px
+  padding: 3px 12px 12px 12px
+  box-sizing: border-box
+  left: 10px
+  height: 25px
+  font-size: 12px
+  background-color: red
+  color: white
+  z-index: 99xs
+  font-weight: bold
+  
+  
