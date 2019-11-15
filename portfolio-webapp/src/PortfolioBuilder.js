@@ -12,7 +12,7 @@ import TreeView from './TreeView.js';
 import {classNames} from './utils.js';
 import Shortener from './shortener.js';
 import Exporters from './Exporters.js';
-import {Modal,Button,Icon} from './widgets.js';
+import {Modal,Button,Icon,Error} from './widgets.js';
 
 var BE_FUSSY = false;
 
@@ -404,7 +404,7 @@ function PortfolioBuilder (props) {
           />
           <div className="section">
             {busyState && (<progress className="progress is-medium is-primary" max="100">Busy... {busyState}</progress>)}
-            {errorState && (<b>ERROR: {inspect(errorState)}</b>)}
+            {errorState && (<b><Error error={errorState}/></b>)}
           </div>
         {
          (<Modal 
