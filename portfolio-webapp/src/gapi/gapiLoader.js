@@ -164,7 +164,6 @@ function Gapi (props) {
                     (isSignedIn)=>{
                         console.log('is signed in? %s',isSignedIn);
                         setAuthorized(isSignedIn)
-                        debugger;
                         if (isSignedIn) {
                             console.log('Yes logged in - log onready!!')
                             props.onReady && props.onReady();
