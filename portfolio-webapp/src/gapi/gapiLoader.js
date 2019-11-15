@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from 'react';
 import Brand from '../brand.js';
-import {Navbar,Button} from '../widgets.js';
+import {Navbar,Button,Loader} from '../widgets.js';
 
 import Spy from './spy.js';
 
@@ -247,12 +247,14 @@ function Gapi (props) {
                     </span>
                 }
               </Navbar.Item>
+              
               <Navbar.Item>
-                {authorized &&
+                {!gapi && <Loader>Loading google API...</Loader> ||
+                 (authorized &&
                  <Button onClick={handleSignoutClick}>Sign Out</Button>
                  ||
                  <Button className='button' onClick={handleAuthClick}>Sign In</Button>
-                }
+                 )}
               </Navbar.Item>
             </Navbar.Start>
               <Navbar.End>
