@@ -31,9 +31,10 @@ function StudentPortfolio (course, student, studentMode=false) {
         else {
             console.log('SP:Pushing portfolio data',portfolio);
             var portfolioResult = await set_portfolio(portfolio);
+            await get_updated_time();
         }
         if (studentMode) {
-            return [portfolioResult,{}]
+            return {portfolioResult,assessmentResult:{},updatedTimes}
         }
         if (!studentMode) {
             // Assessments... (fix me - don't try for students).
@@ -56,7 +57,7 @@ function StudentPortfolio (course, student, studentMode=false) {
             }
         }
         console.log('SP:success! returning results.');
-        return [portfolioResult,assessmentResult];
+        return {portfolioResult,assessmentResult,updatedTimes};
     }
 
     async function set_portfolio (portfolioEntries) {
