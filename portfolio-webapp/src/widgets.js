@@ -3,6 +3,7 @@ import {classNames} from './utils.js';
 import Icon from './widgets/Icon.js';
 import Modal from './widgets/Modal.js';
 import Panel from './widgets/Panel.js';
+import Error from './widgets/Error.js';
 import makeComponent from './widgets/QuickComponents.js';
 import Card from './widgets/Card.js';
 import Button from './widgets/Button.js';
@@ -54,4 +55,5 @@ export {Viewport,
         Navbar,Tabs,
         Panel,
         h,
+        Error,
         Progress,Loader,ProgressOverlay}
