@@ -68,7 +68,6 @@ function TeacherAssignmentView (props) {
 
 
     function updateUrl ({student,coursework}) {
-        debugger;
         if ((student||selectedStudent) && (coursework||selectedCoursework)) {
             history.push(`/teacher/${props.course.id}/assignment/${coursework&&coursework.id||selectedCoursework.id}/${student&&student.userId||selectedStudent.userId}/`);
         }
@@ -79,7 +78,6 @@ function TeacherAssignmentView (props) {
 
     function doChangeStudent (student) {
         setSelectedStudent(student);
-        debugger;
         updateUrl({student});
     }
     function doChangeCoursework (coursework) {
