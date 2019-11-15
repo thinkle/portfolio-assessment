@@ -191,7 +191,7 @@ function useStudentPortfolioManager (params) {
             sp = Api.StudentPortfolio(course,student);
         }
         try {
-            await sp.set_portfolio_and_assessments(
+            const {updatedTimes} = await sp.set_portfolio_and_assessments(
                 {
                     data:portfolioMap.map[key],
                     updatedTimes:updatedTimeMap.map[key],
@@ -201,8 +201,7 @@ function useStudentPortfolioManager (params) {
             );
             origPortfolioMap.updateKey(key,portfolioMap.map[key]);
             savedStateMap.updateKey(key,true);
-            var newTimes = await sp.get_updated_time();
-            updatedTimeMap.updateKey(key,{...newTimes});
+            updatedTimeMap.updateKey(key,{...updatedTimes});
             console.log('PH:Done saving!');
         }
         catch (err) {
@@ -365,12 +364,13 @@ function useStudentPortfolio (params) {
         catch (err) {
             setBusy(false);
             setError(err);
-            console.log('PH hit error saving: ',err);//
+            console.log('Error saving: ',err);//
             //throw err;
             return
         }
         setBusy(false);
         setSaved(true);
+        setUpdatedTimes(result.updatedTimes);
         setOrigPortfolio(portfolio);
         return result;
     }
