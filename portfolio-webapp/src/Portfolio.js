@@ -259,6 +259,7 @@ function PortfolioComponent (props) {
         buildTreeDataStructure()
         setDataCount(dataCount+1);
         setShowExemplar(false);
+        savePortfolio();
     }
 
     var treeState = TreeView.NapTime(2); // state manager for toggled state of tree
@@ -339,7 +340,7 @@ function PortfolioComponent (props) {
                 }
                 else {
                     return [StatusCol,
-                            TreeView.ButtonCol({field:'coursework.title',className:'break-after',linkStyle:true,
+                            TreeView.ButtonCol({getText:(data)=>getProp(data,'coursework.title')||getProp(data,'permalink'),className:'break-after',linkStyle:true,
                                                 generateOnClick:editExemplarCallback}),
                             TreeView.PopupCol({field:'reflection',label:'Reflection',tagMode:true,snippetMode:true,className:'break-after'}),
                             TreeView.PopupCol({field:'assessment.comment',labelField:'assessment.score',tagMode:true,snippetMode:true,className:'break-after'}),
@@ -387,6 +388,7 @@ function PortfolioComponent (props) {
         return function () {
             var props = {
                 selectedSubmission : data.submission,
+                permalink : data.permalink,
                 selectedCoursework : data.coursework,
                 selectedSkills : [skillFromData(data)],
             };
@@ -408,7 +410,10 @@ function PortfolioComponent (props) {
                     strand.children.forEach(
                         (skill) => {
                             skill.children.forEach((exemplar)=>{
-                                if (exemplar.data.submission == data.submission && exemplar.data != data) {
+                                if (data.submission && (exemplar.data.submission == data.submission && exemplar.data != data)
+                                    ||
+                                    data.permalink && (exemplar.data.permalink == data.permalink && exemplar.data != data)
+                                   ) {
                                     props.selectedSkills.push(skillFromData(exemplar.data));
                                 }
                             })
