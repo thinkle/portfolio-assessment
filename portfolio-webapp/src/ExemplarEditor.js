@@ -68,7 +68,7 @@ function ExemplarEditor (props) {
 
     // data we choose
     const [selectedSubmission,setSelectedSubmission] = useState(props.selectedSubmission)
-    const [customSubmissionMode,setCustomSubmissionMode] = useState(false);
+    const [customSubmissionMode,setCustomSubmissionMode] = useState(props.permalink);
     const [permalink,setPermalink] = useState(props.permalink);
 
     // data we fetch
@@ -318,14 +318,18 @@ function ExemplarEditor (props) {
                 <Navbar.Item className="buttons">
                   {(selectedSubmission || (customSubmissionMode && permalink)) &&
                    <Button icon={Icon.plus} onClick={()=>addSkillBox()}>Add Skill</Button>}
-                  <Button onClick={saveDraft}>Keep Draft</Button>
+                  <Button
+                    icon={Icon.check}
+                    onClick={saveDraft}
+                  >Save</Button>
                   <Button className={classNames({
                       "is-primary":selectedSubmission && selectedSkills.filter((sk)=>sk&&sk.skill).length > 0,
-                  })}icon={Icon.check}
+                  })}
+                          icon={Icon.teacher}
                           onClick={updateAndSaveAll}
                   >
                     {props.mode=='teacher' && 'Give Feedback'
-                     || 'Submit for Feedback'}
+                     || 'Save + Submit All for Feedback'}
                   </Button>
                 </Navbar.Item>
               </Navbar.End>
