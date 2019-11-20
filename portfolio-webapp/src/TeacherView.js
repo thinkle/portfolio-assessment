@@ -139,7 +139,7 @@ function TeacherCourseView (props) {
         {routeName:'home',
          label:props.course.name,
          element:<TeacherHome
-                   key={gotDataAndStuff}
+                   //key={gotDataAndStuff}
                    {...props}
                    {...propsToPassDown}
                    dataKey={gotDataAndStuff}
@@ -147,12 +147,16 @@ function TeacherCourseView (props) {
         },
         {routeName:'assignment',
          label:'Assess By Assignments',
-         element:<TeacherAssignmentView key={gotDataAndStuff} course={props.course} {...props} {...propsToPassDown}/>
+         element:<TeacherAssignmentView
+                   //key={gotDataAndStuff}
+                   course={props.course}
+                   {...props}
+                   {...propsToPassDown}/>
         },
         {routeName:'portfolio',
          label:'Assess Portfolios',
          element:<TeacherPortfolioView
-                   key={gotDataAndStuff}
+                   //key={gotDataAndStuff}
                    course={props.course}
                    {...props}
                    {...propsToPassDown}
@@ -161,7 +165,7 @@ function TeacherCourseView (props) {
         {routeName:'build',
          label:'Build Skill Portfolio',
          element:<PortfolioBuilder
-                   key={gotDataAndStuff}
+                   //key={gotDataAndStuff}
                    {...props}
                    {...propsToPassDown}
                    onSelected={()=>updateRoute('build')}
@@ -170,7 +174,7 @@ function TeacherCourseView (props) {
         {routeName:'map',
          label:'Map Skills to Assignments',
          element:<AssignmentMapper
-                   key={gotDataAndStuff}
+                   //key={gotDataAndStuff}
                    {...props}
                    {...propsToPassDown}
                    onSelected={()=>updateRoute('map')}/>
