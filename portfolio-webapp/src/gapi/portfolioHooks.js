@@ -191,7 +191,7 @@ function useStudentPortfolioManager (params) {
             sp = Api.StudentPortfolio(course,student);
         }
         try {
-            const {updatedTimes} = await sp.set_portfolio_and_assessments(
+            const {updatedTimes,portfolioData} = await sp.set_portfolio_and_assessments(
                 {
                     data:portfolioMap.map[key],
                     updatedTimes:updatedTimeMap.map[key],
@@ -199,7 +199,8 @@ function useStudentPortfolioManager (params) {
                 studentMode,
                 force
             );
-            origPortfolioMap.updateKey(key,portfolioMap.map[key]);
+            origPortfolioMap.updateKey(key,portfolioData);
+            portfolioMap.updateKey(key,portfolioData);
             savedStateMap.updateKey(key,true);
             updatedTimeMap.updateKey(key,{...updatedTimes});
             console.log('PH:Done saving!');
@@ -371,8 +372,37 @@ function useStudentPortfolio (params) {
         setBusy(false);
         setSaved(true);
         setUpdatedTimes(result.updatedTimes);
-        setOrigPortfolio(portfolio);
+        setOrigPortfolio(result.portfolioData);
         return result;
+    }
+
+    async function updateAndSaveExemplars (exemplars) {
+        var copy = updatePortfolioWithExemplars(portfolio,exemplars);
+        _setPortfolio(copy);
+        setBusy(true);
+        try {
+            var result = await Api.StudentPortfolio(course,student).set_portfolio_and_assessments(
+                {
+                    data : copy,
+                    updatedTimes : updatedTimes,
+                },
+                studentMode,
+                false
+            );
+        }
+        catch (err) {
+            setBusy(false);
+            setError(err);
+            console.log('Error with updateAndSave',err);
+            throw err;
+            return;
+        }
+        setBusy(false);
+        setSaved(true);
+        setUpdatedTimes(result.updatedTimes);
+        setOrigPortfolio(result.portfolioData);
+        _setPortfolio(result.portfolioData);
+        return result
     }
 
     function setPortfolio (newPortfolio) {
@@ -389,6 +419,7 @@ function useStudentPortfolio (params) {
     return {
         busy, saved, error, urls, // read-only
         portfolio, setPortfolio, savePortfolio, saveOverPortfolio,  // read/write/save
+        updateAndSaveExemplars,
         updateExemplars (exemplars) {
             var copy = updatePortfolioWithExemplars(portfolio,exemplars);
             setPortfolio(copy);
@@ -414,7 +445,7 @@ function updatePortfolioWithExemplars (portfolio, exemplars) {
                 if (exemplar.id) {
                     replaceItemInArray(newPortfolio,exemplar,'id',true)
                 }
-                else {
+                else if (exemplar.skill) {
                     newPortfolio.push(exemplar);
                 }
             });
