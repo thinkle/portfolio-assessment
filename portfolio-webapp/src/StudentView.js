@@ -16,7 +16,7 @@ const PORT = 'portfolio'
 const ASGN = 'assignment'
 
 function StudentView (props) {
-
+    console.log('ReRender StudentView',props,new Date());
     const [course,setCourse] = useState();
     const CoursesApi = useStudentCoursesApi({},setCourseFromId);
     const StudentApi = useStudentProfileApi();
@@ -76,6 +76,7 @@ function StudentView (props) {
 
 
 function StudentCourseView (props) {
+    console.log('Rerender StudentCourseView',new Date(),props);
     var task = props.task || 'portfolio'
     const base = `/student/${getProp(props.course,'id')}/`
 
@@ -83,8 +84,7 @@ function StudentCourseView (props) {
     const studentwork = useStudentWork(props);
     const studentPortfolioProps = useStudentPortfolio({...props,studentMode:true});
     const skillHookProps = usePortfolioSkillHook(props);
-
-
+    
     return <>
              <Tabs.TabsTop className="is-centered">
                <ul>
@@ -100,14 +100,14 @@ function StudentCourseView (props) {
              <div>
                {task==PORT &&
                 <ErrorBoundary>
-                   <Portfolio.Bare
-                     {...props}
-                     {...skillHookProps}
-                     {...studentPortfolioProps}
-                     coursework={coursework}
-                     studentwork={studentwork}
-                     studentMode={true}
-                     teacherMode={false}/> 
+                  <Portfolio.Bare
+                    {...props}
+                    {...skillHookProps}
+                    {...studentPortfolioProps}
+                    coursework={coursework}
+                    studentwork={studentwork}
+                    studentMode={true}
+                    teacherMode={false}/> 
                 </ErrorBoundary>                
                }
                {task==ASGN &&
