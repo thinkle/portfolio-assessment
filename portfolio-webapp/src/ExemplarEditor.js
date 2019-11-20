@@ -319,18 +319,21 @@ function ExemplarEditor (props) {
                   {(selectedSubmission || (customSubmissionMode && permalink)) &&
                    <Button icon={Icon.plus} onClick={()=>addSkillBox()}>Add Skill</Button>}
                   <Button
+                    className={classNames({
+                        'is-primary':(selectedSubmission||permalink) && selectedSkills.filter((sk)=>sk&&sk.skill).length > 0,
+                    })}
                     icon={Icon.check}
                     onClick={saveDraft}
                   >Save</Button>
-                  <Button className={classNames({
-                      "is-primary":selectedSubmission && selectedSkills.filter((sk)=>sk&&sk.skill).length > 0,
-                  })}
-                          icon={Icon.teacher}
-                          onClick={updateAndSaveAll}
-                  >
-                    {props.mode=='teacher' && 'Give Feedback'
-                     || 'Save + Submit All for Feedback'}
-                  </Button>
+                  {/* <Button className={classNames({ */}
+                  {/*     "is-primary":selectedSubmission && selectedSkills.filter((sk)=>sk&&sk.skill).length > 0, */}
+                  {/* })} */}
+                  {/*         icon={Icon.teacher} */}
+                  {/*         onClick={updateAndSaveAll} */}
+                  {/* > */}
+                  {/*   {props.mode=='teacher' && 'Give Feedback' */}
+                  {/*    || `Save + Submit ${selectedSkills.filter((sk)=>sk&&sk.skill).length} Skill for Feedback`} */}
+                  {/* </Button> */}
                 </Navbar.Item>
               </Navbar.End>
             </Navbar>
