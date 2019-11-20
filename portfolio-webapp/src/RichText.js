@@ -50,9 +50,6 @@ class Editor extends React.Component {
             this.formats = [...this.formats,'headers']
             this.toolbar[0] = ['h1','h2','h3'];
         }
-        console.log('QUILL EDITOR!');
-        console.log('We have toolbar: ',this.toolbar);
-        console.log('We have formats: ',this.formats);
         
     }
     
