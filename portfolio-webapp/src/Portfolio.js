@@ -117,7 +117,7 @@ function PortfolioComponent (props) {
     // student =
     console.log('Rerender PortfolioComponent',props);
     const {skills, strands, assignments,
-           urls, busy, error, portfolio, setPortfolio, savePortfolio, saveOverPortfolio, saved, updateExemplars,
+           urls, busy, error, portfolio, setPortfolio, savePortfolio, saveOverPortfolio, saved, updateAndSaveExemplars, updateExemplars,
            coursework, studentwork, 
           } = props; // state lifted...
 
@@ -255,14 +255,16 @@ function PortfolioComponent (props) {
     }
 
     function saveExemplars (exemplars) {
-        updateExemplars(exemplars)
-        buildTreeDataStructure()
-        setDataCount(dataCount+1);
+        updateAndSaveExemplars(exemplars)
         setShowExemplar(false);
-        savePortfolio();
+        // We will be rebuilt when the portfolio gets updated post-save...
+        //buildTreeDataStructure()
+        //setDataCount(dataCount+1);
+        //savePortfolio();
     }
 
-    var treeState = TreeView.NapTime(2); // state manager for toggled state of tree
+    var treeState = TreeView.useNapTime(2); // state manager for toggled state of tree
+    //var treeState = props.treeState;    
 
     return (
         <Viewport>
@@ -303,11 +305,10 @@ function PortfolioComponent (props) {
               />
             </Navbar.End>
           </Navbar>
-          {true && 
-           <TreeView
+          <TreeView
              className="portfolio-tree-view"
-             getShowChildrenState={treeState.getShowChildrenState}
-             onSetShowChildren={treeState.onSetShowChildren}
+             getShowChildrenState={treeState && treeState.getShowChildrenState}
+             onSetShowChildren={treeState && treeState.onSetShowChildren}
              noDelete={true}
              key={dataCount}
              data={treeData}
@@ -349,7 +350,7 @@ function PortfolioComponent (props) {
                            ];
                 }
             }}
-          />}
+          />
           <Modal className='full' active={showExemplar} onClose={()=>setShowExemplar(false)}>
             <ExemplarEditor
               {...props}
@@ -363,8 +364,6 @@ function PortfolioComponent (props) {
               mode={props.teacherMode&&'teacher'||'student'}
             />
           </Modal>
-
-          
         </Viewport>
     )
     function getExemplarKey () {
