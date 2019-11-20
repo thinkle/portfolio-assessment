@@ -8,6 +8,10 @@ import {Icon,Modal,Button} from './widgets.js';
 import makeComponent,{mergeClassNames} from './widgets/QuickComponents.js';
 import './TreeView.sass';
 
+function hash (o) {
+    return inspect(o)
+}
+
 
 // Nevermind -- let's abstract the treeview out into a widget.
 
@@ -326,18 +330,18 @@ function TreeView (props) {
         setData(newData);
     }
 
-    return (
-        <TransitionGroup>
+    return (        
           <div className={props.className + ' ' + classNames(tvClassNames)}>
           <TreeHead key={props.headers.join('')} headers={props.headers}
         /* template={template} */
           />
-          
+
+            
 
         {data.map(
             (row,count)=>(<TreeRow
                             {...props}
-                            /* key={hash(row.data)} */
+                            key={hash(row.data)} 
                             id={''+count}
                             /* template={template} */
                             level={0}
@@ -359,7 +363,6 @@ function TreeView (props) {
                                   /* template={template} */
                                 />}
         </div>
-        </TransitionGroup>
     )
 }
 
@@ -682,13 +685,12 @@ TreeView.CascadeHook = (props) => (data,node,prop,val) => {
     
 }
 
-function NapTime (showLevel=0) { // i.e. collapsing children manager
+function useNapTime (showLevel=0) { // i.e. collapsing children manager
 
     const [childStateMap,setChildStateMap] = useState({});
 
     function getShowChildrenState (rowProps) {
-        if (childStateMap[rowProps.id]) {
-            //console.log('receive cached tree state',childStateMap[rowProps.id],rowProps.id);
+        if (childStateMap.hasOwnProperty(rowProps.id)) {
             return childStateMap[rowProps.id]
         }
         else {
@@ -702,15 +704,17 @@ function NapTime (showLevel=0) { // i.e. collapsing children manager
     }
 
     function onSetShowChildren (value, id) {
-        //console.log('set show children state',id,value);
         setChildStateMap({
             ...childStateMap,
             [id]:value
         });
     }
 
-    return {getShowChildrenState,
-           onSetShowChildren}
+    return {
+        childStateMap,
+        getShowChildrenState,
+        onSetShowChildren,
+    }
 }
 
 function snippet (htmlVal) {
@@ -723,6 +727,6 @@ function snippet (htmlVal) {
 }
 
 
-TreeView.NapTime = NapTime;
+TreeView.useNapTime = useNapTime;
 TreeView.tcc = tcClass
 export default TreeView
