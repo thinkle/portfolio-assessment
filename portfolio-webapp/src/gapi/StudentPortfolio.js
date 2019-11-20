@@ -285,6 +285,19 @@ function parsePortfolio (studentPortfolio, assessments) {
                 }
                 else {
                     console.log('SP:WEIRD: We have an assessment for %s but no exemplar :(',assessment.id);
+                    if (assessment.skill) {
+                        // good, we backed this puppy up...
+                        console.log('SP: Using teacher copy of assessment');
+                        const exemplar = {
+                            ...assessment,
+                            assessment: assessment
+                        }
+                        exemplarById[exemplar.id] = exemplar;
+                        portfolio.push(exemplar);
+                    }
+                    else {
+                        console.log('SP: No data stored with assessment - must be old ');
+                    }
                 }
             }
         );
@@ -323,8 +336,9 @@ function splitPortfolioAndAssessmentData (fullPortfolio) {
                     console.log("adding ID to exemplar",exemplarCopy)
                 }
                 if (exemplar.assessment) {
-                    var assessmentCopy = {...exemplar.assessment}
-                    assessmentCopy.id = exemplarCopy.id; // make the IDs equal
+                    // Copy all the exemplar data into assessment data for easier merging/fixing in the futre
+                    var assessmentCopy = {...exemplar.assessment, ...exemplarCopy}
+                    //assessmentCopy.id = exemplarCopy.id; // make the IDs equal
                     assessments.push(assessmentCopy);
                 }
                 portfolio.push(exemplarCopy);
