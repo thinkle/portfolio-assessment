@@ -66,7 +66,6 @@ function SheetManager (sheetId) {
                 getWithGrid()
                     .then((ssheet)=>{
                         var sheets = {};
-                        console.log('getSheetsData got result: %s',ssheet);
                         ssheet.sheets.forEach(
                             (sheet) => {
                                 sheets[sheet.properties.title] = sheet.data[0].rowData.map(Sheets.fromRowToJS)
@@ -176,8 +175,6 @@ function SheetManager (sheetId) {
                         }
                         requests.push(makeUpdateRequest(sheet));
                     });
-                    console.log('Making the following requests:');
-                    console.log(JSON.stringify(requests));
                     gsheets.spreadsheets.batchUpdate(
                         {
                             spreadsheetId:sheetId,
@@ -227,7 +224,6 @@ function SheetManager (sheetId) {
 
         getUrl : async function () {
             var ssheet = await getNoGrid()
-            console.log('Get URL returning: ',ssheet.spreadsheetUrl);
             return ssheet.spreadsheetUrl;
         },
     }
