@@ -5,6 +5,7 @@ import {Container,Navbar,Card,Progress,h,Loader,Buttons,Button} from './widgets.
 import TestView from './Tests.js';
 import TeacherView from './TeacherView.js';
 import StudentView from './StudentView.js';
+import SettingsUI from './SettingsUI.js';
 import Api from './gapi/gapi.js';
 import Gapi from './gapi/gapiLoader.js';
 import history from './history.js';
@@ -74,8 +75,13 @@ function MainView (props) {
               </Container>
           )}
           {!user && 'No user? Please log in ^^^'}
-          {userType=='teacher' && user && <TeacherView user={user} {...props}/>}
-          {userType=='student' && user && <StudentView user={user} {...props}/>}
+          {props.task=='settings' && user && <SettingsUI user={user} {...props}/>}
+          {props.task != 'settings' &&
+           <>
+             {userType=='teacher' && user && <TeacherView user={user} {...props}/>}
+             {userType=='student' && user && <StudentView user={user} {...props}/>}
+           </>
+          }
 
         </div>
     );
