@@ -34,7 +34,8 @@ function StudentPortfolio (course, student, studentMode=false) {
             await get_updated_time();
         }
         if (studentMode) {
-            return {portfolioResult,assessmentResult:{},updatedTimes}
+            assessmentResult = {}
+            //return {portfolioResult,assessmentResult:{},updatedTimes,portfolio,assessments}
         }
         if (!studentMode) {
             // Assessments... (fix me - don't try for students).
@@ -57,7 +58,11 @@ function StudentPortfolio (course, student, studentMode=false) {
             }
         }
         console.log('SP:success! returning results.');
-        return {portfolioResult,assessmentResult,updatedTimes};
+        // Re-parse so we can update : we may have added IDs to our data in the process which should go back to our UI
+        const portfolioData = parsePortfolio(portfolio,assessments);
+        return {portfolioResult,assessmentResult,updatedTimes,
+                portfolio,assessments,portfolioData,
+               };
     }
 
     async function set_portfolio (portfolioEntries) {
@@ -302,26 +307,32 @@ function splitPortfolioAndAssessmentData (fullPortfolio) {
     if (isNaN(topId)) {topId = 1};
     fullPortfolio.forEach(
         (exemplar) => {
-            const exemplarCopy = {
-                id : exemplar.id,
-                skill : exemplar.skill.skill || exemplar.skill,
-                courseworkId: exemplar.courseworkId, // || exemplar.submission.courseWorkId,
-                submissionId : exemplar.submissionId, //|| exemplar.coursework.id,
-                permalink : exemplar.permalink,
-                reflection : exemplar.reflection,
-                revisionCount : exemplar.revisionCount,
+            if (exemplar && exemplar.id || exemplar.skill) {
+                const exemplarCopy = {
+                    id : exemplar.id,
+                    skill : exemplar.skill.skill || exemplar.skill,
+                    courseworkId: exemplar.courseworkId, // || exemplar.submission.courseWorkId,
+                    submissionId : exemplar.submissionId, //|| exemplar.coursework.id,
+                    permalink : exemplar.permalink,
+                    reflection : exemplar.reflection,
+                    revisionCount : exemplar.revisionCount,
+                }
+                if (!exemplarCopy.id) {
+                    exemplarCopy.id = topId + 1;
+                    topId += 1;
+                    console.log("adding ID to exemplar",exemplarCopy)
+                }
+                if (exemplar.assessment) {
+                    var assessmentCopy = {...exemplar.assessment}
+                    assessmentCopy.id = exemplarCopy.id; // make the IDs equal
+                    assessments.push(assessmentCopy);
+                }
+                portfolio.push(exemplarCopy);
             }
-            if (!exemplarCopy.id) {
-                exemplarCopy.id = topId + 1;
-                topId += 1;
-                console.log("adding ID to exemplar",exemplarCopy)
+            else {
+                // skip
+                console.log('Skip empty exemplar?',exemplar);
             }
-            if (exemplar.assessment) {
-                var assessmentCopy = {...exemplar.assessment}
-                assessmentCopy.id = exemplarCopy.id; // make the IDs equal
-                assessments.push(assessmentCopy);
-            }
-            portfolio.push(exemplarCopy);
         }
     );
     return [portfolio, assessments]
