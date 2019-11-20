@@ -44,7 +44,6 @@ function addScope (parent, child, suffixes=['readonly']) {
     }
 
     if (child.indexOf('.')!=-1) {
-        console.log('Got nested child... ',child);
         var layers = child.split('.')
         var myparent = GOOGLESCOPES[parent];
         
@@ -77,7 +76,6 @@ addScope('drive',null,['readonly']); // top-level permissions
 addScope('drive','appdata',[]); // top-level permissions
 addScope('spreadsheets',null,['readonly']); // top-level sheets permissions
 
-console.log("APIs look like: %s",JSON.stringify(GOOGLESCOPES));
 
 const SCOPES = [GOOGLESCOPES.classroom.courses.readonly];
 SCOPES.push(GOOGLESCOPES.classroom.coursework.students.readonly);
@@ -93,18 +91,15 @@ const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/classroom/
                         "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
                         "https://sheets.googleapis.com/$discovery/rest?version=v4"
                        ]
-console.log('scopes are ',SCOPES);
 
 const awaitGapi = (spy)=> new Promise((resolve,reject)=>{
 
     const maxAttempts = 10;
     const attempts = []
-    console.log('Start waiting for gapi...');
     
     function checkForGapi () {
         attempts.push(new Date())
         if (window.gapi) {
-            console.log('Got it!');
             if (spy) {
                 window.origGapi = window.gapi;
                 window.gapi = Spy(window.gapi,'gapi');
@@ -112,7 +107,6 @@ const awaitGapi = (spy)=> new Promise((resolve,reject)=>{
             resolve(window.gapi);
         }
         else {
-            console.log('Try again... attempts #',attempts.length);
             if (attempts.length > maxAttempts) {
                 reject({
                     message:'Waited too long...',
@@ -120,7 +114,6 @@ const awaitGapi = (spy)=> new Promise((resolve,reject)=>{
                       )
             }
             else {
-                console.log('timeout...')
                 setTimeout(checkForGapi,1000)
             }
         }
@@ -135,12 +128,10 @@ function Gapi (props) {
     const [gapi,setGapi] = useState(window.gapi);
     const [gapiLoaded,setGapiLoaded] = useState();
     const [insertedGapiScript,setInsertedGapiScript] = useState(false);
-    console.log('Got gapi? %s',gapi);
     const [courses,setCourses] = useState([]);
     const [errorInfo,setErrorInfo] = useState();
 
     function initClient () {
-        console.log('initClient!');
         if (gapi) {
             gapi.client.init({
             apiKey : apiInfo.API_KEY,
@@ -149,7 +140,6 @@ function Gapi (props) {
             scope : SCOPES.join(' '),
         })
             .then(()=>{
-                console.log('client initialized!');
                 if (props.onApiLoaded) {
                     props.onApiLoaded(true);
                 }
@@ -162,27 +152,22 @@ function Gapi (props) {
                 setGapiLoaded(true);
                 gapi.auth2.getAuthInstance().isSignedIn.listen(
                     (isSignedIn)=>{
-                        console.log('is signed in? %s',isSignedIn);
                         setAuthorized(isSignedIn)
                         if (isSignedIn) {
-                            console.log('Yes logged in - log onready!!')
                             props.onReady && props.onReady();
                         }
                         else {
-                            console.log('Not logged in - log out!')
                             props.onLoggedOut && props.onLoggedOut();
                         }
                     }
                 )
                 var state = gapi.auth2.getAuthInstance().isSignedIn.get();
-                console.log('initial sign-in state? %s',state);
                 setAuthorized(state);
                 if (state) {
                     props.onReady && props.onReady();
                 }
             })
             .catch((err)=>{
-                console.log('client init failed :(');
                 console.log(err);
             });
         }
@@ -192,19 +177,16 @@ function Gapi (props) {
     }
 
     function handleAuthClick (event) {
-        console.log('authClick!');
         gapi.auth2.getAuthInstance().signIn();
     }
 
     function handleSignoutClick (event) {
-        console.log('signOutclick!');
         gapi.auth2.getAuthInstance().signOut();
     }
 
     
     useEffect( ()=>{
         if (!gapi && !window.gapi && !insertedGapiScript) {
-            console.log('Load gapi script into document')
             const script = document.createElement('script');
             script.src = ''
             script.setAttribute('src','https://apis.google.com/js/client.js');
@@ -212,14 +194,12 @@ function Gapi (props) {
             script.async = true;
             document.body.appendChild(script);
             setInsertedGapiScript(true);
-            console.log('Done attaching gapi script into document')
             awaitGapi(props.spy).then((mygapi)=>{
                 setGapi(mygapi)
             })
             return;
         }
         if (window.gapi && !gapi) {
-            console.log('window.gapi defined -- set gapi to point to it :)');
             setGapi(window.gapi);
         }
         
@@ -229,9 +209,7 @@ function Gapi (props) {
                 .then((resp)=>{
                     resp.json()
                         .then((data)=>{
-                            console.log('Got our API Info!');
                             apiInfo = data;
-                            console.log('handleClientLoad()!');
                             handleClientLoad();
                         });
                 })
@@ -244,7 +222,6 @@ function Gapi (props) {
 
 
     function handleClientLoad () {
-        console.log('load auth2!');
         gapi && gapi.load('client:auth2',initClient,setErrorInfo)
     }
 
