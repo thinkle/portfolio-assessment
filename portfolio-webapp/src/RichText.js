@@ -3,6 +3,7 @@ import ReactQuill, {Quill} from 'react-quill';
 import 'react-quill/dist/quill.core.css';
 import 'react-quill/dist/quill.snow.css';
 import './RichText.sass';
+import _ from 'lodash';
 
 // Help from https://codepen.io/alexkrolick/pen/xgyOXQ
 /* 
@@ -53,10 +54,12 @@ class Editor extends React.Component {
         
     }
     
-    handleChange (html) {
+    handleChange = _.debounce((html) => {
         this.setState({ editorHtml: html });
-        this.props.onChange && this.props.onChange(html);
-    }
+        this.props.onChange && this.props.onChange(html);        
+    }, 300);
+
+    
     
     
     render () {
@@ -64,7 +67,7 @@ class Editor extends React.Component {
                 <div className='noheaderbroken' {...this.props}> {/* Hack to remove stupid headers */}
                 <ReactQuill 
             theme="snow"
-            onChange={this.handleChange}
+                  onChange={this.handleChange}
             value={this.state.editorHtml}
                   modules={{toolbar:this.toolbar}}
             formats={this.formats}
