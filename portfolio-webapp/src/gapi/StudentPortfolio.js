@@ -111,7 +111,7 @@ function StudentPortfolio (course, student, studentMode=false) {
             console.log('SP:Error parsing cache time...',window.localStorage.getItem(EXCACHETIME));
             cacheTime = 0;
         }
-        if (!cacheTime || cacheTime < updatedTimes.exemplars) {
+        if (!cacheTime || new Date(cacheTime) < new Date(updatedTimes.exemplars)) {
             console.log('SP:Get whole file from google');
             var data = await get_portfolio_from_google();
             // Set cache!
