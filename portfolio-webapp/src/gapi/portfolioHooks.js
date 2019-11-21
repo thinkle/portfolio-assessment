@@ -181,6 +181,10 @@ function useStudentPortfolioManager (params) {
         }
     }
 
+    function saveOverPortfolio (student, course, callback, studentMode) {
+        return savePortfolio(student,course,callback,studentMode,true);
+    }
+
     async function savePortfolio (student, course=defaultCourse, callback=undefined, studentMode=false, force=false) {
         var key = makeID(course,student);
         console.log('PH:Set key busy',key);
@@ -270,6 +274,7 @@ function useStudentPortfolioManager (params) {
         touchPortfolio,
         setPortfolio,
         savePortfolio,
+        saveOverPortfolio,
         getPortfolio,
         getError,
         getAllErrors,
