@@ -25,9 +25,8 @@ function StudentAssignmentView (props) {
            });
 
     function saveExemplars (exemplars) {
-        console.log('saveExemplars',exemplars);
-        console.log('FIXME!');
-        props.updateExemplars(exemplars)
+        console.log('update and save...');
+        props.updateAndSaveExemplars(exemplars)
     }
 
     return (
