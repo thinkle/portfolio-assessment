@@ -11,8 +11,6 @@ function propname (courseId, prop, student) {
 
 
 function DocumentManagerMock () {
-    console.log('Testing mock');
-
 
     return {
         getSheetUrl () {
@@ -20,7 +18,6 @@ function DocumentManagerMock () {
         },
         getSheetId (courseId, prop, studentId) {
             const fullprop = propname(courseId,prop,studentId)
-            console.log('getSheetId=>',fullprop);
             if (mockSheets[fullprop]) {
                 return mockSheets[fullprop].id
             }
