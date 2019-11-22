@@ -4,7 +4,7 @@ import App from './App';
 import { act } from "react-dom/test-utils";
 import {inspect} from 'util';
 
-it('renders without crashing', () => {
+xit('renders without crashing', () => {
     const div = document.createElement('div');
     ReactDOM.render(<App />, div);
     ReactDOM.unmountComponentAtNode(div);
@@ -43,7 +43,7 @@ const awaitGapi = ()=> new Promise((resolve,reject)=>{
     checkForGapi()
 });
 
-it('loads gapi', ()=>{
+xit('loads gapi', ()=>{
 
     const div = document.createElement('div');
     ReactDOM.render(<App />, div);
