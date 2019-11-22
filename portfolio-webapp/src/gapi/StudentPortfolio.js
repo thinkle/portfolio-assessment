@@ -16,12 +16,10 @@ function StudentPortfolio (course, student, studentMode=false) {
     var updatedTimes = {}
 
     async function set_portfolio_and_assessments (portData, studentMode=false, force=false) {
-        console.log('SP:set_portfolio_and_assessments',portData);
         var portfolioEntries = portData.data;
         var fetchedTimes = {...portData.updatedTimes};
         const latestGoogleTimes = await get_updated_time();
         const [portfolio,assessments] = splitPortfolioAndAssessmentData(portfolioEntries);
-        console.log('SP:Check times: latest vs fetched',latestGoogleTimes,fetchedTimes);
         // Exemplars...
         if (!force && latestGoogleTimes.exemplars > fetchedTimes.exemplars) {
             console.log('SP:Crap, this was updated while we were playing with it...')
@@ -29,7 +27,6 @@ function StudentPortfolio (course, student, studentMode=false) {
             throw 'File was updated by somebody else while you were working :(';
         }
         else {
-            console.log('SP:Pushing portfolio data',portfolio);
             var portfolioResult = await set_portfolio(portfolio);
             await get_updated_time();
         }
@@ -40,7 +37,7 @@ function StudentPortfolio (course, student, studentMode=false) {
         if (!studentMode) {
             // Assessments... (fix me - don't try for students).
             if (!force && latestGoogleTimes.assessments > fetchedTimes.assessments) {
-                console.log('SP:Crap, assessments updated while we were playing - bad bad bad');
+                console.log('SP:Grrr, assessments updated while we were playing - bad bad bad');
                 throw 'assessments file updated while we were working - merge not implemeneted';
             }
             else {
@@ -57,7 +54,6 @@ function StudentPortfolio (course, student, studentMode=false) {
                 }
             }
         }
-        console.log('SP:success! returning results.');
         // Re-parse so we can update : we may have added IDs to our data in the process which should go back to our UI
         const portfolioData = parsePortfolio(portfolio,assessments);
         return {portfolioResult,assessmentResult,updatedTimes,
@@ -112,7 +108,6 @@ function StudentPortfolio (course, student, studentMode=false) {
             cacheTime = 0;
         }
         if (!cacheTime || new Date(cacheTime) < new Date(updatedTimes.exemplars)) {
-            console.log('SP:Get whole file from google');
             var data = await get_portfolio_from_google();
             // Set cache!
             try {
@@ -144,7 +139,6 @@ function StudentPortfolio (course, student, studentMode=false) {
     async function get_portfolio_from_google () {
         var id = await dm.getSheetId(course.id,PORTPROP,student.userId);
         if (id) {
-            console.log('SP:StudentPortfolio: exemplar data in file with ID: %s',id);
             var sheets = await SheetManager(id).getSheetsDataJson();
             return sheets.exemplars;
         }
@@ -163,7 +157,7 @@ function StudentPortfolio (course, student, studentMode=false) {
             console.log('SP:Error parsing cache time',ASSCACHETIME,window.localStorage.getItem(ASSCACHETIME));
             cacheTime = 0;
         }
-        if (!cacheTime || cacheTime < updatedTimes.assessments) {
+        if (!cacheTime || new Date(cacheTime) < new Date(updatedTimes.assessments)) {
             var data = await get_assessments_from_google();
             // set cache
             try {
@@ -195,7 +189,6 @@ function StudentPortfolio (course, student, studentMode=false) {
     async function get_assessments_from_google () {
         var id = await dm.getSheetId(course.id,GRADEPROP,student.userId);
         if (id) {
-            console.log('SP:StudentPortfolio: assessment data in file with ID: %s',id);
             var sheets = await SheetManager(id).getSheetsDataJson();
             return sheets.assessments;
         }
