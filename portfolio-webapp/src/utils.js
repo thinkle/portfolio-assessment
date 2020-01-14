@@ -2,6 +2,12 @@ function objProp (obj, setObj) {
     return {
         map : obj,
         setMap : setObj,
+        keys () {
+            return Object.keys(obj);
+        },
+        values () {
+            return Object.values(obj);
+        },
         updateKeys (props) {
             setObj({...obj,...props});
         },
