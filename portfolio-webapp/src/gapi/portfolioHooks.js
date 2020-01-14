@@ -17,6 +17,31 @@ function useStudentPortfolioManager (params) {
     const errorMap = objProp(...useState({}));
     const urlMap = objProp(...useState({}));
 
+    useEffect( ()=>{
+        console.log('REGISTER UNLOAD!')
+        window.addEventListener('beforeunload',
+                                function (e) {
+                                    console.log('Beore Unload!');
+                                    var message;
+                                    var nunsaved = 0;
+                                    savedStateMap.values().forEach((v)=>{
+                                        if (!v) {
+                                            nunsaved += 1;
+                                        }
+                                    });
+                                    if (nunsaved > 0) {
+                                        message = `${nunsaved} unsaved portfolio(s). Are you sure you want to reload the page? All changes will be lost`
+                                    }
+                                    if (!message) {
+                                        message = undefined;
+                                    }
+                                    e.returnValue = message;
+                                    console.log('message:',message);
+                                    // Fix me ! This is *always* preventing unload
+                                    return message;
+                                });
+    },[]);
+
     const checkForUpdatesToFetch = () => {
         //console.log('PH: Effect triggered!',timestamp())
         var timeouts = []
@@ -313,6 +338,20 @@ function useStudentPortfolio (params) {
     const [urls,setUrls] = useState();
     const sp = Api.StudentPortfolio(course,student);
 
+    useEffect( ()=>{
+        console.log("REGISTER UNLOAD")
+        window.addEventListener('beforeunload',
+                                function (e) {
+                                    // Fix me: always stopping reload...
+                                    var message;
+                                    if (!saved) {
+                                        message = 'Portfolio not yet saved, are you sure you want to reload the page? All changes will be lost.'
+                                    }
+                                    e.returnValue = message;
+                                    return message;
+                                })
+    },[])
+    
     useEffect( ()=>{
 
         async function getPortfolio () {
