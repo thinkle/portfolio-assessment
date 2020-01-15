@@ -8,15 +8,58 @@ import './AssignmentMapper.sass'
 
 
 function SkillPicker (props) {
-  
-    var strands = props.strands||['MO','EX'] // for menu
-    var skills = props.skills||[
-        {strand:'MO',skill:'Model stuff well'},
-        {strand:'EX',skill:'Experiment stuff well'},
-    ] // for menu
+    var {portfolio,strands,skills} = props
+    //var strands = props.strands||['MO','EX'] // for menu
+    // var skills = props.skills||[
+    //     {strand:'MO',skill:'Model stuff well'},
+    //     {strand:'EX',skill:'Experiment stuff well'},
+    // ] // for menu
 
     const [selectedStrand,setSelectedStrand] = useState(); // for sub-menu
 
+    const renderSkill = function (sk) {
+        if (!portfolio) {
+            // just the skill name
+            return sk&&sk.skill
+        }
+        if (!sk) {
+            return 
+        }
+        else {
+            const nrequired = sk.exemplars.length;
+            const completeExemplars = portfolio.filter((itm)=>itm.skill==sk.skill);
+            const nfilled = completeExemplars.length;
+            // skill name + the number filled...
+            return (
+                <div className="skillItem"
+                     style={{
+                         color:'#223',
+                    textDecoration:nfilled>=nrequired&&'line-through'||'none',
+                }}
+                ><span> </span>
+                  <b className="skill">{sk.skill}</b>
+                  <div>
+                    <span> </span>
+                    <i className="completed">{nfilled} of {nrequired}</i>
+                    {nfilled &&
+                     <span className="gradeList" style={{fontSize: 'small'}}>(
+                       {completeExemplars.map(
+                           (ex,n)=>(<span>
+                                      {n>0 && ','}
+                                      {ex.assessment && ex.assessment.score || 'Not Assessed'}
+                                    </span>
+                                   )
+                       )}
+                       )
+                     </span> || 
+                     ""}
+                  </div>
+                </div>
+            )
+        
+        }
+    }
+    
     return (
         <div className="skillSelector">
           {props.customMenu &&
@@ -33,7 +76,7 @@ function SkillPicker (props) {
               title={strand}
               onSelected={(skill)=>props.onSelected(skill)}
               items={skills.filter((sk)=>sk&&sk.strand==strand)}
-              renderItem={(sk)=>sk&&sk.skill}
+              renderItem={renderSkill}
             />
           </div>
         ))}
