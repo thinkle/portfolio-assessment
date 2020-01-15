@@ -66,7 +66,7 @@ function ExemplarEditor (props) {
     const {strands,skills,assignments,coursework} = props; // lifted up to Portfolio
 
 
-    // data we choose
+   // data we choose
     const [selectedSubmission,setSelectedSubmission] = useState(props.selectedSubmission)
     const [customSubmissionMode,setCustomSubmissionMode] = useState(props.permalink);
     const [permalink,setPermalink] = useState(props.permalink);
@@ -396,6 +396,7 @@ function ExemplarSkillEditor (props) {
     // data we need to choose our exemplar
     // Refactored as we lift state up... 
     const {strands,skills,assignments} = props; // lifted up to Portfolio
+    const {portfolio} = props; // grab the portfolio itself...
     const {coursework,
            selectedSubmission,
            setSelectedSubmission,
@@ -549,7 +550,8 @@ function ExemplarSkillEditor (props) {
                   </div>
                   <div className="side-by-side">
                     <h.h5>Skill:</h.h5>
-                <SkillPicker
+                    <SkillPicker
+                      portfolio={portfolio}
                   key={selectedSubmission && selectedSubmission.courseWorkId}
                   customMenu={getCustomSkillPickerMenu()}
                   strands={strands}
