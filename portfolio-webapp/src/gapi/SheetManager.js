@@ -66,9 +66,31 @@ function SheetManager (sheetId) {
                 getWithGrid()
                     .then((ssheet)=>{
                         var sheets = {};
+                        if (!ssheet.sheets) {
+                            throw 'WTF? No sheets on object';
+                        }
                         ssheet.sheets.forEach(
                             (sheet) => {
-                                sheets[sheet.properties.title] = sheet.data[0].rowData.map(Sheets.fromRowToJS)
+                                if (!sheet.data) {
+                                    debugger;
+                                    throw 'WTF? No data';
+                                }
+                                if (!sheet.data[0]) {
+                                    debugger;
+                                    throw 'WTF? Now data object?';
+                                }
+                                if (!sheet.data[0].rowData) {
+                                    debugger;
+                                    throw 'WTF? No RowData!';
+                                }
+                                try {
+                                    sheets[sheet.properties.title] = sheet.data[0].rowData.map(Sheets.fromRowToJS)
+                                }
+                                catch (err) {
+                                    console.log('Error with ',sheet);
+                                    debugger;
+                                    throw err;
+                                }
                             }
                         );
                         resolve(sheets)
