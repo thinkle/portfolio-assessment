@@ -132,6 +132,9 @@ var Sheets = {
 
 
     fromRowToJS (row) {
+        if (!row.values) {
+            return {}
+        }
         return row.values.map(fromCellData)
     },
 
