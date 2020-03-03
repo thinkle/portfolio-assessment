@@ -67,29 +67,36 @@ function SheetManager (sheetId) {
                     .then((ssheet)=>{
                         var sheets = {};
                         if (!ssheet.sheets) {
+                            console.log('Looking at spreadsheet',ssheet);
+                            console.log('No sheet propert!');
                             throw 'WTF? No sheets on object';
                         }
                         ssheet.sheets.forEach(
                             (sheet) => {
                                 if (!sheet.data) {
+                                    console.log('Error looking at ',ssheet,sheet);
                                     debugger;
                                     throw 'WTF? No data';
                                 }
                                 if (!sheet.data[0]) {
+                                    console.log('Error looking at ',ssheet,sheet,sheet.data);
                                     debugger;
                                     throw 'WTF? Now data object?';
                                 }
                                 if (!sheet.data[0].rowData) {
-                                    debugger;
-                                    throw 'WTF? No RowData!';
+                                    console.log('Odd? No RowData for sheet ',sheet,'from',ssheet);
+                                    console.log("Maybe it's empty!");
+                                    sheets[sheet.properties.title] = [];
                                 }
-                                try {
-                                    sheets[sheet.properties.title] = sheet.data[0].rowData.map(Sheets.fromRowToJS)
-                                }
-                                catch (err) {
-                                    console.log('Error with ',sheet);
-                                    debugger;
-                                    throw err;
+                                else {
+                                    try {
+                                        sheets[sheet.properties.title] = sheet.data[0].rowData.map(Sheets.fromRowToJS)
+                                    }
+                                    catch (err) {
+                                        console.log('Error with ',sheet);
+                                        debugger;
+                                        throw err;
+                                    }
                                 }
                             }
                         );
