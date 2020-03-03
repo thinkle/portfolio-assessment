@@ -80,32 +80,48 @@ $step : 1rem
     
     
 $row-types: even odd
-$colors: #659dbd #BC986A
+$colors: #0033a0 #c6093b
 //$colors: $red $cyan
 
+.treePopover div 
+  background-color: white
+  
+  
 @each $row-type in $row-types
   @debug $row-type
   $i: index($row-types, $row-type)
   @debug $i
   $baseColor : nth($colors,$i)
 
+  .table > .rowGroup:nth-child(#{$row-type})
+    border-bottom: 2px solid $baseColor
+    border-left: 2px solid $baseColor
+    border-right: 2px solid $baseColor
+  
+  .table > .rowGroup:nth-child(#{$row-type}) .rowGroup.nested1
+    border-bottom: 1px solid scale-color($baseColor, $lightness : 30%)
+
+  .table > .rowGroup:nth-child(#{$row-type}) .treerow.nested2
+    border-bottom: 1px dotted scale-color($baseColor, $lightness : 50%)
+    
+  
   .table > .rowGroup:nth-child(#{$row-type}),.table > .rowGroup:nth-child(#{$row-type}) .treePopover div
-    background-color : scale-color($baseColor,$lightness: 10%)
-    @include text-contrast(scale-color($baseColor,$lightness: 10%))
+    //background-color : scale-color($baseColor,$lightness:-80%)
+    //@include text-contrast(scale-color($baseColor,$lightness:-80%))
 
   .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd),.table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd) .treePopover div
-    background-color: scale-color($baseColor,$lightness: 50%)
-    @include text-contrast(scale-color($baseColor,$lightness: 50%))
+    //background-color: scale-color($baseColor,$lightness: -80%,$saturation: -50%)
+    //@include text-contrast(scale-color($baseColor,$lightness: -80%,$saturation: -50%))
   
   .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd) .nested2,.table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(odd) .nested2
-    border-top: 1px solid scale-color($baseColor,$lightness: 60%)
+    //border-top: 1px solid scale-color($baseColor,$saturation: -40%)
 
   .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even),.table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even) .treePopover div
-    background-color: scale-color($baseColor,$lightness: 80%)
-    @include text-contrast(scale-color($baseColor,$lightness: 80%))
+    //background-color: scale-color($baseColor,$saturation: -80%)
+    //@include text-contrast(scale-color($baseColor,$saturation: -80%))
 
   .table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even) .nested2,.table > .rowGroup:nth-child(#{$row-type}) .row-children > .nested1:nth-child(even) .nested2
-    border-top: 1px solid scale-color($baseColor,$lightness: 90%)
+    //border-top: 1px solid scale-color($baseColor,$lightness: 90%)
 
 
 .lcontrol
