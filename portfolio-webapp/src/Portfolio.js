@@ -300,7 +300,7 @@ function PortfolioComponent (props) {
                 urls={urls}
                 saved={saved}
                 error={error}
-                savePortfolio={savePortfolio}
+                savePortfolio={saveOverPortfolio}
                 saveOverPortfolio={saveOverPortfolio}
               />
             </Navbar.End>
@@ -319,7 +319,7 @@ function PortfolioComponent (props) {
                  'Exemplars',
                  'Due'
              ]}
-             cols={6}
+             cols={7}
              /* widths = {[ */
              /*     '6em','15em','12em','15em','8em','15em' */
              /* ]} */
@@ -336,6 +336,7 @@ function PortfolioComponent (props) {
                             PointsTotalCol,
                             ExemplarCountCol,
                             DueDateCol,
+                            TreeView.BlankCol(),
                             TreeView.ButtonCol({icon:Icon.plus,content:'Add exemplar',generateOnClick:makeExemplarCallback}),
                            ]
                 }
@@ -346,6 +347,7 @@ function PortfolioComponent (props) {
                             TreeView.PopupCol({field:'reflection',label:'Reflection',tagMode:true,snippetMode:true,className:'break-after'}),
                             TreeView.PopupCol({field:'assessment.comment',labelField:'assessment.score',tagMode:true,snippetMode:true,className:'break-after'}),
                             TreeView.BlankCol({className:'break-after'}),
+                            TreeView.ButtonCol({className:'delete-ex',icon:Icon.trash,content:'',generateOnClick:deleteExemplarCallback}),
                             TreeView.ButtonCol({icon:Icon.edit,content:'Edit Exemplar',generateOnClick:editExemplarCallback})
                            ];
                 }
@@ -379,6 +381,22 @@ function PortfolioComponent (props) {
             }
             else {
                 return Object.values(pp).join('.');
+            }
+        }
+    }
+
+    function deleteExemplarCallback( {data, children}) {
+        return function () {
+            if (window.confirm(`Are you sure you want to remove this Exemplar for 
+${data.skill} (${data.courseworkId})`)) {
+                const copy = [...portfolio]
+                console.log('Had',copy.length,'items...');
+                copy.splice(copy.indexOf(data),1); // remove item
+                console.log('And now we have',copy.length);
+                setPortfolio(copy);
+            }
+            else {
+                window.alert('Nevermind then');
             }
         }
     }
