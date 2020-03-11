@@ -94,9 +94,7 @@ $colors: #0033a0 #c6093b
   $baseColor : nth($colors,$i)
 
   .table > .rowGroup:nth-child(#{$row-type})
-    border-bottom: 2px solid $baseColor
-    border-left: 2px solid $baseColor
-    border-right: 2px solid $baseColor
+    border: 2px solid $baseColor
   
   .table > .rowGroup:nth-child(#{$row-type}) .rowGroup.nested1
     border-bottom: 1px solid scale-color($baseColor, $lightness : 30%)
@@ -310,20 +308,23 @@ $spacer : 0.5em
     grid-column-gap: 3px;
 
   .portfolio-tree-view .treerow
-    grid-template-columns: 60px 50fr 250fr 250fr 250fr 100fr 160px
+    grid-template-columns: 60px 50fr 250fr 250fr 250fr 100fr 38px 160px 
 
 +touch
   .portfolio-builder-tree .treerow
-    grid-template-columns: 60px 1fr 2fr 2fr 60px
+    grid-template-columns: 60px 1fr 2fr 2fr 60px 60px
     grid-template-areas: "lcontrol cell1 cell2 cell6 ." ". cell5 cell3 cell4 rcontrol"
 
   .portfolio-tree-view .treerow
     grid-template-columns: 60px 50fr 250fr 250fr;
-    grid-template-areas: "lcontrol cell1 cell2 cell4" ". cell3 cell5 cell6";
+    grid-template-areas: "lcontrol cell1 cell2 cell4" ". cell3 cell5 cell6 cell7";
 
   .portfolio-tree-view .nested2.treerow
     grid-template-columns: 60px 50fr 250fr 250fr;
-    grid-template-areas: "lcontrol cell1 cell3 cell2" ". cell5 cell4 cell6";
+    grid-template-areas: "lcontrol cell1 cell3 cell2" ". cell5 cell4 cell6 cell7";
     //grid-template-areas: "lcontrol cell1 cell4 cell6" ". . cell3 cell5";
   
+  
+.delete-ex:hover
+  color: $red
   
