@@ -205,7 +205,7 @@ function Gapi (props) {
         
         if (localMode) {handleClientLoad();}
         else {
-            fetch('https://portfolio-assessment.netlify.com/.netlify/functions/apiInfo/')
+            fetch('https://portfolio-assessment.netlify.app/.netlify/functions/apiInfo/')
                 .then((resp)=>{
                     resp.json()
                         .then((data)=>{
